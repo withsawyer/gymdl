@@ -28,5 +28,11 @@ Thumbs.db
 
 # Build artifacts
 bin/
-dist/*
-!dist/.gitkeep
+data/dist/*
+!data/dist/.gitkeep
+data/cache/*
+!data/cache/.gitkeep
+data/temp/*
+!data/temp/.gitkeep
+
+.env
