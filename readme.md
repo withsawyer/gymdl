@@ -14,7 +14,7 @@
 - 🎧 **高音质下载**  
   支持下载 **256kbps AAC** 音质（YouTube Premium 会员专属）。
 - 🍪 **简化 Cookie 配置**  
-  使用 Chrome 插件 [Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/)，一键导入 Cookie；运行中如检测到过期，会自动跳转至 YouTube Music 提示重新导入。
+  使用 Chrome 插件 [Get cookies.txt LOCALLY]([https://chrome.google.com/webstore/detail/get-cookiestxt-locally/](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc))，一键导入 Cookie；运行中如检测到过期，会自动跳转至 YouTube Music 提示重新导入。
 
 - ⚙️ **自定义配置文件**  
   灵活控制下载与存储选项，比如下载完成后自动移动到 NAS 音乐待刮削目录。
