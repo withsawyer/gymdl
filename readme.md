@@ -88,7 +88,7 @@ cookie_file: './cookies.txt'
 
 ## 🧩 流程图
 
-![alt text](image.png)
+![alt text](data/assets/image.png)
 
 ---
 
