@@ -27,7 +27,8 @@ Thumbs.db
 *.log
 
 # Build artifacts
-bin/
+data/bin/*/*
+!data/bin/*/.gitkeep
 data/dist/*
 !data/dist/.gitkeep
 data/cache/*
@@ -35,4 +36,4 @@ data/cache/*
 data/temp/*
 !data/temp/.gitkeep
 
-.env
+config.json
