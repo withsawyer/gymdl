@@ -86,6 +86,12 @@ cookie_file: './cookies.txt'
 
 ---
 
+## 流程图
+
+![alt text](image.png)
+
+---
+
 ## 🤝 贡献指南
 
 欢迎提出建议或提交代码改进：
