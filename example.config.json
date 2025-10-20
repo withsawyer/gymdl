@@ -30,6 +30,10 @@
         "level": 2,
         "file": "data/logs/run.log"
     },
+    "dns_unlock": {
+        "ip": "",
+        "domains": []
+    },
     "ai": {
         "base_url": "",
         "model": "",
