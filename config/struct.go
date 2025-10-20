@@ -1,18 +1,19 @@
 package config
 
 type Config struct {
-	WebConfig   *WebConfig         `json:"webConfig"`   //web配置
-	CookieCloud *CookieCloudConfig `json:"cookieCloud"` //cookiecloud配置
-	MusicTidy   *MusicTidyConfig   `json:"musicTidy"`   //音乐整理配置
-	WebDAV      *WebDAVConfig      `json:"webdav"`      //webdav配置
-	Ffmpeg      *FfmpegConfig      `json:"ffmpeg"`      // ffmpeg配置，转码使用
-	Log         *LogConfig         `json:"logs"`        // 日志配置
-	AI          *AIConfig          `json:"ai"`          //AI配置
+	WebConfig   *WebConfig         `json:"web_config"`   //web配置
+	CookieCloud *CookieCloudConfig `json:"cookie_cloud"` //cookiecloud配置
+	MusicTidy   *MusicTidyConfig   `json:"music_tidy"`   //音乐整理配置
+	WebDAV      *WebDAVConfig      `json:"webdav"`       //webdav配置
+	Ffmpeg      *FfmpegConfig      `json:"ffmpeg"`       // ffmpeg配置，转码使用
+	Log         *LogConfig         `json:"log"`          // 日志配置
+	DnsUnlock   DnsUnlockConfig    `json:"dns_unlock"`   //dns解锁配置
+	AI          *AIConfig          `json:"ai"`           //AI配置
 }
 
 type WebConfig struct {
 	AppHost string `json:"app_host"` //web服务监听地址
-	AppPort string `json:"app_port"` //web服务监听端口
+	AppPort int    `json:"app_port"` //web服务监听端口
 }
 
 type CookieCloudConfig struct {
@@ -47,8 +48,14 @@ type LogConfig struct {
 	File  string `json:"file"`  // 日志文件路径
 }
 
+type DnsUnlockConfig struct {
+	IP      string   `json:"ip"`      //用于dns解锁的ip
+	Domains []string `json:"domains"` //需要解锁的域名列表(后缀匹配)
+}
+
 type AIConfig struct {
-	AIBaseUrl string `json:"ai_base_url"` //baseurl
-	AIModel   string `json:"ai_model"`    //使用的模型
-	AIApiKey  string `json:"ai_api_key"`  //apiKey
+	BaseUrl      string `json:"base_url"`      //baseurl
+	Model        string `json:"model"`         //使用的模型
+	ApiKey       string `json:"api_key"`       //apiKey
+	SystemPrompt string `json:"system_prompt"` //默认系统提示词
 }
