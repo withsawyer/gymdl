@@ -33,7 +33,6 @@ func initGin(wg *sync.WaitGroup, c *config.WebConfig) {
 			"message": "Hi,Gin!",
 		})
 	})
-	fmt.Println("web服务已启动!")
 	err := r.Run(":8080")
 	if err != nil {
 		return
@@ -46,9 +45,7 @@ func main() {
 		return
 	}
 	//加载配置
-	fmt.Println("正在加载配置...")
 	c := config.LoadConfig(configFile)
-	fmt.Println("配置已加载")
 	
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
@@ -57,6 +54,5 @@ func main() {
 	//启动http服务gin
 	go initGin(wg, c.WebConfig)
 	
-	fmt.Println("项目已启动!")
 	wg.Wait()
 }
