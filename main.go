@@ -3,13 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/http"
 	"runtime"
 	"sync"
 	
-	"github.com/gin-gonic/gin"
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/cron"
+	"github.com/nichuanfang/gymdl/internal/router"
 )
 
 var (
@@ -24,16 +23,11 @@ func init() {
 	flag.Parse()
 }
 
-func initGin(wg *sync.WaitGroup, c *config.WebConfig) {
+// initGin 启动Web服务
+func initGin(wg *sync.WaitGroup, c *config.Config) {
 	defer wg.Done()
-	r := gin.Default()
-	
-	r.GET("/", func(context *gin.Context) {
-		context.JSON(http.StatusOK, gin.H{
-			"message": "Hi,Gin!",
-		})
-	})
-	err := r.Run(":8080")
+	r := router.SetupRouter(c)
+	err := r.Run(fmt.Sprintf("%s:%d", c.WebConfig.AppHost, c.WebConfig.AppPort))
 	if err != nil {
 		return
 	}
@@ -49,10 +43,12 @@ func main() {
 	
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
-	//初始化定时任务
-	go cron.InitCron(c, wg)
-	//启动http服务gin
-	go initGin(wg, c.WebConfig)
 	
+	//【协程1】 初始化定时任务
+	go cron.InitCron(c, wg)
+	//【协程2】 启动http服务gin
+	go initGin(wg, c)
+	
+	//阻塞主协程
 	wg.Wait()
 }
