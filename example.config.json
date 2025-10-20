@@ -21,7 +21,7 @@
         "webdav_dir": ""
     },
     "ffmpeg": {
-        "max_worker": "",
+        "max_worker": 4,
         "ffmpeg_path": "",
         "ffprobe_path": ""
     },
