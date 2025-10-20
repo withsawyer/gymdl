@@ -22,6 +22,7 @@ type FfmpegConfig struct {
 type CookieCloudConfig struct {
 	CookieCloudUrl  string `json:"cookiecloud_url"`  //cookiecloud 地址
 	CookieCloudUUID string `json:"cookiecloud_uuid"` //cookiecloud uuid
+	CookieCloudKEY  string `json:"cookiecloud_key"`  //cookiecloud key
 }
 
 type WebDAVConfig struct {
