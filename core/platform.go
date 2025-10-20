@@ -1,4 +1,4 @@
-package utils
+package core
 
 //## 根据平台初始化bin目录的可执行文件(yt-dlp,)
 //1.  初始化检测创建执行文件

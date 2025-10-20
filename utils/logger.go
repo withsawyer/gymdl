@@ -48,10 +48,10 @@ func InitLogger(mode, level int, logFile string) {
 	if mode != LogModeStdout {
 		file, err = os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
-			log.Fatalf("open log file:%s err: %v", logFile, err)
+			log.Fatalf("open logs file:%s err: %v", logFile, err)
 		}
 	}
-
+	
 	Logger = &logger{
 		level: logLevel(level),
 		lock:  new(sync.Mutex),
@@ -132,22 +132,22 @@ func (l *logger) write(level logLevel, str string) {
 	if l.file == nil || l.mode == LogModeStdout {
 		return
 	}
-
+	
 	l.lock.Lock()
 	defer l.lock.Unlock()
-
+	
 	// 结尾自动空格
 	if len(str) == 0 || str[len(str)-1] != '\n' {
 		str += "\n"
 	}
-
+	
 	now := time.Now().Format("2006/01/02 15:04:05")
 	levelStr, _ := levelMap[level]
 	str = fmt.Sprintf("%s %s %s", now, levelStr, str)
-
+	
 	_, err := l.file.WriteString(str)
 	if err != nil {
-		log.Fatalf("write log file: %s, err: %v", l.file.Name(), err)
+		log.Fatalf("write logs file: %s, err: %v", l.file.Name(), err)
 	}
-
+	
 }

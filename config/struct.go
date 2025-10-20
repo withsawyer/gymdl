@@ -1,7 +1,7 @@
 package config
 
 type Config struct {
-	Log    *LogConfig    `json:"log"`    // 日志配置
+	Log    *LogConfig    `json:"logs"`   // 日志配置
 	Ffmpeg *FfmpegConfig `json:"ffmpeg"` // ffmpeg配置，转码使用
 	WebDAV *WebDAVConfig `json:"webdav"` //webdav配置
 	AI     *AIConfig     `json:"ai"`     //AI配置

@@ -2,15 +2,7 @@
     "log": {
         "mode": 1,
         "level": 2,
-        "file": "/tmp/tmdb-collector.log"
-    },
-    "tmdb": {
-        "api_host": "https://api.themoviedb.org",
-        "image_host": "https://image.tmdb.org",
-        "api_key": "a52fb1bab999ef3918b3e2864d584cb6",
-        "language": "zh-CN",
-        "proxy": "http://127.0.0.1:10809",
-        "rating": "US"
+        "file": "./data/logs/run.log"
     },
     "collector": {
         "watcher": true,
