@@ -1,11 +1,11 @@
-package utils
+package cron
 
 import (
 	"fmt"
 	"log"
 	"sync"
 	"time"
-
+	
 	"github.com/robfig/cron/v3"
 )
 
@@ -38,24 +38,24 @@ func NewScheduler() *Scheduler {
 func (s *Scheduler) AddIntervalTask(name string, interval time.Duration, job func()) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
+	
 	if _, exists := s.intervalTasks[name]; exists {
 		return fmt.Errorf("任务 %s 已存在", name)
 	}
-
+	
 	task := &intervalTask{
 		Name:     name,
 		Interval: interval,
 		Job:      job,
 		stopChan: make(chan struct{}),
 	}
-
+	
 	s.intervalTasks[name] = task
-
+	
 	go func(t *intervalTask) {
 		ticker := time.NewTicker(t.Interval)
 		defer ticker.Stop()
-
+		
 		for {
 			select {
 			case <-ticker.C:
@@ -65,7 +65,7 @@ func (s *Scheduler) AddIntervalTask(name string, interval time.Duration, job fun
 			}
 		}
 	}(task)
-
+	
 	return nil
 }
 
@@ -73,16 +73,16 @@ func (s *Scheduler) AddIntervalTask(name string, interval time.Duration, job fun
 func (s *Scheduler) AddCronTask(name string, expr string, job func()) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
+	
 	if _, exists := s.cronTasks[name]; exists {
 		return fmt.Errorf("任务 %s 已存在", name)
 	}
-
+	
 	id, err := s.cronRunner.AddFunc(expr, func() { s.safeRun(name, job) })
 	if err != nil {
 		return err
 	}
-
+	
 	s.cronTasks[name] = id
 	return nil
 }
@@ -91,18 +91,18 @@ func (s *Scheduler) AddCronTask(name string, expr string, job func()) error {
 func (s *Scheduler) AddDelayTask(name string, delay time.Duration, job func()) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
+	
 	if _, exists := s.delayTasks[name]; exists {
 		return fmt.Errorf("任务 %s 已存在", name)
 	}
-
+	
 	timer := time.AfterFunc(delay, func() {
 		s.safeRun(name, job)
 		s.mu.Lock()
 		delete(s.delayTasks, name)
 		s.mu.Unlock()
 	})
-
+	
 	s.delayTasks[name] = timer
 	return nil
 }
@@ -121,17 +121,17 @@ func (s *Scheduler) safeRun(name string, job func()) {
 func (s *Scheduler) RemoveTask(name string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
+	
 	if t, ok := s.intervalTasks[name]; ok {
 		close(t.stopChan)
 		delete(s.intervalTasks, name)
 	}
-
+	
 	if id, ok := s.cronTasks[name]; ok {
 		s.cronRunner.Remove(id)
 		delete(s.cronTasks, name)
 	}
-
+	
 	if timer, ok := s.delayTasks[name]; ok {
 		timer.Stop()
 		delete(s.delayTasks, name)
@@ -147,17 +147,17 @@ func (s *Scheduler) Start() {
 func (s *Scheduler) Stop() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
+	
 	for name, t := range s.intervalTasks {
 		close(t.stopChan)
 		delete(s.intervalTasks, name)
 	}
-
+	
 	for name := range s.cronTasks {
 		delete(s.cronTasks, name)
 	}
 	s.cronRunner.Stop()
-
+	
 	for name, timer := range s.delayTasks {
 		timer.Stop()
 		delete(s.delayTasks, name)
