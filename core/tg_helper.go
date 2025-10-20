@@ -1,3 +1,3 @@
-package telegram
+package core
 
 // telegram助手
