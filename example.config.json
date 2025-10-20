@@ -1,59 +1,39 @@
 {
+    "web_config": {
+        "app_host": "0.0.0.0",
+        "app_port": 8080
+    },
+    "cookie_cloud": {
+        "cookiecloud_url": "",
+        "cookiecloud_uuid": "",
+        "cookiecloud_key": "",
+        "cookie_file": "",
+        "expire_time": 20
+    },
+    "music_tidy": {
+        "mode": 1,
+        "dist_dir": "data/dist"
+    },
+    "webdav": {
+        "webdav_url": "",
+        "webdav_user": "",
+        "webdav_pass": "",
+        "webdav_dir": ""
+    },
+    "ffmpeg": {
+        "max_worker": "",
+        "ffmpeg_path": "",
+        "ffprobe_path": ""
+    },
     "log": {
         "mode": 1,
         "level": 2,
-        "file": "./data/logs/run.log"
+        "file": "data/logs/run.log"
     },
-    "collector": {
-        "watcher": true,
-        "cron_seconds": 3600,
-        "skip_folders": [
-            "tmdb",
-            "@eaDir",
-            "CERTIFICATE",
-            "$RECYCLE.BIN",
-            "RECYCLER",
-            "SYSTEM VOLUME INFORMATION",
-            "@EADIR",
-            "ADV_OBJ",
-            "PLEX VERSIONS",
-            "Sample",
-            "gallery",
-            "metadata"
-        ],
-        "movies_nfo_mode": 1,
-        "move_to_storage": true,
-        "movies_dir": [
-            "/volume1/down/movies"
-        ],
-        "movies_storage_dir": "/volume1/storage/movies",
-        "shows_dir": [
-            "/volume1/down/shows"
-        ],
-        "shows_storage_dir": "/volume1/storage/shows",
-        "music_videos_dir": [
-            "/volume1/down/music_videos"
-        ],
-        "music_videos_storage_dir": "/volume1/down/music_videos"
-    },
-    "kodi": {
-        "enable": false,
-        "clean_library": false,
-        "json_rpc": "http://192.168.1.123:8080/jsonrpc",
-        "timeout": 1,
-        "username": "kodi",
-        "password": "123456"
-    },
-    "ffmpeg": {
-        "max_worker": 4,
-        "ffmpeg_path": "/usr/local/ffmpeg-5.0.1-amd64-static/ffmpeg",
-        "ffprobe_path": "/usr/local/ffmpeg-5.0.1-amd64-static/ffprobe"
-    },
-    "webdav": {
-        "webdav_url": "http://127.0.0.1:19798/dav",
-        "webdav_user": "root",
-        "webdav_pass": "123456",
-        "webdav_movies_dir": "",
-        "webdav_shows_dir": ""
+    "ai": {
+        "base_url": "",
+        "model": "",
+        "api_key": "",
+        "system_prompt": ""
     }
 }
