@@ -6,3 +6,4 @@
 -   [x] 所属平台解析器
 -   [ ] 搭建定时任务框架[gocron](github.com/go-co-op/gocron)
 -   [ ] 搭建 telegram 框架[telebot](<[telebot](https://github.com/tucnak/telebot)>)
+-   [ ] gocron 和 telebot 的中间件实现(日志,鉴权)
