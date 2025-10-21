@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	
+
 	"github.com/nichuanfang/gymdl/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -12,21 +12,30 @@ import (
 
 var loggerInstance *zap.Logger
 
-// 彩色等级输出
+// 彩色等级输出（加粗对齐）
 var colorLevelEncoder = func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 	switch l {
 	case zapcore.DebugLevel:
-		enc.AppendString("\033[36mDEBUG\033[0m") // 青色
+		enc.AppendString("\033[1;36mDEBUG\033[0m") // 加粗青色
 	case zapcore.InfoLevel:
-		enc.AppendString("\033[32mINFO\033[0m") // 绿色
+		enc.AppendString("\033[1;32mINFO \033[0m") // 加粗绿色，补齐宽度
 	case zapcore.WarnLevel:
-		enc.AppendString("\033[33mWARN\033[0m") // 黄色
+		enc.AppendString("\033[1;33mWARN \033[0m") // 加粗黄色，补齐宽度
 	case zapcore.ErrorLevel:
-		enc.AppendString("\033[31mERROR\033[0m") // 红色
+		enc.AppendString("\033[1;31mERROR\033[0m") // 加粗红色
 	case zapcore.FatalLevel:
-		enc.AppendString("\033[35mFATAL\033[0m") // 紫色
+		enc.AppendString("\033[1;35mFATAL\033[0m") // 加粗紫色
 	default:
-		enc.AppendString(l.CapitalString())
+		enc.AppendString(fmt.Sprintf("%-5s", l.CapitalString()))
+	}
+}
+
+// 对齐字段输出
+func paddedCallerEncoder(caller zapcore.EntryCaller, enc zapcore.PrimitiveArrayEncoder) {
+	if caller.Defined {
+		enc.AppendString(fmt.Sprintf("%-25s", caller.TrimmedPath())) // 文件:行号左对齐，宽度25
+	} else {
+		enc.AppendString(fmt.Sprintf("%-25s", ""))
 	}
 }
 
@@ -39,12 +48,12 @@ func newConsoleEncoder() zapcore.Encoder {
 		MessageKey:   "M",
 		EncodeTime:   zapcore.TimeEncoderOfLayout("15:04:05"),
 		EncodeLevel:  colorLevelEncoder,
-		EncodeCaller: zapcore.ShortCallerEncoder,
+		EncodeCaller: paddedCallerEncoder,
 	}
 	return zapcore.NewConsoleEncoder(cfg)
 }
 
-// 文件 Encoder（无颜色）
+// 文件 Encoder（无颜色，对齐）
 func newFileEncoder() zapcore.Encoder {
 	cfg := zapcore.EncoderConfig{
 		TimeKey:        "T",
@@ -53,13 +62,13 @@ func newFileEncoder() zapcore.Encoder {
 		MessageKey:     "M",
 		EncodeTime:     zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05"),
 		EncodeLevel:    zapcore.CapitalLevelEncoder,
-		EncodeCaller:   zapcore.ShortCallerEncoder,
+		EncodeCaller:   paddedCallerEncoder,
 		EncodeDuration: zapcore.StringDurationEncoder,
 	}
 	return zapcore.NewConsoleEncoder(cfg)
 }
 
-//InitLogger 初始化 Logger
+// InitLogger 初始化 Logger
 func InitLogger(cfg *config.LogConfig) error {
 	var level zapcore.Level
 	switch cfg.Level {
@@ -74,16 +83,16 @@ func InitLogger(cfg *config.LogConfig) error {
 	default:
 		level = zap.FatalLevel
 	}
-	
+
 	consoleEnc := newConsoleEncoder()
 	fileEnc := newFileEncoder()
-	
+
 	var cores []zapcore.Core
-	
+
 	if cfg.Mode == 1 || cfg.Mode == 3 {
 		cores = append(cores, zapcore.NewCore(consoleEnc, zapcore.Lock(os.Stdout), level))
 	}
-	
+
 	if (cfg.Mode == 2 || cfg.Mode == 3) && cfg.File != "" {
 		_ = os.MkdirAll(filepath.Dir(cfg.File), 0755)
 		f, err := os.OpenFile(cfg.File, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -92,12 +101,12 @@ func InitLogger(cfg *config.LogConfig) error {
 		}
 		cores = append(cores, zapcore.NewCore(fileEnc, zapcore.AddSync(f), level))
 	}
-	
+
 	loggerInstance = zap.New(zapcore.NewTee(cores...), zap.AddCaller(), zap.AddCallerSkip(1))
 	return nil
 }
 
-//Logger 获取全局 Logger
+// Logger 获取全局 Logger
 func Logger() *zap.SugaredLogger {
 	if loggerInstance == nil {
 		_ = InitLogger(&config.LogConfig{Mode: 1, Level: 2})
@@ -105,7 +114,7 @@ func Logger() *zap.SugaredLogger {
 	return loggerInstance.Sugar()
 }
 
-//Sync 同步日志（用于程序退出前 flush）
+// Sync 同步日志（用于程序退出前 flush）
 func Sync() {
 	if loggerInstance != nil {
 		_ = loggerInstance.Sync()
