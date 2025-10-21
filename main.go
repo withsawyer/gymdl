@@ -61,7 +61,9 @@ func initAI(c *config.AIConfig) {
 // initCron 启动定时任务
 func initCron(wg *sync.WaitGroup, c *config.Config) {
 	defer wg.Done()
-	cron.InitCron(c)
+	s := cron.InitScheduler(c)
+	s.Start()
+	utils.Success("定时任务已启动")
 }
 
 // initGin 启动Web服务
