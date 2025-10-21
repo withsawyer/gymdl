@@ -26,9 +26,24 @@ func init() {
 	flag.Parse()
 }
 
-//=================================基础配置================================================
+// =================================基础服务================================================
 
-//=================================核心服务================================================
+// initWebDAV 初始化webdav服务
+func initWebDAV(c *config.WebDAVConfig) {
+	utils.Logger().Info("已加载webdav服务:", c.WebDAVUrl)
+	return
+}
+
+// initCookieCloud 初始化cookiecloud
+func initCookieCloud(cookieCloudConfig *config.CookieCloudConfig) {
+	utils.Logger().Info("已加载cookiecloud服务:", cookieCloudConfig.CookieCloudUrl)
+}
+
+func initAI(c *config.AIConfig) {
+	utils.Logger().Info("已加载AI服务:", c.BaseUrl)
+}
+
+//=================================后台服务================================================
 
 // initCron 启动定时任务
 func initCron(wg *sync.WaitGroup, c *config.Config) {
@@ -69,6 +84,16 @@ func main() {
 		return
 	}
 	defer utils.Sync()
+
+	// 初始化webdav+连通性检测
+	if c.MusicTidy.Mode == 2 {
+		initWebDAV(c.WebDAV)
+	}
+	//初始化cookiecloud+连通性检测
+	initCookieCloud(c.CookieCloud)
+
+	//初始化AI服务+连通性检测
+	initAI(c.AI)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(3)
