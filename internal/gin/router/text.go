@@ -8,4 +8,5 @@ import (
 func RegisterTextRoutes(rg *gin.RouterGroup) {
 	group := rg.Group("/text")
 	group.GET("/", controller.HandleMsg)
+	group.GET("/test", controller.TestError)
 }

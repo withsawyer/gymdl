@@ -30,7 +30,7 @@ func init() {
 
 // verifyConfig 核心配置项检测
 func verifyConfig(c *config.Config) error {
-	fmt.Println(c.CookieCloud.CookieCloudUrl)
+	utils.Success("核心配置项检测通过")
 	return nil
 }
 

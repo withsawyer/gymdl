@@ -17,6 +17,7 @@ func InitCron(config *config.Config) {
 	//    - 依赖的可执行文件或者pip更新检测
 	//    - 定期从cookiecloud获取cookie数据并解密为cookie文件
 	platformInfo := core.PlatformInfo()
-	utils.Successf("当前平台: %s", platformInfo.String())
+	utils.Logger().Infof("当前平台: %s", platformInfo.String())
+	utils.Success("定时任务已启动")
 	time.Sleep(time.Hour)
 }
