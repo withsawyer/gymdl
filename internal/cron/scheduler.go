@@ -1,25 +1,80 @@
 package cron
 
 import (
+	"fmt"
+	"strings"
+	"sync"
 	"time"
 	
 	"github.com/go-co-op/gocron/v2"
+	"github.com/google/uuid"
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core"
 	"github.com/nichuanfang/gymdl/utils"
+	"go.uber.org/zap"
 )
 
-// InitScheduler 初始化定时任务
 func InitScheduler(c *config.Config) gocron.Scheduler {
 	platformInfo := core.PlatformInfo()
 	utils.SugaredLogger().Infof("当前平台: %s", platformInfo.String())
 	
-	//初始化gocron
-	newScheduler, _ := gocron.NewScheduler(gocron.WithLocation(time.Local))
+	var startTimes sync.Map
 	
-	// 注册定时任务
+	newScheduler, err := gocron.NewScheduler(
+		gocron.WithLocation(time.Local),
+		gocron.WithGlobalJobOptions(
+			gocron.WithEventListeners(
+				gocron.BeforeJobRuns(func(jobID uuid.UUID, jobName string) {
+					startTimes.Store(jobID, time.Now())
+					logJobEvent("started", jobName, jobID, nil, nil)
+				}),
+				gocron.AfterJobRuns(func(jobID uuid.UUID, jobName string) {
+					if v, ok := startTimes.LoadAndDelete(jobID); ok {
+						start := v.(time.Time)
+						logJobEvent("finished", jobName, jobID, &start, nil)
+					} else {
+						logJobEvent("finished", jobName, jobID, nil, nil)
+					}
+				}),
+				gocron.AfterJobRunsWithError(func(jobID uuid.UUID, jobName string, err error) {
+					if v, ok := startTimes.LoadAndDelete(jobID); ok {
+						start := v.(time.Time)
+						logJobEvent("failed", jobName, jobID, &start, err)
+					} else {
+						logJobEvent("failed", jobName, jobID, nil, err)
+					}
+				}),
+			),
+		),
+	)
+	if err != nil {
+		utils.Logger().Fatal("Failed to initialize scheduler", zap.Error(err))
+	}
+	
 	registerTasks(c, platformInfo, newScheduler)
 	return newScheduler
+}
+
+func logJobEvent(event, jobName string, jobID uuid.UUID, start *time.Time, err error) {
+	name := jobName
+	if idx := strings.LastIndex(jobName, "."); idx != -1 {
+		name = jobName[idx+1:]
+	}
+	
+	fields := []zap.Field{
+		zap.String("job_name", name),
+		zap.String("job_id", jobID.String()),
+	}
+	
+	if start != nil {
+		fields = append(fields, zap.String("duration", fmt.Sprintf("%vms", time.Since(*start).Milliseconds())))
+	}
+	if err != nil {
+		fields = append(fields, zap.Error(err))
+		utils.Logger().Error(fmt.Sprintf("Job %s", event), fields...)
+	} else {
+		utils.Logger().Info(fmt.Sprintf("Job %s", event), fields...)
+	}
 }
 
 //registerTasks 注册定时任务

@@ -130,6 +130,26 @@ func Successf(format string, args ...interface{}) {
 	sugaredLoggerInstance.Infof("✅ "+format, args...)
 }
 
+// ServiceIsOn 打印带有⚙️的成功信息
+func ServiceIsOn(args ...interface{}) {
+	sugaredLoggerInstance.Infof("⚙️ %s", fmt.Sprint(args...))
+}
+
+// ServiceIsOnf  打印带有⚙️的格式化成功信息
+func ServiceIsOnf(format string, args ...interface{}) {
+	sugaredLoggerInstance.Infof("⚙️ "+format, args...)
+}
+
+// NetworkHealth 打印带有🌐的成功信息
+func NetworkHealth(args ...interface{}) {
+	sugaredLoggerInstance.Infof("🌐 %s", fmt.Sprint(args...))
+}
+
+// NetworkHealthf  打印带有🌐的格式化成功信息
+func NetworkHealthf(format string, args ...interface{}) {
+	sugaredLoggerInstance.Infof("🌐 "+format, args...)
+}
+
 // Stop 打印带有🛑的成功信息
 func Stop(args ...interface{}) {
 	sugaredLoggerInstance.Infof("🛑 %s", fmt.Sprint(args...))

@@ -49,18 +49,18 @@ func printBanner() {
 
 // initWebDAV 初始化webdav服务
 func initWebDAV(c *config.WebDAVConfig) {
-	utils.Successf("已加载webdav服务:%s", c.WebDAVUrl)
+	utils.ServiceIsOnf("已加载webdav服务:%s", c.WebDAVUrl)
 	return
 }
 
 // initCookieCloud 初始化cookiecloud
 func initCookieCloud(cookieCloudConfig *config.CookieCloudConfig) {
-	utils.Successf("已加载cookiecloud服务: %s ", cookieCloudConfig.CookieCloudUrl)
+	utils.ServiceIsOnf("已加载cookiecloud服务: %s ", cookieCloudConfig.CookieCloudUrl)
 }
 
 // initAI 初始化AI服务
 func initAI(c *config.AIConfig) {
-	utils.Successf("已加载AI服务: %s ", c.BaseUrl)
+	utils.ServiceIsOnf("已加载AI服务: %s ", c.BaseUrl)
 }
 
 //=================================后台服务================================================
@@ -71,13 +71,8 @@ func initCron(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 	s := cron.InitScheduler(c)
 	s.Start()
 	utils.Success("定时任务已启动")
-	for {
-		select {
-		case <-ctx.Done():
-			utils.Stop("定时任务已关闭")
-			return
-		}
-	}
+	<-ctx.Done()
+	utils.Stop("定时任务已关闭")
 }
 
 // initGin 启动Web服务
@@ -98,7 +93,6 @@ func initGin(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 		}
 	}()
 	utils.Successf("Gin已成功启动")
-	
 	<-ctx.Done()
 	utils.Stop("Gin服务已关闭")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -111,14 +105,10 @@ func initGin(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 // initGin 启动tg机器人
 func initBot(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 	defer wg.Done()
+	//todo 执行启动操作
 	utils.Success("Telegram Bot 启动")
-	for {
-		select {
-		case <-ctx.Done():
-			utils.Stop("Telegram Bot 退出")
-			return
-		}
-	}
+	<-ctx.Done()
+	utils.Stop("Telegram Bot 退出")
 }
 
 //=====================================程序入口================================================

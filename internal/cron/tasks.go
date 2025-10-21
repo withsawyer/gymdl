@@ -14,6 +14,6 @@ func installExecutableFile(*config.Config, core.Platform) {
 	// 2. todo 如果已安装,检查更新(只更新非固定版本的或者经常更新的)
 	utils.Logger().Info("开始执行依赖项更新...")
 	time.Sleep(2 * time.Second)
-	utils.Successf("依赖项更新完毕")
+	utils.Logger().Info("依赖项更新完毕")
 	return
 }
