@@ -7,7 +7,7 @@ type Config struct {
 	WebDAV      *WebDAVConfig      `json:"webdav"`       //webdav配置
 	Ffmpeg      *FfmpegConfig      `json:"ffmpeg"`       // ffmpeg配置，转码使用
 	Log         *LogConfig         `json:"log"`          // 日志配置
-	DnsUnlock   DnsUnlockConfig    `json:"dns_unlock"`   //dns解锁配置
+	Telegram    TelegramConfig     `json:"telegram"`     //telegram配置
 	AI          *AIConfig          `json:"ai"`           //AI配置
 }
 
@@ -21,6 +21,7 @@ type CookieCloudConfig struct {
 	CookieCloudUUID string `json:"cookiecloud_uuid"` //cookiecloud uuid
 	CookieCloudKEY  string `json:"cookiecloud_key"`  //cookiecloud key
 	CookieFile      string `json:"cookie_file"`      //cookie文件名
+	CookieFilePath  string `json:"cookie_file_path"` //cookie存储目录
 	ExpireTime      int    `json:"expire_time"`      //cookie文件过期时间(分钟)
 }
 
@@ -48,9 +49,9 @@ type LogConfig struct {
 	File  string `json:"file"`  // 日志文件路径
 }
 
-type DnsUnlockConfig struct {
-	IP      string   `json:"ip"`      //用于dns解锁的ip
-	Domains []string `json:"domains"` //需要解锁的域名列表(后缀匹配)
+type TelegramConfig struct {
+	ChatID   string `json:"chat_id"`   //chat_id
+	BotToken string `json:"bot_token"` //telegram机器人token
 }
 
 type AIConfig struct {

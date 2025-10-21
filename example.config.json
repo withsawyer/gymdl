@@ -7,6 +7,7 @@
         "cookiecloud_url": "",
         "cookiecloud_uuid": "",
         "cookiecloud_key": "",
+        "cookie_file_path": "",
         "cookie_file": "",
         "expire_time": 20
     },
@@ -30,9 +31,9 @@
         "level": 2,
         "file": "data/logs/run.log"
     },
-    "dns_unlock": {
-        "ip": "",
-        "domains": []
+    "telegram": {
+        "chat_id": "",
+        "bot_token": ""
     },
     "ai": {
         "base_url": "",
