@@ -8,7 +8,9 @@ import (
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/cron"
+	"github.com/nichuanfang/gymdl/internal/bot"
 	"github.com/nichuanfang/gymdl/internal/gin/router"
+	"github.com/nichuanfang/gymdl/utils"
 )
 
 var (
@@ -42,11 +44,7 @@ func initGin(wg *sync.WaitGroup, c *config.Config) {
 // initGin 启动tg机器人
 func initBot(wg *sync.WaitGroup, c *config.Config) {
 	defer wg.Done()
-	r := router.SetupRouter(c)
-	err := r.Run(fmt.Sprintf("%s:%d", c.WebConfig.AppHost, c.WebConfig.AppPort))
-	if err != nil {
-		return
-	}
+	bot.InitBot(c)
 }
 
 func main() {
@@ -56,6 +54,8 @@ func main() {
 	}
 	//加载配置
 	c := config.LoadConfig(configFile)
+	//初始化日志模块
+	utils.InitLogger(c.Log.Mode, c.Log.Level, c.Log.File)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(3)

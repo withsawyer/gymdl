@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/internal/gin/middleware"
+	"github.com/nichuanfang/gymdl/utils"
 )
 
 // SetupRouter 路由注册
@@ -18,5 +19,6 @@ func SetupRouter(c *config.Config) *gin.Engine {
 	RegisterTextRoutes(apiGroup)
 	//注册指令处理器路由
 	RegisterCommandRoutes(apiGroup)
+	utils.Logger.Info("Gin模块已加载")
 	return engine
 }
