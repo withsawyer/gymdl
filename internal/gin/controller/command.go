@@ -1,13 +1,15 @@
 package controller
 
 import (
-	"net/http"
-	
 	"github.com/gin-gonic/gin"
+	"github.com/nichuanfang/gymdl/internal/gin/response"
 )
 
 //指令处理器
 
 func HandleCommand(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"data": "指令处理器"})
+	response.Success(c, gin.H{
+		"hahah": "sd",
+		"data":  "dsd",
+	})
 }

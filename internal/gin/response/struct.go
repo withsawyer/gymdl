@@ -1,6 +1,6 @@
 package response
 
-//http 固定响应格式
+//http 统一响应格式
 
 import (
 	"net/http"
@@ -17,7 +17,7 @@ type Response struct {
 }
 
 // Success 返回成功响应
-func Success(c *gin.Context, data ...any) {
+func Success(c *gin.Context, data any) {
 	c.JSON(http.StatusOK, Response{
 		Code:    http.StatusOK,
 		Message: "success",
