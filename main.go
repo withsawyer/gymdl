@@ -34,6 +34,18 @@ func verifyConfig(c *config.Config) error {
 	return nil
 }
 
+// printBanner 打印启动横幅
+func printBanner() {
+	banner := `
+ ________  _ _      ____  _    
+/  __/\  \/// \__/|/  _ \/ \   
+| |  _ \  / | |\/||| | \|| |   
+| |_// / /  | |  ||| |_/|| |_/\
+\____\/_/   \_/  \|\____/\____/
+`
+	fmt.Println(banner)
+}
+
 // initWebDAV 初始化webdav服务
 func initWebDAV(c *config.WebDAVConfig) {
 	utils.Logger().Info("已加载webdav服务:", c.WebDAVUrl)
@@ -83,6 +95,8 @@ func main() {
 		fmt.Printf("version: %s, build with: %s\n", buildVersion, runtime.Version())
 		return
 	}
+	// banner
+	printBanner()
 	//加载配置
 	c := config.LoadConfig(configFile)
 
