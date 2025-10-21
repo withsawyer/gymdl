@@ -14,6 +14,7 @@ type Config struct {
 type WebConfig struct {
 	AppHost string `json:"app_host"` //web服务监听地址
 	AppPort int    `json:"app_port"` //web服务监听端口
+	GinMode string `json:"gin_mode"` //Gin的运行模式: 可选项[debug release test]
 }
 
 type CookieCloudConfig struct {

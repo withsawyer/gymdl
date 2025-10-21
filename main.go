@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/internal/bot"
 	"github.com/nichuanfang/gymdl/internal/cron"
@@ -34,6 +35,8 @@ func initCron(wg *sync.WaitGroup, c *config.Config) {
 // initGin 启动Web服务
 func initGin(wg *sync.WaitGroup, c *config.Config) {
 	defer wg.Done()
+	//设置运行模式 debug/release/test
+	gin.SetMode(c.WebConfig.GinMode)
 	r := router.SetupRouter(c)
 	err := r.Run(fmt.Sprintf("%s:%d", c.WebConfig.AppHost, c.WebConfig.AppPort))
 	if err != nil {

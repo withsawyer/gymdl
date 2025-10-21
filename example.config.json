@@ -1,7 +1,8 @@
 {
     "web_config": {
         "app_host": "0.0.0.0",
-        "app_port": 8080
+        "app_port": 8080,
+        "gin_mode": "debug"
     },
     "cookie_cloud": {
         "cookiecloud_url": "",
