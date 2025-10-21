@@ -5,7 +5,7 @@
 -   [x] 搭建日志框架 Zap.支持分模块,日志级别控制,可以指定输出模式(控制台,文件,混合)
 -   [x] Gin 日志中间件 针对异常 需要输出不同日志级别的 log
 -   [x] 所属平台解析器
--   [ ] 搭建定时任务框架[gocron](github.com/go-co-op/gocron)
+-   [ ] 搭建定时任务框架[gocron](https://github.com/go-co-op/gocron)
 -   [ ] 搭建 telegram 框架[telebot](https://github.com/tucnak/telebot)
 -   [ ] gocron 和 telebot 的中间件实现(日志,鉴权)
 -   [ ] 研究cookiecloud的同步机制以及其存储方式,更新方式
