@@ -28,6 +28,12 @@ func init() {
 
 // =================================基础服务================================================
 
+// verifyConfig 核心配置项检测
+func verifyConfig(c *config.Config) error {
+	fmt.Println(c.CookieCloud.CookieCloudUrl)
+	return nil
+}
+
 // initWebDAV 初始化webdav服务
 func initWebDAV(c *config.WebDAVConfig) {
 	utils.Logger().Info("已加载webdav服务:", c.WebDAVUrl)
@@ -79,6 +85,13 @@ func main() {
 	}
 	//加载配置
 	c := config.LoadConfig(configFile)
+
+	//核心配置项检测
+	verify_err := verifyConfig(c)
+	if verify_err != nil {
+		return
+	}
+
 	//初始化日志模块
 	err := utils.InitLogger(c.Log)
 	if err != nil {
