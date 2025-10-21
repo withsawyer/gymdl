@@ -114,6 +114,16 @@ func Logger() *zap.SugaredLogger {
 	return loggerInstance.Sugar()
 }
 
+// Success 打印带有✅的成功信息
+func Success(args ...interface{}) {
+	Logger().Infof("✅ %s", fmt.Sprint(args...))
+}
+
+// Successf 打印带有✅的格式化成功信息
+func Successf(format string, args ...interface{}) {
+	Logger().Infof("✅ "+format, args...)
+}
+
 // Sync 同步日志（用于程序退出前 flush）
 func Sync() {
 	if loggerInstance != nil {

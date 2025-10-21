@@ -54,12 +54,12 @@ func initWebDAV(c *config.WebDAVConfig) {
 
 // initCookieCloud 初始化cookiecloud
 func initCookieCloud(cookieCloudConfig *config.CookieCloudConfig) {
-	utils.Logger().Info("已加载cookiecloud服务:", cookieCloudConfig.CookieCloudUrl)
+	utils.Successf("已加载cookiecloud服务: %s ", cookieCloudConfig.CookieCloudUrl)
 }
 
 // initAI 初始化AI服务
 func initAI(c *config.AIConfig) {
-	utils.Logger().Info("已加载AI服务:", c.BaseUrl)
+	utils.Successf("已加载AI服务: %s ", c.BaseUrl)
 }
 
 //=================================后台服务================================================
@@ -76,6 +76,7 @@ func initGin(wg *sync.WaitGroup, c *config.Config) {
 	//设置运行模式 debug/release/test
 	gin.SetMode(c.WebConfig.GinMode)
 	r := router.SetupRouter(c)
+	utils.Successf("Gin已成功启动")
 	err := r.Run(fmt.Sprintf("%s:%d", c.WebConfig.AppHost, c.WebConfig.AppPort))
 	if err != nil {
 		return
