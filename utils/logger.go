@@ -2,152 +2,112 @@ package utils
 
 import (
 	"fmt"
-	"log"
 	"os"
-	"sync"
-	"time"
+	"path/filepath"
+	
+	"github.com/nichuanfang/gymdl/config"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-type logLevel int
+var loggerInstance *zap.Logger
 
-const (
-	DEBUG logLevel = iota
-	INFO
-	WARNING
-	ERROR
-	FATAL
-)
-
-const (
-	LogModeStdout  = 1
-	LogModeLogfile = 2
-	LogModeBoth    = 3
-)
-
-var (
-	Logger   *logger
-	levelMap = map[logLevel]string{
-		DEBUG:   "debug",
-		INFO:    "info",
-		WARNING: "warning",
-		ERROR:   "error",
-		FATAL:   "fatal",
+// 彩色等级输出
+var colorLevelEncoder = func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
+	switch l {
+	case zapcore.DebugLevel:
+		enc.AppendString("\033[36mDEBUG\033[0m") // 青色
+	case zapcore.InfoLevel:
+		enc.AppendString("\033[32mINFO\033[0m") // 绿色
+	case zapcore.WarnLevel:
+		enc.AppendString("\033[33mWARN\033[0m") // 黄色
+	case zapcore.ErrorLevel:
+		enc.AppendString("\033[31mERROR\033[0m") // 红色
+	case zapcore.FatalLevel:
+		enc.AppendString("\033[35mFATAL\033[0m") // 紫色
+	default:
+		enc.AppendString(l.CapitalString())
 	}
-)
-
-type logger struct {
-	level logLevel
-	lock  *sync.Mutex
-	file  *os.File
-	mode  int
 }
 
-func InitLogger(mode, level int, logFile string) {
-	var err error
-	var file *os.File
-	if mode != LogModeStdout {
-		file, err = os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+// 控制台 Encoder
+func newConsoleEncoder() zapcore.Encoder {
+	cfg := zapcore.EncoderConfig{
+		TimeKey:      "T",
+		LevelKey:     "L",
+		CallerKey:    "C",
+		MessageKey:   "M",
+		EncodeTime:   zapcore.TimeEncoderOfLayout("15:04:05"),
+		EncodeLevel:  colorLevelEncoder,
+		EncodeCaller: zapcore.ShortCallerEncoder,
+	}
+	return zapcore.NewConsoleEncoder(cfg)
+}
+
+// 文件 Encoder（无颜色）
+func newFileEncoder() zapcore.Encoder {
+	cfg := zapcore.EncoderConfig{
+		TimeKey:        "T",
+		LevelKey:       "L",
+		CallerKey:      "C",
+		MessageKey:     "M",
+		EncodeTime:     zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05"),
+		EncodeLevel:    zapcore.CapitalLevelEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+		EncodeDuration: zapcore.StringDurationEncoder,
+	}
+	return zapcore.NewConsoleEncoder(cfg)
+}
+
+//InitLogger 初始化 Logger
+func InitLogger(cfg *config.LogConfig) error {
+	var level zapcore.Level
+	switch cfg.Level {
+	case 1:
+		level = zap.DebugLevel
+	case 2:
+		level = zap.InfoLevel
+	case 3:
+		level = zap.WarnLevel
+	case 4:
+		level = zap.ErrorLevel
+	default:
+		level = zap.FatalLevel
+	}
+	
+	consoleEnc := newConsoleEncoder()
+	fileEnc := newFileEncoder()
+	
+	var cores []zapcore.Core
+	
+	if cfg.Mode == 1 || cfg.Mode == 3 {
+		cores = append(cores, zapcore.NewCore(consoleEnc, zapcore.Lock(os.Stdout), level))
+	}
+	
+	if (cfg.Mode == 2 || cfg.Mode == 3) && cfg.File != "" {
+		_ = os.MkdirAll(filepath.Dir(cfg.File), 0755)
+		f, err := os.OpenFile(cfg.File, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			log.Fatalf("open logs file:%s err: %v", logFile, err)
+			return fmt.Errorf("failed to open log file: %v", err)
 		}
+		cores = append(cores, zapcore.NewCore(fileEnc, zapcore.AddSync(f), level))
 	}
 	
-	Logger = &logger{
-		level: logLevel(level),
-		lock:  new(sync.Mutex),
-		file:  file,
-		mode:  mode,
+	loggerInstance = zap.New(zapcore.NewTee(cores...), zap.AddCaller(), zap.AddCallerSkip(1))
+	return nil
+}
+
+//Logger 获取全局 Logger
+func Logger() *zap.SugaredLogger {
+	if loggerInstance == nil {
+		_ = InitLogger(&config.LogConfig{Mode: 1, Level: 2})
 	}
+	return loggerInstance.Sugar()
 }
 
-func (l *logger) Debug(v ...interface{}) {
-	l.print(DEBUG, v...)
-}
-
-func (l *logger) DebugF(format string, v ...interface{}) {
-	l.printf(DEBUG, format, v...)
-}
-
-func (l *logger) Info(v ...interface{}) {
-	l.print(INFO, v...)
-}
-
-func (l *logger) InfoF(format string, v ...interface{}) {
-	l.printf(INFO, format, v...)
-}
-
-func (l *logger) Warning(v ...interface{}) {
-	l.print(WARNING, v...)
-}
-
-func (l *logger) WarningF(format string, v ...interface{}) {
-	l.printf(WARNING, format, v...)
-}
-
-func (l *logger) Error(v ...interface{}) {
-	l.print(ERROR, v...)
-}
-
-func (l *logger) ErrorF(format string, v ...interface{}) {
-	l.printf(ERROR, format, v...)
-}
-
-func (l *logger) Fatal(v ...interface{}) {
-	if FATAL >= l.level {
-		l.write(FATAL, fmt.Sprint(v...))
-		if l.mode != LogModeLogfile {
-			log.Fatal(v...)
-		}
+//Sync 同步日志（用于程序退出前 flush）
+func Sync() {
+	if loggerInstance != nil {
+		_ = loggerInstance.Sync()
 	}
-}
-
-func (l *logger) FatalF(format string, v ...interface{}) {
-	if FATAL >= l.level {
-		l.write(FATAL, fmt.Sprintf(format, v...))
-		if l.mode != LogModeLogfile {
-			log.Fatalf(format, v...)
-		}
-	}
-}
-
-func (l *logger) print(level logLevel, v ...interface{}) {
-	if level >= l.level {
-		l.write(level, fmt.Sprint(v...))
-		if l.mode != LogModeLogfile {
-			log.Print(v...)
-		}
-	}
-}
-
-func (l *logger) printf(level logLevel, format string, v ...interface{}) {
-	if level >= l.level {
-		l.write(level, fmt.Sprintf(format, v...))
-		if l.mode != LogModeLogfile {
-			log.Printf(levelMap[level]+" "+format, v...)
-		}
-	}
-}
-
-func (l *logger) write(level logLevel, str string) {
-	if l.file == nil || l.mode == LogModeStdout {
-		return
-	}
-	
-	l.lock.Lock()
-	defer l.lock.Unlock()
-	
-	// 结尾自动空格
-	if len(str) == 0 || str[len(str)-1] != '\n' {
-		str += "\n"
-	}
-	
-	now := time.Now().Format("2006/01/02 15:04:05")
-	levelStr, _ := levelMap[level]
-	str = fmt.Sprintf("%s %s %s", now, levelStr, str)
-	
-	_, err := l.file.WriteString(str)
-	if err != nil {
-		log.Fatalf("write logs file: %s, err: %v", l.file.Name(), err)
-	}
-	
 }

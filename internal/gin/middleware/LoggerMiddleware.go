@@ -1,39 +1,28 @@
 package middleware
 
 import (
-	"log"
-	"os"
 	"time"
 	
 	"github.com/gin-gonic/gin"
-	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/utils"
 )
 
-func LoggerMiddleware(logConfig *config.LogConfig) gin.HandlerFunc {
-	//todo 日志级别控制 以及模式3
-	if logConfig.Mode != 1 {
-		f, err := os.OpenFile(logConfig.File, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Fatalf("打开日志文件失败: %v", err)
-		}
-		logger := log.New(f, "", log.LstdFlags)
+func LoggerMiddleware() gin.HandlerFunc {
+	log := utils.Logger()
+	return func(c *gin.Context) {
+		start := time.Now() // 记录请求开始时间
 		
-		return func(c *gin.Context) {
-			start := time.Now()
-			path := c.Request.URL.Path
-			method := c.Request.Method
-			c.Next()
-			duration := time.Since(start)
-			statusCode := c.Writer.Status()
-			logger.Printf("[%s] %s %s %d %s",
-				time.Now().Format("2006-01-02 15:04:05"),
-				method,
-				path,
-				statusCode,
-				duration,
-			)
-		}
-	} else {
-		return func(context *gin.Context) {}
+		c.Next() // 处理请求
+		
+		// 请求处理完成后，记录日志
+		latency := time.Since(start)    // 计算耗时
+		statusCode := c.Writer.Status() // HTTP状态码
+		clientIP := c.ClientIP()        // 客户端IP
+		method := c.Request.Method      // 请求方法
+		path := c.Request.URL.Path      // 请求路径
+		bodySize := c.Writer.Size()     // 响应体大小
+		
+		log.Infof("%3d | %13v | %15s | %-7s %s | size: %d",
+			statusCode, latency, clientIP, method, path, bodySize)
 	}
 }

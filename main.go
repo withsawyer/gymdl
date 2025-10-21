@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
-
+	
 	"github.com/gin-gonic/gin"
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/internal/bot"
@@ -25,6 +25,10 @@ func init() {
 	flag.BoolVar(&version, "v", false, "display version")
 	flag.Parse()
 }
+
+//=================================基础配置================================================
+
+//=================================核心服务================================================
 
 // initCron 启动定时任务
 func initCron(wg *sync.WaitGroup, c *config.Config) {
@@ -50,6 +54,8 @@ func initBot(wg *sync.WaitGroup, c *config.Config) {
 	bot.InitBot(c)
 }
 
+//=====================================程序入口================================================
+
 func main() {
 	if version {
 		fmt.Printf("version: %s, build with: %s\n", buildVersion, runtime.Version())
@@ -58,14 +64,16 @@ func main() {
 	//加载配置
 	c := config.LoadConfig(configFile)
 	//初始化日志模块
-	utils.InitLogger(c.Log.Mode, c.Log.Level, c.Log.File)
-
+	err := utils.InitLogger(c.Log)
+	if err != nil {
+		return
+	}
 	wg := &sync.WaitGroup{}
 	wg.Add(3)
-
-	//【协程1】 初始化定时任务
+	
+	//【协程1】 启动定时任务
 	go initCron(wg, c)
-	//【协程2】 启动http服务gin
+	//【协程2】 启动web服务Gin
 	go initGin(wg, c)
 	//【协程3】 启动telegram机器人
 	go initBot(wg, c)

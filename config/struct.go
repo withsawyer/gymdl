@@ -46,7 +46,7 @@ type FfmpegConfig struct {
 
 type LogConfig struct {
 	Mode  int    `json:"mode"`  // 日志模式：1标准输出，2日志文件，3标准输出和日志文件
-	Level int    `json:"level"` // 日志等级，0-4分别是：debug，info，warning，error，fatal
+	Level int    `json:"level"` // 日志等级，1=debug 2=info 3=warn 4=error 5=fatal
 	File  string `json:"file"`  // 日志文件路径
 }
 
