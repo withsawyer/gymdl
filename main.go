@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
-	
+
 	"github.com/gin-gonic/gin"
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/internal/bot"
@@ -68,9 +68,11 @@ func main() {
 	if err != nil {
 		return
 	}
+	defer utils.Sync()
+
 	wg := &sync.WaitGroup{}
 	wg.Add(3)
-	
+
 	//【协程1】 启动定时任务
 	go initCron(wg, c)
 	//【协程2】 启动web服务Gin
