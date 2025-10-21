@@ -33,6 +33,7 @@ func registerTasks(c *config.Config, platform core.Platform, scheduler gocron.Sc
 	//执行一次依赖安装/更新
 	_, _ = scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartImmediately()),
 		gocron.NewTask(installExecutableFile, c, platform))
+	//todo 注册健康检查任务
 	//todo 注册依赖更新检测任务
 	//todo 注册cookiecloud同步任务
 }

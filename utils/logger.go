@@ -130,6 +130,16 @@ func Successf(format string, args ...interface{}) {
 	sugaredLoggerInstance.Infof("✅ "+format, args...)
 }
 
+// Stop 打印带有🛑的成功信息
+func Stop(args ...interface{}) {
+	sugaredLoggerInstance.Infof("🛑 %s", fmt.Sprint(args...))
+}
+
+// Stopf  打印带有🛑的格式化成功信息
+func Stopf(format string, args ...interface{}) {
+	sugaredLoggerInstance.Infof("🛑 "+format, args...)
+}
+
 // Sync 同步日志（用于程序退出前 flush）
 func Sync() {
 	if loggerInstance != nil {
