@@ -97,6 +97,7 @@ func main() {
 	}
 	// banner
 	printBanner()
+
 	//加载配置
 	c := config.LoadConfig(configFile)
 
