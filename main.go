@@ -39,6 +39,7 @@ func initCookieCloud(cookieCloudConfig *config.CookieCloudConfig) {
 	utils.Logger().Info("已加载cookiecloud服务:", cookieCloudConfig.CookieCloudUrl)
 }
 
+// initAI 初始化AI服务
 func initAI(c *config.AIConfig) {
 	utils.Logger().Info("已加载AI服务:", c.BaseUrl)
 }
