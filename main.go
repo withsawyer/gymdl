@@ -7,8 +7,8 @@ import (
 	"sync"
 
 	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/cron"
 	"github.com/nichuanfang/gymdl/internal/bot"
+	"github.com/nichuanfang/gymdl/internal/cron"
 	"github.com/nichuanfang/gymdl/internal/gin/router"
 	"github.com/nichuanfang/gymdl/utils"
 )
