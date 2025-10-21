@@ -71,9 +71,9 @@ func logJobEvent(event, jobName string, jobID uuid.UUID, start *time.Time, err e
 	}
 	if err != nil {
 		fields = append(fields, zap.Error(err))
-		utils.Logger().Error(fmt.Sprintf("Job %s", event), fields...)
+		utils.Logger().Error(fmt.Sprintf("[Job %s]", event), fields...)
 	} else {
-		utils.Logger().Info(fmt.Sprintf("Job %s", event), fields...)
+		utils.Logger().Info(fmt.Sprintf("[Job %s]", event), fields...)
 	}
 }
 
@@ -86,9 +86,10 @@ func registerTasks(c *config.Config, platform core.Platform, scheduler gocron.Sc
 	//       *  使用:  传入对应平台的cookie文件或者读取cookie文件加载cookie
 	
 	//执行一次依赖安装/更新
-	_, _ = scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartImmediately()),
+	scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartImmediately()),
 		gocron.NewTask(installExecutableFile, c, platform))
 	//todo 注册健康检查任务
+	scheduler.NewJob(gocron.DurationJob(time.Minute), gocron.NewTask(healthCheck, c))
 	//todo 注册依赖更新检测任务
 	//todo 注册cookiecloud同步任务
 }

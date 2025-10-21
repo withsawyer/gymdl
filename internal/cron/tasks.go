@@ -17,3 +17,9 @@ func installExecutableFile(*config.Config, core.Platform) {
 	utils.Logger().Info("依赖项更新完毕")
 	return
 }
+
+//healthCheck 健康检查
+func healthCheck(c *config.Config) {
+	utils.NetworkHealth("健康检查成功")
+	return
+}
