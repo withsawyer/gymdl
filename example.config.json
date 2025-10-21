@@ -32,6 +32,7 @@
         "file": "data/logs/run.log"
     },
     "telegram": {
+        "mode": 1,
         "chat_id": "",
         "bot_token": ""
     },

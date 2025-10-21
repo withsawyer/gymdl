@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
-	
+
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/cron"
-	"github.com/nichuanfang/gymdl/internal/router"
+	"github.com/nichuanfang/gymdl/internal/gin/router"
 )
 
 var (
@@ -23,8 +23,24 @@ func init() {
 	flag.Parse()
 }
 
+// initCron 启动定时任务
+func initCron(wg *sync.WaitGroup, c *config.Config) {
+	defer wg.Done()
+	cron.InitCron(c)
+}
+
 // initGin 启动Web服务
 func initGin(wg *sync.WaitGroup, c *config.Config) {
+	defer wg.Done()
+	r := router.SetupRouter(c)
+	err := r.Run(fmt.Sprintf("%s:%d", c.WebConfig.AppHost, c.WebConfig.AppPort))
+	if err != nil {
+		return
+	}
+}
+
+// initGin 启动tg机器人
+func initBot(wg *sync.WaitGroup, c *config.Config) {
 	defer wg.Done()
 	r := router.SetupRouter(c)
 	err := r.Run(fmt.Sprintf("%s:%d", c.WebConfig.AppHost, c.WebConfig.AppPort))
@@ -40,15 +56,16 @@ func main() {
 	}
 	//加载配置
 	c := config.LoadConfig(configFile)
-	
+
 	wg := &sync.WaitGroup{}
-	wg.Add(2)
-	
+	wg.Add(3)
+
 	//【协程1】 初始化定时任务
-	go cron.InitCron(c, wg)
+	go initCron(wg, c)
 	//【协程2】 启动http服务gin
 	go initGin(wg, c)
-	
+	//【协程3】 启动telegram机器人
+	go initBot(wg, c)
 	//阻塞主协程
 	wg.Wait()
 }

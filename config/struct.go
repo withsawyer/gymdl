@@ -50,6 +50,7 @@ type LogConfig struct {
 }
 
 type TelegramConfig struct {
+	Mode     int    `json:"mode"`      //运行模式: 1长轮询, 2Webhook   开发环境推荐1,生产环境推荐2
 	ChatID   string `json:"chat_id"`   //chat_id
 	BotToken string `json:"bot_token"` //telegram机器人token
 }
