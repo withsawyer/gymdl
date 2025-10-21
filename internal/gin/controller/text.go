@@ -2,16 +2,17 @@ package controller
 
 import (
 	"net/http"
-
+	
 	"github.com/gin-gonic/gin"
+	"github.com/nichuanfang/gymdl/internal/gin/response"
 )
 
 //文本消息处理器
 
 func HandleMsg(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"data": "消息处理器"})
+	response.Success(c, []string{"dsd", "ff"})
 }
 
 func TestError(c *gin.Context) {
-	c.JSON(http.StatusBadRequest, gin.H{"data": "服务器内部异常"})
+	response.Fail(c, http.StatusBadRequest, "接口异常", "线程池耗尽")
 }

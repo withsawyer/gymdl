@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
-
+	
 	"github.com/gin-gonic/gin"
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/internal/bot"
@@ -28,12 +28,6 @@ func init() {
 
 // =================================基础服务================================================
 
-// verifyConfig 核心配置项检测
-func verifyConfig(c *config.Config) error {
-	utils.Success("核心配置项检测通过")
-	return nil
-}
-
 // printBanner 打印启动横幅
 func printBanner() {
 	banner := `
@@ -48,7 +42,7 @@ func printBanner() {
 
 // initWebDAV 初始化webdav服务
 func initWebDAV(c *config.WebDAVConfig) {
-	utils.Logger().Info("已加载webdav服务:", c.WebDAVUrl)
+	utils.Successf("已加载webdav服务:%s", c.WebDAVUrl)
 	return
 }
 
@@ -98,36 +92,30 @@ func main() {
 	}
 	// banner
 	printBanner()
-
+	
 	//加载配置
 	c := config.LoadConfig(configFile)
-
-	//核心配置项检测
-	verify_err := verifyConfig(c)
-	if verify_err != nil {
-		return
-	}
-
+	
 	//初始化日志模块
 	err := utils.InitLogger(c.Log)
 	if err != nil {
 		return
 	}
 	defer utils.Sync()
-
+	
 	// 初始化webdav+连通性检测
 	if c.MusicTidy.Mode == 2 {
 		initWebDAV(c.WebDAV)
 	}
 	//初始化cookiecloud+连通性检测
 	initCookieCloud(c.CookieCloud)
-
+	
 	//初始化AI服务+连通性检测
 	initAI(c.AI)
-
+	
 	wg := &sync.WaitGroup{}
 	wg.Add(3)
-
+	
 	//【协程1】 启动定时任务
 	go initCron(wg, c)
 	//【协程2】 启动web服务Gin

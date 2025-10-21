@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
+	
 	"github.com/nichuanfang/gymdl/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-var loggerInstance *zap.Logger
+var (
+	loggerInstance        *zap.Logger        //性能高
+	sugaredLoggerInstance *zap.SugaredLogger //封装了易用的高级方法 但是性能低
+)
 
 // 彩色等级输出（加粗对齐）
 var colorLevelEncoder = func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
@@ -83,16 +86,16 @@ func InitLogger(cfg *config.LogConfig) error {
 	default:
 		level = zap.FatalLevel
 	}
-
+	
 	consoleEnc := newConsoleEncoder()
 	fileEnc := newFileEncoder()
-
+	
 	var cores []zapcore.Core
-
+	
 	if cfg.Mode == 1 || cfg.Mode == 3 {
 		cores = append(cores, zapcore.NewCore(consoleEnc, zapcore.Lock(os.Stdout), level))
 	}
-
+	
 	if (cfg.Mode == 2 || cfg.Mode == 3) && cfg.File != "" {
 		_ = os.MkdirAll(filepath.Dir(cfg.File), 0755)
 		f, err := os.OpenFile(cfg.File, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -101,27 +104,30 @@ func InitLogger(cfg *config.LogConfig) error {
 		}
 		cores = append(cores, zapcore.NewCore(fileEnc, zapcore.AddSync(f), level))
 	}
-
+	
 	loggerInstance = zap.New(zapcore.NewTee(cores...), zap.AddCaller(), zap.AddCallerSkip(1))
+	sugaredLoggerInstance = loggerInstance.Sugar()
 	return nil
 }
 
-// Logger 获取全局 Logger
-func Logger() *zap.SugaredLogger {
-	if loggerInstance == nil {
-		_ = InitLogger(&config.LogConfig{Mode: 1, Level: 2})
-	}
-	return loggerInstance.Sugar()
+//Logger 基础Logger 高性能日志
+func Logger() *zap.Logger {
+	return loggerInstance
+}
+
+// SugaredLogger Logger 增强Logger(快速日志) 用于 开发调试或 快速原型
+func SugaredLogger() *zap.SugaredLogger {
+	return sugaredLoggerInstance
 }
 
 // Success 打印带有✅的成功信息
 func Success(args ...interface{}) {
-	Logger().Infof("✅ %s", fmt.Sprint(args...))
+	sugaredLoggerInstance.Infof("✅ %s", fmt.Sprint(args...))
 }
 
-// Successf 打印带有✅的格式化成功信息
+// Successf  打印带有✅的格式化成功信息
 func Successf(format string, args ...interface{}) {
-	Logger().Infof("✅ "+format, args...)
+	sugaredLoggerInstance.Infof("✅ "+format, args...)
 }
 
 // Sync 同步日志（用于程序退出前 flush）
