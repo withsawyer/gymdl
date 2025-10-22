@@ -8,8 +8,12 @@ import (
 	"go.uber.org/zap"
 )
 
+var logger *zap.Logger
+
 // SetupRouter 路由注册
 func SetupRouter(c *config.Config) *gin.Engine {
+	//日志初始化
+	logger = utils.Logger()
 	engine := gin.New()
 	
 	// 设置 Gin 的输出遵循 zap 配置

@@ -14,7 +14,11 @@ import (
 	"go.uber.org/zap"
 )
 
+var logger *zap.Logger
+
 func InitScheduler(c *config.Config) gocron.Scheduler {
+	//日志初始化
+	logger = utils.Logger()
 	platformInfo := core.PlatformInfo()
 	utils.SugaredLogger().Infof("当前平台: %s", platformInfo.String())
 	
@@ -48,13 +52,34 @@ func InitScheduler(c *config.Config) gocron.Scheduler {
 		),
 	)
 	if err != nil {
-		utils.Logger().Fatal("Failed to initialize scheduler", zap.Error(err))
+		logger.Fatal("Failed to initialize scheduler", zap.Error(err))
 	}
 	
 	registerTasks(c, platformInfo, newScheduler)
 	return newScheduler
 }
 
+//registerTasks 注册定时任务
+func registerTasks(c *config.Config, platform core.Platform, scheduler gocron.Scheduler) {
+	//执行一次依赖安装/更新
+	newTask("installExecutableFile", scheduler, gocron.OneTimeJob(gocron.OneTimeJobStartImmediately()),
+		gocron.NewTask(installExecutableFile, c, platform))
+	//注册健康检查任务(每分钟执行一次)
+	newTask("healthCheck", scheduler, gocron.DurationJob(time.Minute), gocron.NewTask(healthCheck, c))
+	//注册依赖更新检测任务(6小时)
+	newTask("updateDependency", scheduler, gocron.DurationJob(time.Hour*6), gocron.NewTask(updateDependency, c))
+	//注册cookiecloud同步任务(根据配置的时间)
+	newTask("syncCookieCloud", scheduler, gocron.DurationJob(time.Minute*time.Duration(c.CookieCloud.ExpireTime)),
+		gocron.NewTask(syncCookieCloud, c))
+}
+
+//newTask 日志任务创建信息
+func newTask(jobName string, scheduler gocron.Scheduler, jobDefinition gocron.JobDefinition, task gocron.Task) {
+	logger.Info("[Job Added]", zap.String("jobName", jobName))
+	scheduler.NewJob(jobDefinition, task)
+}
+
+//logJobEvent 日志任务执行信息
 func logJobEvent(event, jobName string, jobID uuid.UUID, start *time.Time, err error) {
 	name := jobName
 	if idx := strings.LastIndex(jobName, "."); idx != -1 {
@@ -71,25 +96,8 @@ func logJobEvent(event, jobName string, jobID uuid.UUID, start *time.Time, err e
 	}
 	if err != nil {
 		fields = append(fields, zap.Error(err))
-		utils.Logger().Error(fmt.Sprintf("[Job %s]", event), fields...)
+		logger.Error(fmt.Sprintf("[Job %s]", event), fields...)
 	} else {
-		utils.Logger().Info(fmt.Sprintf("[Job %s]", event), fields...)
+		logger.Info(fmt.Sprintf("[Job %s]", event), fields...)
 	}
-}
-
-//registerTasks 注册定时任务
-func registerTasks(c *config.Config, platform core.Platform, scheduler gocron.Scheduler) {
-	//    - todo 核心服务(cookiecloud,webdav,ai)健康检查
-	//    - todo 依赖的可执行文件或者pip更新检测
-	//    - todo 定期从cookiecloud获取cookie数据并解密为cookie文件
-	//       *  更新:  cookiecloud->处理成各个音乐平台的cookie数据->储存到本地(覆盖),以平台名称命名
-	//       *  使用:  传入对应平台的cookie文件或者读取cookie文件加载cookie
-	
-	//执行一次依赖安装/更新
-	scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartImmediately()),
-		gocron.NewTask(installExecutableFile, c, platform))
-	//todo 注册健康检查任务
-	scheduler.NewJob(gocron.DurationJob(time.Minute), gocron.NewTask(healthCheck, c))
-	//todo 注册依赖更新检测任务
-	//todo 注册cookiecloud同步任务
 }
