@@ -6,12 +6,13 @@
 -   [x] Gin 日志中间件 针对异常 需要输出不同日志级别的 log
 -   [x] 所属平台解析器
 -   [x] 搭建定时任务框架[gocron](https://github.com/go-co-op/gocron)
--   [ ] gocron的中间件实现(日志,鉴权)
--   [ ] 初始化cookiecloud
--   [ ] 研究cookiecloud的同步机制以及其存储方式,更新方式
--   [ ] 初始化webdav
--   [ ] 初始化AI
+-   [x] gocron 的中间件实现(日志,鉴权)
+-   [ ] 支持指定多个 cookiecloud-key 多端同步
+-   [ ] 初始化 cookiecloud
+-   [ ] 研究 cookiecloud 的同步机制以及其存储方式,更新方式
+-   [ ] 初始化 webdav
+-   [ ] 初始化 AI
 -   [ ] 搭建 telegram 框架[telebot](https://github.com/tucnak/telebot)
 -   [ ] telebot 的中间件实现(日志,鉴权)
--   [ ] telegram消息处理器开发
--   [ ] telegram指令处理器开发
+-   [ ] telegram 消息处理器开发
+-   [ ] telegram 指令处理器开发
