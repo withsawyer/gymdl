@@ -1,5 +1,7 @@
 {
     "web_config": {
+        "app_domain": "localhost",
+        "https": false,
         "app_port": 8080,
         "gin_mode": "debug"
     },
