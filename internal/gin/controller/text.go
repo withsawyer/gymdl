@@ -2,7 +2,7 @@ package controller
 
 import (
 	"net/http"
-	
+
 	"github.com/gin-gonic/gin"
 	"github.com/nichuanfang/gymdl/internal/gin/response"
 )
@@ -10,7 +10,7 @@ import (
 //文本消息处理器
 
 func HandleMsg(c *gin.Context) {
-	response.Success(c, []string{"dsd", "ff"})
+	response.Success(c, "success")
 }
 
 func TestError(c *gin.Context) {
