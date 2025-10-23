@@ -29,9 +29,9 @@ jobs:
         run: pip install pip-review
 
       - name: Update Python dependencies
+        working-directory: .github/dependency
         run: |
           pip-review --local --auto
-          cp requirements.txt .github/dependency/requirements.txt
 
 #      - name: Install Python deps for update_tools.py
 #        run: pip install -r .github/scripts/requirements.txt
