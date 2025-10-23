@@ -3,11 +3,11 @@ name: Build&Publish
 on:
   #目前是手动发版
   workflow_dispatch:
-  pull_request:
+  #  Dependabot自动合并会触发发版
+  workflow_run:
+    workflows: [ "Dependabot Auto Merge" ]
     types:
-      - closed
-    branches:
-      - master
+      - completed
 
 jobs:
   docker:
