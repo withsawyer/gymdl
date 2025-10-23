@@ -1,4 +1,5 @@
 version: 2
+#检测pip依赖
 updates:
   - package-ecosystem: "pip"
     directory: ".github/dependency"
