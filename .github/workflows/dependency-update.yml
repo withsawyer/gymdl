@@ -51,3 +51,6 @@ jobs:
           commit-message: "chore: update dependencies"
           title: "chore: update dependencies"
           body: "自动检测到依赖更新，更新 requirements.txt 和 tools.txt"
+          branch: "dependency-update"
+          base: "master"
+          labels: "dependencies"
