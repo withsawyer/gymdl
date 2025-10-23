@@ -8,6 +8,9 @@ import (
 	"github.com/nichuanfang/gymdl/utils"
 )
 
+// 通过pip安装的 或者 可执行文件都在这个文件夹 并赋予+x权限
+var binPath = "/usr/local/bin"
+
 // installDependency 安装依赖项
 func installDependency(*config.Config, core.Platform) {
 	// todo 如果依赖的可执行文件(如yt-dlp,gamdl,um,ffmpeg)等未安装,执行安装

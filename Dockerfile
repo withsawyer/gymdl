@@ -1,4 +1,6 @@
-# 1. 构建阶段
+# ---------------------------
+# 1. 构建 Go 二进制
+# ---------------------------
 FROM golang:1.24 AS builder
 
 WORKDIR /app
@@ -10,30 +12,36 @@ RUN go mod download
 # 复制所有代码
 COPY . .
 
-# 编译可执行文件（静态编译，避免依赖 glibc）
+# 编译静态二进制
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app .
 
+# ---------------------------
 # 2. 运行阶段
+# ---------------------------
 FROM python:3.12-alpine
 
 WORKDIR /app
 
-# 安装 tzdata 并设置时区
-RUN apk add --no-cache tzdata \
+# 安装基础依赖和 tzdata
+RUN apk add --no-cache \
+        tzdata \
+        build-base \
+        libffi-dev \
+        wget \
+        xz \
+        tar \
     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone \
     && apk del tzdata
 
-# 安装系统依赖（gcc、musl-dev 等可能用于某些 Python 包编译）
-RUN apk add --no-cache build-base libffi-dev
+# 安装 ffmpeg（带 libfdk_aac）
+RUN wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz \
+    && tar -xJf ffmpeg-release-amd64-static.tar.xz \
+    && cp ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/ \
+    && cp ffmpeg-*-amd64-static/ffprobe /usr/local/bin/ \
+    && rm -rf ffmpeg-*-amd64-static ffmpeg-release-amd64-static.tar.xz
 
-# 复制 Python 依赖文件
-COPY ./internal/cron/dependency/requirements.txt ./
-
-# 安装 Python 依赖
-RUN pip install --no-cache-dir -r requirements.txt
-
-# 拷贝 Go 编译好的二进制文件
+# 复制 Go 编译好的二进制文件
 COPY --from=builder /app/app ./
 
 # 暴露端口
