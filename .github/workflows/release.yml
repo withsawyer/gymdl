@@ -1,4 +1,4 @@
-name: Docker Publish
+name: Build&Publish
 
 on:
   #目前是手动发版
