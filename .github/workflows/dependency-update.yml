@@ -29,13 +29,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install pip-review
-        run: pip install pip-review
+      - name: Install pip-tools
+        run: pip install pip-tools
 
       - name: Update Python dependencies
         working-directory: .github/dependency
         run: |
-          pip-review --local --auto
+          pip-compile --upgrade --output-file=requirements.txt requirements.txt
 
 #      - name: Install Python deps for update_tools.py
 #        run: pip install -r .github/scripts/requirements.txt
