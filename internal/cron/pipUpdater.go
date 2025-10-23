@@ -1,12 +1,12 @@
 package cron
 
-import "time"
+import "os/exec"
 
 // installPipDependency 安装pip依赖(执行一次)
 func installPipDependency() {
 	//通过pip安装/更新
-	time.Sleep(10 * time.Second)
-	logger.Info("installing Pip")
+	exec.Command("pip", "install", "-U", "-r", "requirements.txt")
+	logger.Info("【Pip Dependency】 has Installed.")
 }
 
 // updateByRequirements 检查pip依赖更新(定时执行)
