@@ -34,6 +34,9 @@ RUN apk add --no-cache \
     && echo "Asia/Shanghai" > /etc/timezone \
     && apk del tzdata
 
+COPY requirements.txt ./
+COPY data ./data
+
 # 复制 Go 编译好的二进制文件
 COPY --from=builder /app/app ./
 
