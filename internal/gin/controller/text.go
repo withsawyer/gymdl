@@ -7,7 +7,7 @@ import (
 	"github.com/nichuanfang/gymdl/internal/gin/response"
 )
 
-//文本消息处理器
+// 文本消息处理器
 
 func HandleMsg(c *gin.Context) {
 	response.Success(c, "success")

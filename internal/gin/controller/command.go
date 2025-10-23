@@ -5,7 +5,7 @@ import (
 	"github.com/nichuanfang/gymdl/internal/gin/response"
 )
 
-//指令处理器
+// 指令处理器
 
 func HandleCommand(c *gin.Context) {
 	response.Success(c, gin.H{

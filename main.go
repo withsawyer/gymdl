@@ -69,7 +69,7 @@ func initAI(c *config.AIConfig) {
 	utils.ServiceIsOnf("已加载AI服务")
 }
 
-//=================================后台服务================================================
+// =================================后台服务================================================
 
 // initCron 启动定时任务
 func initCron(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
@@ -84,7 +84,7 @@ func initCron(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 // initGin 启动Web服务
 func initGin(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 	defer wg.Done()
-	//设置运行模式 debug/release/test
+	// 设置运行模式 debug/release/test
 	gin.SetMode(c.WebConfig.GinMode)
 	r := router.SetupRouter(c)
 
@@ -117,13 +117,13 @@ func initGin(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 // initGin 启动tg机器人
 func initBot(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 	defer wg.Done()
-	//todo 执行启动操作
+	// todo 执行启动操作
 	utils.Success("Telegram Bot is started")
 	<-ctx.Done()
 	utils.Stop("Telegram Bot 退出")
 }
 
-//=====================================程序入口================================================
+// =====================================程序入口================================================
 
 func main() {
 	if version {
@@ -133,10 +133,10 @@ func main() {
 	// banner
 	printBanner()
 
-	//加载配置
+	// 加载配置
 	c := config.LoadConfig(configFile)
 
-	//初始化日志模块
+	// 初始化日志模块
 	err := utils.InitLogger(c.Log)
 	if err != nil {
 		return
@@ -147,10 +147,10 @@ func main() {
 	if c.MusicTidy.Mode == 2 {
 		initWebDAV(c.WebDAV)
 	}
-	//初始化cookiecloud+连通性检测
+	// 初始化cookiecloud+连通性检测
 	initCookieCloud(c.CookieCloud)
 
-	//初始化AI服务+连通性检测
+	// 初始化AI服务+连通性检测
 	initAI(c.AI)
 
 	// 创建可取消上下文
@@ -159,11 +159,11 @@ func main() {
 	wg := &sync.WaitGroup{}
 	wg.Add(3)
 
-	//【协程1】 启动定时任务
+	// 【协程1】 启动定时任务
 	go initCron(ctx, wg, c)
-	//【协程2】 启动web服务Gin
+	// 【协程2】 启动web服务Gin
 	go initGin(ctx, wg, c)
-	//【协程3】 启动telegram机器人
+	// 【协程3】 启动telegram机器人
 	go initBot(ctx, wg, c)
 
 	// 捕捉系统信号，优雅退出
@@ -173,7 +173,7 @@ func main() {
 	utils.Logger().Info("收到退出信号，开始关闭服务...")
 	cancel() // 通知所有协程退出
 
-	//阻塞主协程
+	// 阻塞主协程
 	wg.Wait()
 	utils.Logger().Info("所有服务已退出，程序结束")
 }
