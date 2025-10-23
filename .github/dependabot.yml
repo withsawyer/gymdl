@@ -5,13 +5,4 @@ updates:
     directory: ".github/dependency"
     schedule:
       interval: "daily"
-    allow:
-      - dependency-type: direct
-   # ignore:
-   #- dependency-name: "要忽略的依赖"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
     open-pull-requests-limit: 5
-    # 自动关闭被更新的旧PR
-    #rebase-strategy: "auto"
