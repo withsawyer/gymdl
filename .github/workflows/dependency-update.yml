@@ -35,7 +35,8 @@ jobs:
       - name: Update Python dependencies
         working-directory: .github/dependency
         run: |
-          pip-compile --upgrade --output-file=requirements.txt requirements.txt
+          pip-compile --upgrade requirements.txt --output-file=requirements.txt.tmp
+          mv requirements.txt.tmp requirements.txt
 
 #      - name: Install Python deps for update_tools.py
 #        run: pip install -r .github/scripts/requirements.txt
