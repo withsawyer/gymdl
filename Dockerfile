@@ -34,13 +34,6 @@ RUN apk add --no-cache \
     && echo "Asia/Shanghai" > /etc/timezone \
     && apk del tzdata
 
-# 安装 ffmpeg（带 libfdk_aac）
-RUN wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz \
-    && tar -xJf ffmpeg-release-amd64-static.tar.xz \
-    && cp ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/ \
-    && cp ffmpeg-*-amd64-static/ffprobe /usr/local/bin/ \
-    && rm -rf ffmpeg-*-amd64-static ffmpeg-release-amd64-static.tar.xz
-
 # 复制 Go 编译好的二进制文件
 COPY --from=builder /app/app ./
 

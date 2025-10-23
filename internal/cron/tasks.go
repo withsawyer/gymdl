@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"sync"
 	"time"
 
 	"github.com/nichuanfang/gymdl/config"
@@ -13,15 +14,23 @@ var binPath = "/usr/local/bin"
 
 // installDependency 安装依赖项
 func installDependency(*config.Config, core.Platform) {
-	// todo 如果依赖的可执行文件(如yt-dlp,gamdl,um,ffmpeg)等未安装,执行安装
-
-	// 依赖项名称:gamdl
-	// 依赖项安装方式:pip
-	// 安装指令:pip install -U gamdl
-	logger.Info("开始执行依赖项更新...")
-	time.Sleep(2 * time.Second)
-	logger.Info("依赖项更新完毕")
-	return
+	logger.Info("开始初始化依赖项...")
+	group := &sync.WaitGroup{}
+	group.Add(3)
+	go func() {
+		defer group.Done()
+		installFFmpeg()
+	}()
+	go func() {
+		defer group.Done()
+		installUm()
+	}()
+	go func() {
+		defer group.Done()
+		installPipDependency()
+	}()
+	group.Wait()
+	logger.Info("依赖项更新完毕!")
 }
 
 // updateDependency 更新依赖项
