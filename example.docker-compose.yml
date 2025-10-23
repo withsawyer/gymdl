@@ -6,6 +6,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
+      - TZ=Asia/Shanghai
     volumes:
      #必须挂载配置文件否则项目无法启动
       - ./config.json:/app/config.json
