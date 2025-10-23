@@ -9,6 +9,8 @@ services:
     volumes:
      #必须挂载配置文件否则项目无法启动
       - ./config.json:/app/config.json
+      # 日志目录
+      - ./logs:/app/data/logs
     expose:
       #api端口
       - 8080
