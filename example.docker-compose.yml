@@ -1,0 +1,21 @@
+version: '3'
+services:
+  gymdl:
+    image: ghcr.io/nichuanfang/gymdl:latest
+    container_name: gymdl
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+     #必须挂载配置文件否则项目无法启动
+      - ./config.json:/app/config.json
+    expose:
+      #api端口
+      - 8080
+    networks:
+      - mynet
+    restart: always
+
+networks:
+  mynet:
+    external: true
