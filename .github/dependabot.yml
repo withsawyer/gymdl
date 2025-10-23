@@ -8,7 +8,7 @@ updates:
     allow:
       - dependency-type: direct
 #    ignore:
-#      - dependency-name: "指定要忽略的依赖名字"
+#      - dependency-name: "要忽略的依赖"
     commit-message:
       prefix: "chore"
       include: "scope"
