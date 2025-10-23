@@ -7,7 +7,7 @@
 -   [x] 所属平台解析器
 -   [x] 搭建定时任务框架[gocron](https://github.com/go-co-op/gocron)
 -   [x] gocron 的中间件实现(日志,鉴权)
--   [ ] 通过Github自动化构建
+-   [x] 通过Github自动化构建
 -   [ ] 通过Github自动检测依赖更新,提交pr,合并pr后自动构建docker镜像
 -   [ ] 支持指定多个 cookiecloud-key 多端同步
 -   [ ] 初始化 cookiecloud
