@@ -1,8 +1,0 @@
-version: 2
-#检测 pip 依赖
-updates:
-  - package-ecosystem: "pip"
-    directory: ".github/dependency"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5

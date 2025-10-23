@@ -2,11 +2,9 @@ name: Build&Publish
 
 on:
   workflow_dispatch:
-  pull_request:
-    types:
-      - closed
-    branches:
-      - master
+  push: 
+    tags:
+      - v*
 
 jobs:
   docker:
