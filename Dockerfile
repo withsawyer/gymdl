@@ -30,6 +30,9 @@ COPY requirements.txt ./
 # 2. 复制 Go 编译好的二进制文件
 COPY --from=builder /app/app ./
 
+# 3. 把 /app/data/bin 加入 PATH
+ENV PATH="/app/data/bin:${PATH}"
+
 # 暴露端口
 EXPOSE 8080
 
