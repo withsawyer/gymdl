@@ -6,7 +6,7 @@ set -e
 #=====================================================
 FFMPEG_VERSION="6.1.2"
 FDK_AAC_VERSION="2.0.3"
-PREFIX="/app/data"
+PREFIX="/usr/local"
 BUILD_DIR="/tmp/ffmpeg_build"
 
 #=====================================================
@@ -95,9 +95,6 @@ cd /
 rm -rf "${BUILD_DIR}"
 
 echo ">>> FFmpeg 构建完成！"
-
-# 赋予可执行权限
-chmod +x "${PREFIX}/bin/ffmpeg" "${PREFIX}/bin/ffprobe"
 
 # 验证版本
 "${PREFIX}/bin/ffmpeg" -version
