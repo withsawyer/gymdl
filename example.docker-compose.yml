@@ -11,6 +11,9 @@ services:
       - ./config.json:/app/config.json
       # 数据目录
       - ./data:/app/data
+      # pip 缓存目录
+      - ./pipcache:/root/.cache/pip
+      # 
     expose:
       #api端口
       - 8080
