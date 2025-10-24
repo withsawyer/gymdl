@@ -13,7 +13,7 @@ import (
 var logger *zap.Logger
 
 func InitBot(c *config.Config) {
-	 logger = utils.Logger()
+	logger = utils.Logger()
 	utils.Success("TelegramBot已成功启动")
 	// 模拟阻塞
 	time.Sleep(time.Hour)
