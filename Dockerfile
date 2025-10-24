@@ -44,6 +44,9 @@ RUN chmod +x ./install_ffmpeg.sh
 # 3. 复制 Go 编译好的二进制文件
 COPY --from=builder /app/app ./
 
+# 设置环境变量
+ENV PATH="/app/data/bin:${PATH}"
+
 # 暴露端口
 EXPOSE 8080
 
