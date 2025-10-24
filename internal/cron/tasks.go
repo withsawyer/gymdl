@@ -1,12 +1,11 @@
 package cron
 
 import (
-	"sync"
-	"time"
+    "sync"
+    "time"
 
-	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core"
-	"github.com/nichuanfang/gymdl/utils"
+    "github.com/nichuanfang/gymdl/config"
+    "github.com/nichuanfang/gymdl/core"
 )
 
 // 通过pip安装的 或者 可执行文件都在这个文件夹 并赋予+x权限
@@ -35,15 +34,24 @@ func installDependency(*config.Config, core.Platform) {
 
 // updateDependency 更新依赖项
 func updateDependency(c *config.Config, platform core.Platform) {
-	// todo 依赖的可执行文件或者pip更新检测
-	time.Sleep(time.Second * time.Duration(2))
-	logger.Info("依赖更新成功")
+    logger.Info("开始检测依赖项更新...")
+    group := sync.WaitGroup{}
+    group.Add(2)
+    go func() {
+        defer group.Done()
+        updatePipDependency()
+    }()
+    go func() {
+        defer group.Done()
+        updateUm()
+    }()
+    group.Wait()
+    logger.Info("依赖项更新检测完毕!")
 }
 
 // healthCheck 健康检查
 func healthCheck(c *config.Config) {
 	// todo 核心服务(cookiecloud,webdav,ai)健康检查
-	utils.NetworkHealth("健康检查成功")
 	return
 }
 

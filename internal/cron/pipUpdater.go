@@ -6,18 +6,25 @@ import (
 
 // installPipDependency 安装pip依赖(执行一次)
 func installPipDependency() {
-	// 通过pip安装/更新
-	command := exec.Command("pip", "install", "-U", "-r", "requirements.txt")
-	if output,err := command.CombinedOutput(); err != nil {
-        logger.Debug("\n"+string(output))
-		logger.Error("【Pip Dependency】Installed failed:"+err.Error())
-	} else {
-        logger.Debug("\n"+string(output))
-		logger.Info("【Pip Dependency】has Installed.")
+	cmd := exec.Command("pip", "--disable-pip-version-check", "install", "-U", "-r", "requirements.txt")
+	output, err := cmd.CombinedOutput()
+	logger.Debug("\n" + string(output))
+	if err != nil {
+		logger.Error("【Pip Dependency】Install failed: " + err.Error())
+		return
 	}
+	logger.Info("【Pip Dependency】Installed successfully.")
 }
 
-// updateByRequirements 检查pip依赖更新(定时执行)
+// updatePipDependency 定时更新pip依赖
 func updatePipDependency() {
-	// 通过pip更新
+	updateCmd := exec.Command("pip", "--disable-pip-version-check", "install", "-U", "-r", "requirements.txt")
+	out, err := updateCmd.CombinedOutput()
+	logger.Debug("\n" + string(out))
+	if err != nil {
+		logger.Error("【Pip Dependency】Update failed: " + err.Error())
+		return
+	}
+
+	logger.Info("【Pip Dependency】All outdated packages have been updated.")
 }

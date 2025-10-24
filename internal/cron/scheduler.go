@@ -21,10 +21,10 @@ func registerTasks(c *config.Config, platform core.Platform, scheduler gocron.Sc
 	// 执行一次依赖安装/更新
 	newTask("installDependency", scheduler, gocron.OneTimeJob(gocron.OneTimeJobStartImmediately()),
 		gocron.NewTask(installDependency, c, platform))
-	// 注册健康检查任务(每分钟执行一次)
-	newTask("healthCheck", scheduler, gocron.DurationJob(time.Minute), gocron.NewTask(healthCheck, c))
+	// 注册健康检查任务(每10分钟执行一次)
+	newTask("healthCheck", scheduler, gocron.DurationJob(time.Minute*10), gocron.NewTask(healthCheck, c))
 	// 注册依赖更新检测任务(6小时)
-	newTask("updateDependency", scheduler, gocron.DurationJob(time.Hour*6), gocron.NewTask(updateDependency, c))
+	newTask("updateDependency", scheduler, gocron.DurationJob(time.Hour*6), gocron.NewTask(updateDependency, c,platform))
 	// 注册cookiecloud同步任务(根据配置的时间)
 	newTask("syncCookieCloud", scheduler, gocron.DurationJob(time.Minute*time.Duration(c.CookieCloud.ExpireTime)),
 		gocron.NewTask(syncCookieCloud, c))
