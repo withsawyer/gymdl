@@ -10,7 +10,7 @@ func installPipDependency() {
 	command := exec.Command("pip", "install", "-U", "-r", "requirements.txt")
 	if output,err := command.CombinedOutput(); err != nil {
         logger.Debug("\n"+string(output))
-		logger.Error("【Pip Dependency】Installed failed")
+		logger.Error("【Pip Dependency】Installed failed:"+err.Error())
 	} else {
         logger.Debug("\n"+string(output))
 		logger.Info("【Pip Dependency】has Installed.")
