@@ -8,10 +8,10 @@
     "cookie_cloud": {
         "cookiecloud_url": "",
         "cookiecloud_uuid": "",
-        "cookiecloud_key": "",
+        "cookiecloud_key": [""],
         "cookie_file_path": "",
         "cookie_file": "",
-        "expire_time": 20
+        "expire_time": 360
     },
     "music_tidy": {
         "mode": 1,

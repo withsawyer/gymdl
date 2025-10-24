@@ -20,10 +20,10 @@ type WebConfig struct {
 type CookieCloudConfig struct {
 	CookieCloudUrl  string `json:"cookiecloud_url"`  // cookiecloud 地址
 	CookieCloudUUID string `json:"cookiecloud_uuid"` // cookiecloud uuid
-	CookieCloudKEY  string `json:"cookiecloud_key"`  // cookiecloud key
+	CookieCloudKEY  []string `json:"cookiecloud_key"`  // cookiecloud key 数组
 	CookieFile      string `json:"cookie_file"`      // cookie文件名
 	CookieFilePath  string `json:"cookie_file_path"` // cookie存储目录
-	ExpireTime      int    `json:"expire_time"`      // cookie文件过期时间(分钟)
+	ExpireTime      int    `json:"expire_time"`      // cookie文件过期时间(分钟) 根据自己需求控制
 }
 
 type MusicTidyConfig struct {
