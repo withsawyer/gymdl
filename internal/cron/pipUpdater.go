@@ -9,10 +9,10 @@ func installPipDependency() {
 	// 通过pip安装/更新
 	command := exec.Command("pip", "install", "-U", "-r", "requirements.txt")
 	if output,err := command.CombinedOutput(); err != nil {
-        logger.Info("\n"+string(output))
+        logger.Debug("\n"+string(output))
 		logger.Error("【Pip Dependency】Installed failed")
 	} else {
-        logger.Info("\n"+string(output))
+        logger.Debug("\n"+string(output))
 		logger.Info("【Pip Dependency】has Installed.")
 	}
 }
