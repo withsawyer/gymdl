@@ -9,24 +9,21 @@ import (
 
 // installDependency 安装依赖项
 func installDependency(c *config.Config) {
-	logger.Info("开始初始化依赖项...")
-	group := &sync.WaitGroup{}
-	group.Add(2)
-	go func() {
-		defer group.Done()
-		installUm(c)
-	}()
-	go func() {
-		defer group.Done()
-		installPipDependency()
-	}()
-	group.Wait()
-	logger.Info("依赖项更新完毕!")
+    group := sync.WaitGroup{}
+    group.Add(2)
+    go func() {
+        defer group.Done()
+        installPipDependency()    
+    }()
+    go func() {
+        defer group.Done()
+        installUm()       
+    }()
+    group.Wait()
 }
 
 // updateDependency 更新依赖项
 func updateDependency(c *config.Config) {
-    logger.Info("开始检测依赖项更新...")
     group := sync.WaitGroup{}
     group.Add(2)
     go func() {
@@ -38,7 +35,6 @@ func updateDependency(c *config.Config) {
         updateUm()
     }()
     group.Wait()
-    logger.Info("依赖项更新检测完毕!")
 }
 
 // healthCheck 健康检查
