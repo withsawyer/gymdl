@@ -61,7 +61,7 @@ RUN rm -rf "$BUILD_DIR"
 # ==========================
 # 运行阶段
 # ==========================
-FROM python:3.12-alpine
+FROM ubuntu:24.04
 
 ENV PREFIX=/usr/local
 ENV PATH="$PREFIX/bin:$PATH"
