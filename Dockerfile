@@ -24,6 +24,19 @@ FROM python:3.12-alpine
 
 WORKDIR /app
 
+# 1. 安装基础运行依赖和设置时区
+RUN apk update && apk add --no-cache \
+        # 基础运行工具 \
+        wget \
+        xz \
+        tar \
+        # 时区依赖 \
+        tzdata \
+    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone \
+    && apk del tzdata \
+    && rm -rf /var/cache/apk/*
+
 # 2. 复制需要的文件
 COPY requirements.txt scripts/install_ffmpeg.sh ./
 RUN chmod +x ./install_ffmpeg.sh
