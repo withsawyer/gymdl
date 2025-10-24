@@ -25,8 +25,8 @@
     },
     "ffmpeg": {
         "max_worker": 4,
-        "ffmpeg_path": "/usr/local/bin/ffmpeg",
-        "ffprobe_path": "/usr/local/bin/ffprobe"
+        "ffmpeg_path": "data/bin",
+        "ffprobe_path": "data/bin"
     },
     "log": {
         "mode": 1,
