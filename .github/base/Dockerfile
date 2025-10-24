@@ -1,34 +1,30 @@
-FROM python:3.12-slim
+# ==============================
+# 第一阶段：编译 FFmpeg + libfdk_aac
+# ==============================
+FROM python:3.12-slim AS builder
 
-# 设置时区
 ENV TZ=Asia/Shanghai \
-    DEBIAN_FRONTEND=noninteractive
-
-# 安装构建工具、Go、ffmpeg编译依赖
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    tzdata ca-certificates curl wget git build-essential pkg-config \
-    yasm nasm libtool autoconf automake cmake golang-go && \
-    ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone && \
-    rm -rf /var/lib/apt/lists/*
-
-# -------------------------------------------------------------
-# 编译安装 libfdk_aac
-# -------------------------------------------------------------
-WORKDIR /tmp/build
-ENV FFMPEG_VERSION=6.1 \
+    DEBIAN_FRONTEND=noninteractive \
+    FFMPEG_VERSION=6.1 \
     FDKAAC_VERSION=2.0.2
 
+# 安装编译依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata ca-certificates curl wget git build-essential pkg-config \
+    yasm nasm libtool autoconf automake cmake && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /tmp/build
+
+# 编译 libfdk_aac
 RUN wget https://github.com/mstorsjo/fdk-aac/archive/refs/tags/v${FDKAAC_VERSION}.tar.gz && \
     tar xzf v${FDKAAC_VERSION}.tar.gz && \
     cd fdk-aac-${FDKAAC_VERSION} && \
     autoreconf -fiv && ./configure --enable-static --disable-shared && \
     make -j$(nproc) && make install
 
-# -------------------------------------------------------------
-# 编译安装 ffmpeg (静态 + libfdk_aac)
-# -------------------------------------------------------------
+# 编译 FFmpeg（静态 + libfdk_aac）
 RUN wget https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.gz && \
     tar xzf ffmpeg-${FFMPEG_VERSION}.tar.gz && \
     cd ffmpeg-${FFMPEG_VERSION} && \
@@ -43,8 +39,24 @@ RUN wget https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.gz && \
       --disable-shared \
       --enable-static && \
     make -j$(nproc) && make install && \
-    strip /usr/local/bin/ffmpeg && strip /usr/local/bin/ffprobe
+    strip /usr/local/bin/ffmpeg /usr/local/bin/ffprobe
 
-WORKDIR /root
+# 清理构建目录
+RUN rm -rf /tmp/build
 
-ENTRYPOINT ["python3"]
+
+# ==============================
+# 第二阶段：生产镜像
+# ==============================
+FROM python:3.12-slim
+
+ENV TZ=Asia/Shanghai
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata ca-certificates && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    rm -rf /var/lib/apt/lists/*
+
+# 从 builder 阶段复制 FFmpeg
+COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
+COPY --from=builder /usr/local/lib /usr/local/lib
+COPY --from=builder /usr/local/include /usr/local/include
