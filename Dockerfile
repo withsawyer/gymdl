@@ -35,7 +35,7 @@ RUN apk add --no-cache \
     && apk del tzdata
 
 COPY requirements.txt ./
-COPY data ./data
+RUN mkdir data
 
 # 复制 Go 编译好的二进制文件
 COPY --from=builder /app/app ./
