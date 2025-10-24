@@ -37,8 +37,9 @@ RUN apk update && apk add --no-cache \
     && apk del tzdata \
     && rm -rf /var/cache/apk/*
 
-# 2. 复制requirements.txt
-COPY requirements.txt ./
+# 2. 复制需要的文件
+COPY requirements.txt scripts/install_ffmpeg.sh ./
+RUN chmod +x ./install_ffmpeg.sh
 
 # 3. 复制 Go 编译好的二进制文件
 COPY --from=builder /app/app ./
