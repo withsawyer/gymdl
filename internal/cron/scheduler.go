@@ -9,7 +9,6 @@ import (
 	"github.com/go-co-op/gocron/v2"
 	"github.com/google/uuid"
 	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core"
 	"github.com/nichuanfang/gymdl/utils"
 	"go.uber.org/zap"
 )
@@ -17,14 +16,14 @@ import (
 var logger *zap.Logger
 
 // registerTasks 注册定时任务
-func registerTasks(c *config.Config, platform core.Platform, scheduler gocron.Scheduler) {
+func registerTasks(c *config.Config, scheduler gocron.Scheduler) {
 	// 执行一次依赖安装/更新
 	newTask("installDependency", scheduler, gocron.OneTimeJob(gocron.OneTimeJobStartImmediately()),
-		gocron.NewTask(installDependency, c, platform))
+		gocron.NewTask(installDependency, c))
 	// 注册健康检查任务(每10分钟执行一次)
 	newTask("healthCheck", scheduler, gocron.DurationJob(time.Minute*10), gocron.NewTask(healthCheck, c))
 	// 注册依赖更新检测任务(6小时)
-	newTask("updateDependency", scheduler, gocron.DurationJob(time.Hour*6), gocron.NewTask(updateDependency, c,platform))
+	newTask("updateDependency", scheduler, gocron.DurationJob(time.Hour*6), gocron.NewTask(updateDependency, c))
 	// 注册cookiecloud同步任务(根据配置的时间)
 	newTask("syncCookieCloud", scheduler, gocron.DurationJob(time.Minute*time.Duration(c.CookieCloud.ExpireTime)),
 		gocron.NewTask(syncCookieCloud, c))
@@ -33,9 +32,6 @@ func registerTasks(c *config.Config, platform core.Platform, scheduler gocron.Sc
 // InitScheduler 日志初始化
 func InitScheduler(c *config.Config) gocron.Scheduler {
 	logger = utils.Logger()
-	platformInfo := core.PlatformInfo()
-	utils.SugaredLogger().Infof("当前平台: %s", platformInfo.String())
-
 	var startTimes sync.Map
 
 	newScheduler, err := gocron.NewScheduler(
@@ -70,7 +66,7 @@ func InitScheduler(c *config.Config) gocron.Scheduler {
 		return nil
 	}
 
-	registerTasks(c, platformInfo, newScheduler)
+	registerTasks(c, newScheduler)
 	return newScheduler
 }
 

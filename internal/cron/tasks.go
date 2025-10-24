@@ -5,24 +5,20 @@ import (
     "time"
 
     "github.com/nichuanfang/gymdl/config"
-    "github.com/nichuanfang/gymdl/core"
 )
 
-// 通过pip安装的 或者 可执行文件都在这个文件夹 并赋予+x权限
-var binPath = "/usr/local/bin"
-
 // installDependency 安装依赖项
-func installDependency(*config.Config, core.Platform) {
+func installDependency(c *config.Config) {
 	logger.Info("开始初始化依赖项...")
 	group := &sync.WaitGroup{}
 	group.Add(3)
 	go func() {
 		defer group.Done()
-		installFFmpeg()
+		installFFmpeg(c)
 	}()
 	go func() {
 		defer group.Done()
-		installUm()
+		installUm(c)
 	}()
 	go func() {
 		defer group.Done()
@@ -33,7 +29,7 @@ func installDependency(*config.Config, core.Platform) {
 }
 
 // updateDependency 更新依赖项
-func updateDependency(c *config.Config, platform core.Platform) {
+func updateDependency(c *config.Config) {
     logger.Info("开始检测依赖项更新...")
     group := sync.WaitGroup{}
     group.Add(2)
