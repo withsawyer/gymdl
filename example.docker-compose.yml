@@ -9,11 +9,10 @@ services:
     volumes:
      #必须挂载配置文件否则项目无法启动
       - ./config.json:/app/config.json
-      # 数据目录
+      # 数据目录  目录结构和项目的data结构一致
       - ./data:/app/data
       # pip 缓存目录
-      - ./pipcache:/root/.cache/pip
-      # 
+      - ./.pipcache:/root/.cache/pip
     expose:
       #api端口
       - 8080
