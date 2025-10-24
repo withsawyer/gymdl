@@ -1,7 +1,7 @@
 # ==========================
 # 构建阶段
 # ==========================
-FROM python:3.12-alpine AS builder
+FROM ubuntu:24.04 AS builder
 
 ENV FFMPEG_VERSION=6.1.2
 ENV FDK_AAC_VERSION=2.0.3
@@ -78,4 +78,4 @@ COPY --from=builder /usr/local /usr/local
 # 验证 ffmpeg 可用
 RUN ffmpeg -version
 
-ENTRYPOINT ["python3"]
+ENTRYPOINT []
