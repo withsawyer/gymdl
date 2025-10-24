@@ -23,11 +23,6 @@
         "webdav_pass": "",
         "webdav_dir": ""
     },
-    "ffmpeg": {
-        "max_worker": 4,
-        "ffmpeg_path": "data/bin",
-        "ffprobe_path": "data/bin"
-    },
     "log": {
         "mode": 1,
         "level": 2,

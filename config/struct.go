@@ -5,7 +5,6 @@ type Config struct {
 	CookieCloud *CookieCloudConfig `json:"cookie_cloud"` // cookiecloud配置
 	MusicTidy   *MusicTidyConfig   `json:"music_tidy"`   // 音乐整理配置
 	WebDAV      *WebDAVConfig      `json:"webdav"`       // webdav配置
-	Ffmpeg      *FfmpegConfig      `json:"ffmpeg"`       // ffmpeg配置，转码使用
 	Log         *LogConfig         `json:"log"`          // 日志配置
 	Telegram    TelegramConfig     `json:"telegram"`     // telegram配置
 	AI          *AIConfig          `json:"ai"`           // AI配置
@@ -37,12 +36,6 @@ type WebDAVConfig struct {
 	WebDAVUser string `json:"webdav_user"` // webdav用户名
 	WebDAVPass string `json:"webdav_pass"` // webdav密码
 	WebDAVDir  string `json:"webdav_dir"`  // wevdav路径
-}
-
-type FfmpegConfig struct {
-	MaxWorker   int    `json:"max_worker"`   // 最大进程数：建议为逻辑CPU个数
-	FfmpegPath  string `json:"ffmpeg_path"`  // ffmpeg 可执行文件路径
-	FfprobePath string `json:"ffprobe_path"` // ffprobe 可执行文件路径
 }
 
 type LogConfig struct {

@@ -11,11 +11,7 @@ import (
 func installDependency(c *config.Config) {
 	logger.Info("开始初始化依赖项...")
 	group := &sync.WaitGroup{}
-	group.Add(3)
-	go func() {
-		defer group.Done()
-		installFFmpeg(c)
-	}()
+	group.Add(2)
 	go func() {
 		defer group.Done()
 		installUm(c)
