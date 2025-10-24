@@ -2,6 +2,7 @@ package cron
 
 import (
 	"archive/tar"
+	"bufio"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -9,24 +10,48 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
-	"strings"
+	"sync"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 const destDir = "./data/bin"
 
+var (
+	httpClient = &http.Client{
+		Timeout: 30 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:       10,
+			IdleConnTimeout:    30 * time.Second,
+			DisableCompression: false,
+		},
+	}
+
+	latestVersionCache struct {
+		version   string
+		timestamp time.Time
+		mu        sync.Mutex
+	}
+
+	localVersionCache struct {
+		version string
+		mu      sync.Mutex
+	}
+)
+
 // installUm 安装或更新 Um
 func installUm() {
 	version := getLatestVersion()
-
-	if !shouldUpdate(version) {
-		logger.Info("【Um】已安装，版本：" + version)
+	if version == "" {
+		logger.Error("未获取到最新版本，安装失败")
 		return
 	}
 
-	if err := os.MkdirAll(destDir, 0755); err != nil {
-		logger.Error("创建目录失败: " + err.Error())
+	if !shouldUpdate(version) {
+		logger.Info("【Um】已安装，版本: " + version)
 		return
 	}
 
@@ -38,18 +63,27 @@ func installUm() {
 		return
 	}
 
-	logger.Info("【Um】安装完成，版本：" + version)
+	// 更新本地版本缓存
+	localVersionCache.mu.Lock()
+	localVersionCache.version = version
+	localVersionCache.mu.Unlock()
+
+	logger.Info("【Um】安装完成，版本: " + version)
 }
 
 // updateUm 检查并更新 Um
 func updateUm() {
 	version := getLatestVersion()
-	if !shouldUpdate(version) {
-		logger.Debug(fmt.Sprintf("Um 已是最新版本: %s", version))
+	if version == "" {
 		return
 	}
 
-	logger.Info(fmt.Sprintf("检测到新版本: %s，正在更新 Um...", version))
+	if !shouldUpdate(version) {
+		logger.Debug("Um 已是最新版本: " + version)
+		return
+	}
+
+	logger.Info("检测到新版本: " + version + "，正在更新 Um...")
 	installUm()
 }
 
@@ -61,27 +95,73 @@ func shouldUpdate(latestVersion string) bool {
 		return true
 	}
 
-	currentVersion, err := getLocalVersion(binaryPath)
-	if err != nil {
+	currentVersion := getLocalVersionCached(binaryPath)
+	if currentVersion == "" {
 		return true
 	}
 
 	return currentVersion != latestVersion
 }
 
-// getLocalVersion 获取本地 Um 版本
-func getLocalVersion(binaryPath string) (string, error) {
+// getLocalVersionCached 获取本地 Um 版本，带缓存
+func getLocalVersionCached(binaryPath string) string {
+	localVersionCache.mu.Lock()
+	defer localVersionCache.mu.Unlock()
+
+	if localVersionCache.version != "" {
+		return localVersionCache.version
+	}
+
 	out, err := exec.Command(binaryPath, "--version").Output()
 	if err != nil {
-		return "", err
+		return ""
 	}
-	return parseVersion(string(out)), nil
+
+	v := parseVersion(string(out))
+	localVersionCache.version = v
+	return v
 }
 
-// getLatestVersion 返回最新版本
+// getLatestVersion 从 Releases 页面获取最新版本号，带缓存
 func getLatestVersion() string {
-	// TODO: 可以改为从 GitLab API 获取最新 release
-	return "v0.2.17"
+	latestVersionCache.mu.Lock()
+	defer latestVersionCache.mu.Unlock()
+
+	if time.Since(latestVersionCache.timestamp) < 10*time.Minute && latestVersionCache.version != "" {
+		return latestVersionCache.version
+	}
+
+	url := "https://git.um-react.app/um/cli/releases/"
+	resp, err := httpClient.Get(url)
+	if err != nil {
+		logger.Error("获取 Releases 页面失败: " + err.Error())
+		return ""
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		logger.Error("获取 Releases 页面失败，状态码: " + fmt.Sprint(resp.StatusCode))
+		return ""
+	}
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		logger.Error("解析页面 HTML 失败: " + err.Error())
+		return ""
+	}
+
+	selection := doc.Find("#release-list > li").First()
+	text := selection.Text()
+	re := regexp.MustCompile(`v\d+\.\d+\.\d+`)
+	match := re.FindString(text)
+	if match == "" {
+		logger.Error("未匹配到版本号")
+		return ""
+	}
+
+	latestVersionCache.version = match
+	latestVersionCache.timestamp = time.Now()
+	return match
 }
 
 // buildUmURL 构建下载 URL
@@ -94,8 +174,7 @@ func buildUmURL(version string) string {
 
 // downloadAndExtract 下载并解压 Um
 func downloadAndExtract(url, destDir string) error {
-	client := http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return fmt.Errorf("下载失败: %w", err)
 	}
@@ -128,12 +207,12 @@ func extractUmBinary(r io.Reader, destDir string) error {
 			return fmt.Errorf("tar 读取失败: %w", err)
 		}
 
-		if strings.HasSuffix(header.Name, target) {
+		if filepath.Base(header.Name) == target {
 			return saveFile(tr, filepath.Join(destDir, target))
 		}
 	}
 
-	return fmt.Errorf("未找到二进制文件: %s", target)
+	return fmt.Errorf("未找到二进制文件: " + target)
 }
 
 // umBinaryName 返回系统对应的 Um 文件名
@@ -144,7 +223,7 @@ func umBinaryName() string {
 	return "um"
 }
 
-// saveFile 保存文件并设置可执行权限
+// saveFile 保存文件并设置可执行权限，使用缓冲写入
 func saveFile(r io.Reader, path string) error {
 	out, err := os.Create(path)
 	if err != nil {
@@ -152,8 +231,12 @@ func saveFile(r io.Reader, path string) error {
 	}
 	defer out.Close()
 
-	if _, err := io.Copy(out, r); err != nil {
+	buf := bufio.NewWriter(out)
+	if _, err := io.Copy(buf, r); err != nil {
 		return fmt.Errorf("写入文件失败: %w", err)
+	}
+	if err := buf.Flush(); err != nil {
+		return fmt.Errorf("刷新缓冲失败: %w", err)
 	}
 
 	if runtime.GOOS != "windows" {
@@ -161,18 +244,11 @@ func saveFile(r io.Reader, path string) error {
 			return fmt.Errorf("设置可执行权限失败: %w", err)
 		}
 	}
-
 	return nil
 }
 
 // parseVersion 从 Um --version 输出中提取版本号
 func parseVersion(output string) string {
-	// 输出示例: "Unlock Music CLI version v0.2.17 (go1.25.1,darwin/amd64)"
-	fields := strings.Fields(output)
-	for i, f := range fields {
-		if f == "version" && i+1 < len(fields) {
-			return strings.TrimSpace(fields[i+1])
-		}
-	}
-	return ""
+	re := regexp.MustCompile(`v\d+\.\d+\.\d+`)
+	return re.FindString(output)
 }
