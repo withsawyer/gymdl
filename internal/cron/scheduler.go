@@ -23,7 +23,7 @@ func registerTasks(c *config.Config, scheduler gocron.Scheduler) {
 	// 注册依赖更新检测任务(6小时)
 	newTask("updateDependency", scheduler, gocron.DurationJob(time.Hour*6), gocron.NewTask(updateDependency, c))
 	// 注册cookiecloud同步任务(根据配置的时间)
-	newTask("syncCookieCloud", scheduler, gocron.DurationJob(time.Minute),
+	newTask("syncCookieCloud", scheduler, gocron.DurationJob(time.Minute*time.Duration(c.CookieCloud.ExpireTime)),
 		gocron.NewTask(syncCookieCloud))
 }
 
