@@ -47,20 +47,11 @@ RUN wget -q https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.gz && \
 # ==============================
 FROM python:3.12-slim
 
-#设置环境变量
 ENV TZ=Asia/Shanghai \
-    PATH="/root/.deno/bin:/app/data/bin:${PATH}"
+    PATH="/root/.deno/bin:/app/data/bin:${PATH}" \
+    DEBIAN_FRONTEND=noninteractive
 
-# 仅安装必要包
+# 安装运行依赖 + unzip（Deno 安装需要）
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    tzdata ca-certificates curl && \
+    tzdata ca-certificates curl unzip && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
-    rm -rf /var/lib/apt/lists/*
-
-# 安装 Deno（无交互）
-RUN curl -fsSL https://deno.land/install.sh | sh
-
-# 从 builder 拷贝 FFmpeg
-COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
-COPY --from=builder /usr/local/lib /usr/local/lib
-COPY --from=builder /usr/local/include /usr/local/include
