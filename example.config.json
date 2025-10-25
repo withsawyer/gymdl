@@ -1,5 +1,6 @@
 {
     "web_config": {
+        "enable": false,
         "app_domain": "localhost",
         "https": false,
         "app_port": 8080,
@@ -29,6 +30,7 @@
         "file": "data/logs/run.log"
     },
   "telegram": {
+    "enable": false,
     "mode": 1,
     "chat_id": "",
     "bot_token": "",

@@ -11,6 +11,7 @@ type Config struct {
 }
 
 type WebConfig struct {
+	Enable    bool   `json:"enable"`     //是否启用该服务
 	AppDomain string `json:"app_domain"` // web服务domain
 	Https     bool   `json:"https"`      // 是否开启了 https
 	AppPort   int    `json:"app_port"`   // web服务监听端口
@@ -45,6 +46,7 @@ type LogConfig struct {
 }
 
 type TelegramConfig struct {
+	Enable       bool     `json:"enable"`        //是否启用该服务
 	Mode         int      `json:"mode"`          // 运行模式: 1长轮询, 2Webhook   开发环境推荐1,生产环境推荐2
 	ChatID       string   `json:"chat_id"`       // chat_id 机器人ID
 	BotToken     string   `json:"bot_token"`     // telegram机器人token

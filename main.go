@@ -85,7 +85,6 @@ func initAI(c *config.AIConfig) {
 
 // 启动定时任务
 func initCron(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
-	defer wg.Done()
 	s := cron.InitScheduler(c)
 	s.Start()
 	utils.Success("定时任务调度器已启动")
@@ -96,8 +95,6 @@ func initCron(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 
 // 启动 Gin Web 服务
 func initGin(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
-	defer wg.Done()
-
 	gin.SetMode(c.WebConfig.GinMode)
 	r := router.SetupRouter(c)
 
@@ -131,8 +128,6 @@ func initGin(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 
 // 启动 Telegram Bot
 func initBot(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
-	defer wg.Done()
-
 	app, err := bot.NewBotApp(c)
 	if err != nil {
 		utils.Logger().Error("创建 Telegram Bot 应用失败", zap.Error(err))
@@ -186,10 +181,26 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	wg := &sync.WaitGroup{}
 
-	wg.Add(3)
-	go initCron(ctx, wg, c) // 定时任务
-	go initGin(ctx, wg, c)  // Web 服务
-	go initBot(ctx, wg, c)  // Telegram Bot
+	// 用 map 映射模块启动逻辑，更优雅地管理协程
+	services := map[string]func(context.Context, *sync.WaitGroup, *config.Config){
+		"cron": initCron,
+	}
+
+	if c.WebConfig.Enable {
+		services["web"] = initGin
+	}
+	if c.Telegram.Enable {
+		services["telegram"] = initBot
+	}
+
+	// 启动所有服务
+	for name, start := range services {
+		wg.Add(1)
+		go func(name string, start func(context.Context, *sync.WaitGroup, *config.Config)) {
+			defer wg.Done()
+			start(ctx, wg, c)
+		}(name, start)
+	}
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
