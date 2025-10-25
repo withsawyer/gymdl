@@ -127,7 +127,7 @@ func getLatestVersion() string {
 	latestVersionCache.mu.Lock()
 	defer latestVersionCache.mu.Unlock()
 
-	if time.Since(latestVersionCache.timestamp) < 10*time.Minute && latestVersionCache.version != "" {
+	if time.Since(latestVersionCache.timestamp) < 360*time.Minute && latestVersionCache.version != "" {
 		return latestVersionCache.version
 	}
 

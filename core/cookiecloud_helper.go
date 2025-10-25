@@ -34,25 +34,22 @@ type decryptResult struct {
 var (
 	// GlobalCookieCloud 全局单例对象
 	GlobalCookieCloud *CookieCloud
-	once              sync.Once
 	logger            *zap.Logger
 )
 
 // InitCookieCloud 初始化全局 CookieCloud，只会执行一次
 func InitCookieCloud(cfg *config.CookieCloudConfig) {
 	logger = utils.Logger()
-	once.Do(func() {
-		GlobalCookieCloud = &CookieCloud{
-			Config: cfg,
-			Client: &http.Client{Timeout: 10 * time.Second},
-		}
-	})
+	GlobalCookieCloud = &CookieCloud{
+		Config: cfg,
+		Client: &http.Client{Timeout: 10 * time.Second},
+	}
 }
 
 // CheckConnection 检查 CookieCloud 服务是否可用
 func (cc *CookieCloud) CheckConnection() bool {
 	if cc.Config == nil || cc.Config.CookieCloudUrl == "" || cc.Config.CookieCloudUUID == "" {
-		logger.Error("【CookieCloud】config, URL or UUID is empty")
+		logger.Error("⚠️CookieCloud config, URL or UUID is empty")
 		return false
 	}
 

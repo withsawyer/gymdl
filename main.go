@@ -13,7 +13,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/bytedance/gopkg/util/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core"
@@ -67,13 +66,19 @@ func initCookieCloud(cookieCloudConfig *config.CookieCloudConfig) {
 	if core.GlobalCookieCloud.CheckConnection() {
 		utils.ServiceIsOnf("已加载cookiecloud服务")
 	} else {
-		logger.Warn("CookieCloud service is not available")
+		utils.Warning("CookieCloud service is not available")
 	}
 }
 
 // initAI 初始化AI服务
 func initAI(c *config.AIConfig) {
-	utils.ServiceIsOnf("已加载AI服务")
+	core.InitAI(c)
+	if core.GlobalAI.CheckConnection() {
+		utils.ServiceIsOnf("已加载AI服务")
+	} else {
+		utils.Warning("AI service is not available")
+	}
+
 }
 
 // =================================后台服务================================================
@@ -157,8 +162,8 @@ func main() {
 	// 初始化cookiecloud+连通性检测
 	initCookieCloud(c.CookieCloud)
 
-	// 初始化AI服务+连通性检测
-	initAI(c.AI)
+	// 初始化AI服务+连通性检测 暂时停用以节省api-key
+	//initAI(c.AI)
 
 	// 创建可取消上下文
 	ctx, cancel := context.WithCancel(context.Background())
