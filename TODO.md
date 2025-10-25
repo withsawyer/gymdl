@@ -14,8 +14,15 @@
 -   [x] 初始化 webdav
 -   [x] webdav支持上传文件
 -   [x] 初始化 AI
--   [ ] 搭建 telegram 框架[telebot](https://github.com/tucnak/telebot)
--   [ ] telebot 的中间件实现(日志,鉴权)
+-   [x] 搭建 telegram 框架[telebot](https://github.com/tucnak/telebot)
+-   [x] telebot 的中间件实现(日志,鉴权)
 -   [ ] telegram 消息处理器开发
 -   [ ] telegram 指令处理器开发
+-   [ ] 各个音乐平台的链接识别,下载,刮削,整理
+  - [ ] 网易云
+  - [ ] AppleMusic
+  - [ ] YoutubeMusic
+  - [ ] Soundcloud
+  - [ ] QQ
+  - [ ] Spotify
 -   [ ] 目录监听,触发音乐刮削整理
