@@ -54,4 +54,15 @@ ENV TZ=Asia/Shanghai \
 # 安装运行依赖 + unzip（Deno 安装需要）
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tzdata ca-certificates curl unzip && \
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone && \
+    rm -rf /var/lib/apt/lists/*
+
+# 安装 Deno 并清理缓存
+RUN curl -fsSL https://deno.land/install.sh | sh && \
+    rm -rf /root/.cache/deno
+
+# 拷贝 FFmpeg 静态二进制
+COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
+COPY --from=builder /usr/local/lib /usr/local/lib
+COPY --from=builder /usr/local/include /usr/local/include
