@@ -9,7 +9,7 @@ ENV TZ=Asia/Shanghai \
     FDKAAC_VERSION=2.0.2
 
 # 安装构建依赖
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt update && apt install -y --no-install-recommends \
     tzdata ca-certificates curl wget git build-essential pkg-config \
     yasm nasm libtool autoconf automake cmake && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
@@ -47,12 +47,11 @@ RUN wget -q https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.gz && \
 # ==============================
 FROM python:3.12-slim
 
-
-# 安装运行依赖
+# 安装运行依赖（删除了 libicu-dev）
 RUN apt update && apt install -y --no-install-recommends \
-    tzdata ca-certificates wget curl tar unzip libicu-dev&& \
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone && \
+    tzdata ca-certificates wget curl tar unzip libicu72 && \
+    ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    echo Asia/Shanghai > /etc/timezone && \
     rm -rf /var/lib/apt/lists/*
 
 # 安装 Deno 并清理缓存
@@ -72,9 +71,6 @@ RUN curl -L -o N_m3u8DL-RE.tar.gz \
 
 # 拷贝 FFmpeg 静态二进制
 COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
-COPY --from=builder /usr/local/lib /usr/local/lib
-COPY --from=builder /usr/local/include /usr/local/include
-
 
 ENV TZ=Asia/Shanghai \
     PATH="/root/.deno/bin:/app/data/bin:${PATH}" \
