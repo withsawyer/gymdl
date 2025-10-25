@@ -13,8 +13,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/bytedance/gopkg/util/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/core"
 	"github.com/nichuanfang/gymdl/internal/cron"
 	"github.com/nichuanfang/gymdl/internal/gin/router"
 	"github.com/nichuanfang/gymdl/utils"
@@ -61,7 +63,12 @@ func initWebDAV(c *config.WebDAVConfig) {
 
 // initCookieCloud 初始化cookiecloud
 func initCookieCloud(cookieCloudConfig *config.CookieCloudConfig) {
-	utils.ServiceIsOnf("已加载cookiecloud服务")
+	core.InitCookieCloud(cookieCloudConfig) // 初始化全局 CookieCloud
+	if core.GlobalCookieCloud.CheckConnection() {
+		utils.ServiceIsOnf("已加载cookiecloud服务")
+	} else {
+		logger.Warn("CookieCloud service is not available")
+	}
 }
 
 // initAI 初始化AI服务

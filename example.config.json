@@ -11,7 +11,7 @@
         "cookiecloud_key": [""],
         "cookie_file_path": "",
         "cookie_file": "",
-        "expire_time": 360
+        "expire_time": 180
     },
     "music_tidy": {
         "mode": 1,

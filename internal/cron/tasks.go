@@ -1,9 +1,10 @@
 package cron
 
 import (
-    "sync"
+	"sync"
 
-    "github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/core"
 )
 
 // installDependency 安装依赖项
@@ -18,10 +19,10 @@ func installDependency(c *config.Config) {
 		defer group.Done()
 		installUm()
 	}()
-    go func() {
-        defer group.Done()
-        syncCookieCloud(c.CookieCloud)
-    }()
+	go func() {
+		defer group.Done()
+		syncCookieCloud()
+	}()
 	group.Wait()
 }
 
@@ -38,4 +39,9 @@ func updateDependency(c *config.Config) {
 		updateUm()
 	}()
 	group.Wait()
+}
+
+// syncCookieCloud 同步cookie
+func syncCookieCloud() {
+	core.GlobalCookieCloud.Sync()
 }

@@ -8,9 +8,8 @@
 -   [x] 搭建定时任务框架[gocron](https://github.com/go-co-op/gocron)
 -   [x] gocron 的中间件实现(日志,鉴权)
 -   [x] 通过Github自动化构建
--   [ ] 通过Github自动检测依赖更新,提交pr,合并pr后自动构建docker镜像
--   [ ] 支持指定多个 cookiecloud-key 多端同步
--   [ ] 初始化 cookiecloud
+-   [x] 支持指定多个 cookiecloud-key 多端同步
+-   [x] 初始化 cookiecloud
 -   [ ] 研究 cookiecloud 的同步机制以及其存储方式,更新方式
 -   [ ] 初始化 webdav
 -   [ ] 初始化 AI
