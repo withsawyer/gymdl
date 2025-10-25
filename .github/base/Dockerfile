@@ -50,7 +50,7 @@ FROM python:3.12-slim
 
 # 安装运行依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    tzdata ca-certificates wget curl unzip && \
+    tzdata ca-certificates wget curl tar unzip && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone && \
     rm -rf /var/lib/apt/lists/*
@@ -60,14 +60,12 @@ RUN curl -fsSL https://deno.land/install.sh | sh && \
     rm -rf /root/.cache/deno 
 
 # 下载并安装 N_m3u8DL-RE
-ENV NM3U8DL_RE_TAG=v0.3.0-beta
-ENV NM3U8DL_RE_FILE=N_m3u8DL-RE_${NM3U8DL_RE_TAG}_linux-musl-x64_20241203.tar.gz
-ENV DOWNLOAD_URL="https://github.com/nilaoda/N_m3u8DL-RE/releases/download/${NM3U8DL_RE_TAG}/${NM3U8DL_RE_FILE}"
-
-RUN wget "${DOWNLOAD_URL}" -O /tmp/${NM3U8DL_RE_FILE} \
-    && tar -xzf /tmp/${NM3U8DL_RE_FILE} -C /usr/local/bin/ --strip-components=1 N_m3u8DL-RE \
+# 下载、解压、移动并清理压缩包
+RUN wget -O /tmp/N_m3u8DL-RE.tar.gz "https://github.com/nilaoda/N_m3u8DL-RE/releases/download/v0.3.0-beta/N_m3u8DL-RE_v0.3.0-beta_linux-musl-x64_20241203.tar.gz" \
+    && tar -xzf /tmp/N_m3u8DL-RE_v0.3.0-beta_linux-musl-x64_20241203.tar.gz -C /tmp \
+    && mv /tmp/N_m3u8DL-RE /usr/local/bin/N_m3u8DL-RE \
     && chmod +x /usr/local/bin/N_m3u8DL-RE \
-    && rm /tmp/${NM3U8DL_RE_FILE}
+    && rm -f /tmp/N_m3u8DL-RE_v0.3.0-beta_linux-musl-x64_20241203.tar.gz
 
 # 拷贝 FFmpeg 静态二进制
 COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
