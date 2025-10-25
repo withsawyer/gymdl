@@ -13,7 +13,7 @@ func installPipDependency() {
 		logger.Error("⚠️Pip Dependency Install failed: " + err.Error())
 		return
 	}
-	logger.Info("💡Pip Dependency Installed successfully.")
+	logger.Info("💡Pip Dependency Installed successfully")
 }
 
 // updatePipDependency 定时更新pip依赖
