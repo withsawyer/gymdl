@@ -28,11 +28,14 @@
         "level": 2,
         "file": "data/logs/run.log"
     },
-    "telegram": {
-        "mode": 1,
-        "chat_id": "",
-        "bot_token": ""
-    },
+  "telegram": {
+    "mode": 1,
+    "chat_id": "",
+    "bot_token": "",
+    "allowed_users": [""],
+    "webhook_url": "",
+    "webhook_port": 9000
+  },
     "ai": {
         "enable": false,
         "base_url": "",

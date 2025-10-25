@@ -45,9 +45,12 @@ type LogConfig struct {
 }
 
 type TelegramConfig struct {
-	Mode     int    `json:"mode"`      // 运行模式: 1长轮询, 2Webhook   开发环境推荐1,生产环境推荐2
-	ChatID   string `json:"chat_id"`   // chat_id
-	BotToken string `json:"bot_token"` // telegram机器人token
+	Mode         int      `json:"mode"`          // 运行模式: 1长轮询, 2Webhook   开发环境推荐1,生产环境推荐2
+	ChatID       string   `json:"chat_id"`       // chat_id 机器人ID
+	BotToken     string   `json:"bot_token"`     // telegram机器人token
+	AllowedUsers []string `json:"allowed_users"` //白名单列表 填用户ID
+	WebhookURL   string   `json:"webhook_url"`   //webhook地址 运行模式为2时必填
+	WebhookPort  int      `json:"webhook_port"`  //webhook模式监听的端口
 }
 
 type AIConfig struct {

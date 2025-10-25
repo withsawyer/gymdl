@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core"
+	"github.com/nichuanfang/gymdl/internal/bot"
 	"github.com/nichuanfang/gymdl/internal/cron"
 	"github.com/nichuanfang/gymdl/internal/gin/router"
 	"github.com/nichuanfang/gymdl/utils"
@@ -133,10 +134,17 @@ func initGin(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 // initGin 启动tg机器人
 func initBot(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 	defer wg.Done()
-	// todo 执行启动操作
-	utils.Success("Telegram Bot is started")
+	app, err := bot.NewBotApp(c)
+	if err != nil {
+		panic(err)
+	}
+	go func() {
+		utils.Success("Telegram Bot is started")
+		app.Start()
+	}()
 	<-ctx.Done()
-	utils.Stop("Telegram Bot 退出")
+	app.Stop()
+	utils.Stop("Telegram Bot is stopped")
 }
 
 // =====================================程序入口================================================

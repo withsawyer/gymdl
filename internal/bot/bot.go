@@ -1,20 +1,60 @@
 package bot
 
 import (
-	"time"
+	"fmt"
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/utils"
 	"go.uber.org/zap"
+	tb "gopkg.in/telebot.v4"
 )
-
-// tg机器人入口
 
 var logger *zap.Logger
 
-func InitBot(c *config.Config) {
+type BotApp struct {
+	bot *tb.Bot
+	cfg *config.Config
+}
+
+// NewBotApp 创建机器人
+func NewBotApp(cfg *config.Config) (*BotApp, error) {
 	logger = utils.Logger()
-	utils.Success("TelegramBot已成功启动")
-	// 模拟阻塞
-	time.Sleep(time.Hour)
+	botSettings := tb.Settings{
+		Token: cfg.Telegram.BotToken,
+		// 默认使用 polling，后面可切换
+		Poller: &tb.LongPoller{Timeout: 10},
+	}
+
+	if cfg.Telegram.Mode == 2 {
+		botSettings.Poller = &tb.Webhook{
+			Listen: ":" + fmt.Sprint(cfg.Telegram.WebhookPort),
+			Endpoint: &tb.WebhookEndpoint{
+				PublicURL: cfg.Telegram.WebhookURL,
+			},
+		}
+	}
+
+	bot, err := tb.NewBot(botSettings)
+	if err != nil {
+		return nil, err
+	}
+
+	app := &BotApp{
+		bot: bot,
+		cfg: cfg,
+	}
+
+	app.registerHandlers()
+
+	return app, nil
+}
+
+// Start 启动机器人
+func (app *BotApp) Start() {
+	app.bot.Start()
+}
+
+// Stop 关闭机器人
+func (app *BotApp) Stop() {
+	app.bot.Stop()
 }

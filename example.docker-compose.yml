@@ -19,6 +19,8 @@ services:
     expose:
       #api端口
       - 8080
+      #webhook监听的端口 跟配置文件的保持一致      
+      - 9000
     networks:
       - mynet
     restart: always
