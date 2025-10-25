@@ -54,7 +54,10 @@ ENV TZ=Asia/Shanghai
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tzdata ca-certificates && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* 
+
+# youtube政策修改需要Deno作为js运行环境
+RUN curl -fsSL https://deno.land/install.sh | sh
 
 # 从 builder 阶段复制 FFmpeg
 COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
