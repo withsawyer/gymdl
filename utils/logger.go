@@ -4,30 +4,41 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	
+
 	"github.com/nichuanfang/gymdl/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 var (
-	loggerInstance        *zap.Logger        //性能高
-	sugaredLoggerInstance *zap.SugaredLogger //封装了易用的高级方法 但是性能低
+	loggerInstance        *zap.Logger
+	sugaredLoggerInstance *zap.SugaredLogger
 )
+
+// 日志等级对应的图标
+var levelIcons = map[zapcore.Level]string{
+	zapcore.DebugLevel:  "🐞",
+	zapcore.InfoLevel:   "💡",
+	zapcore.WarnLevel:   "⚠️",
+	zapcore.ErrorLevel:  "❌",
+	zapcore.DPanicLevel: "🔥",
+	zapcore.PanicLevel:  "💀",
+	zapcore.FatalLevel:  "🛑",
+}
 
 // 彩色等级输出（加粗对齐）
 var colorLevelEncoder = func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 	switch l {
 	case zapcore.DebugLevel:
-		enc.AppendString("\033[1;36mDEBUG\033[0m") // 加粗青色
+		enc.AppendString("\033[1;36mDEBUG\033[0m")
 	case zapcore.InfoLevel:
-		enc.AppendString("\033[1;32mINFO \033[0m") // 加粗绿色，补齐宽度
+		enc.AppendString("\033[1;32mINFO \033[0m")
 	case zapcore.WarnLevel:
-		enc.AppendString("\033[1;33mWARN \033[0m") // 加粗黄色，补齐宽度
+		enc.AppendString("\033[1;33mWARN \033[0m")
 	case zapcore.ErrorLevel:
-		enc.AppendString("\033[1;31mERROR\033[0m") // 加粗红色
+		enc.AppendString("\033[1;31mERROR\033[0m")
 	case zapcore.FatalLevel:
-		enc.AppendString("\033[1;35mFATAL\033[0m") // 加粗紫色
+		enc.AppendString("\033[1;35mFATAL\033[0m")
 	default:
 		enc.AppendString(fmt.Sprintf("%-5s", l.CapitalString()))
 	}
@@ -36,7 +47,7 @@ var colorLevelEncoder = func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder)
 // 对齐字段输出
 func paddedCallerEncoder(caller zapcore.EntryCaller, enc zapcore.PrimitiveArrayEncoder) {
 	if caller.Defined {
-		enc.AppendString(fmt.Sprintf("%-25s", caller.TrimmedPath())) // 文件:行号左对齐，宽度25
+		enc.AppendString(fmt.Sprintf("%-25s", caller.TrimmedPath()))
 	} else {
 		enc.AppendString(fmt.Sprintf("%-25s", ""))
 	}
@@ -86,16 +97,15 @@ func InitLogger(cfg *config.LogConfig) error {
 	default:
 		level = zap.FatalLevel
 	}
-	
+
 	consoleEnc := newConsoleEncoder()
 	fileEnc := newFileEncoder()
-	
 	var cores []zapcore.Core
-	
+
 	if cfg.Mode == 1 || cfg.Mode == 3 {
 		cores = append(cores, zapcore.NewCore(consoleEnc, zapcore.Lock(os.Stdout), level))
 	}
-	
+
 	if (cfg.Mode == 2 || cfg.Mode == 3) && cfg.File != "" {
 		_ = os.MkdirAll(filepath.Dir(cfg.File), 0755)
 		f, err := os.OpenFile(cfg.File, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -104,65 +114,88 @@ func InitLogger(cfg *config.LogConfig) error {
 		}
 		cores = append(cores, zapcore.NewCore(fileEnc, zapcore.AddSync(f), level))
 	}
-	
+
 	loggerInstance = zap.New(zapcore.NewTee(cores...), zap.AddCaller(), zap.AddCallerSkip(1))
 	sugaredLoggerInstance = loggerInstance.Sugar()
 	return nil
 }
 
-//Logger 基础Logger 高性能日志
+// Logger 返回高性能 Logger
 func Logger() *zap.Logger {
 	return loggerInstance
 }
 
-// SugaredLogger Logger 增强Logger(快速日志) 用于 开发调试或 快速原型
+// SugaredLogger 返回快速开发 Logger
 func SugaredLogger() *zap.SugaredLogger {
 	return sugaredLoggerInstance
 }
 
-// Success 打印带有✅的成功信息
-func Success(args ...interface{}) {
-	sugaredLoggerInstance.Infof("✅ %s", fmt.Sprint(args...))
-}
-
-// Successf  打印带有✅的格式化成功信息
-func Successf(format string, args ...interface{}) {
-	sugaredLoggerInstance.Infof("✅ "+format, args...)
-}
-
-// ServiceIsOn 打印带有⚙️的成功信息
-func ServiceIsOn(args ...interface{}) {
-	sugaredLoggerInstance.Infof("⚙️ %s", fmt.Sprint(args...))
-}
-
-// ServiceIsOnf  打印带有⚙️的格式化成功信息
-func ServiceIsOnf(format string, args ...interface{}) {
-	sugaredLoggerInstance.Infof("⚙️ "+format, args...)
-}
-
-// NetworkHealth 打印带有🌐的成功信息
-func NetworkHealth(args ...interface{}) {
-	sugaredLoggerInstance.Infof("🌐 %s", fmt.Sprint(args...))
-}
-
-// NetworkHealthf  打印带有🌐的格式化成功信息
-func NetworkHealthf(format string, args ...interface{}) {
-	sugaredLoggerInstance.Infof("🌐 "+format, args...)
-}
-
-// Stop 打印带有🛑的成功信息
-func Stop(args ...interface{}) {
-	sugaredLoggerInstance.Infof("🛑 %s", fmt.Sprint(args...))
-}
-
-// Stopf  打印带有🛑的格式化成功信息
-func Stopf(format string, args ...interface{}) {
-	sugaredLoggerInstance.Infof("🛑 "+format, args...)
-}
-
-// Sync 同步日志（用于程序退出前 flush）
+// Sync 同步日志（程序退出前 flush）
 func Sync() {
 	if loggerInstance != nil {
 		_ = loggerInstance.Sync()
 	}
+}
+
+// =================== 通用封装 ===================
+
+// logWithIcon 通用函数：带图标输出
+func logWithIcon(level zapcore.Level, icon string, msg string) {
+	if sugaredLoggerInstance == nil {
+		return
+	}
+	switch level {
+	case zapcore.DebugLevel:
+		sugaredLoggerInstance.Debugf("%s %s", icon, msg)
+	case zapcore.InfoLevel:
+		sugaredLoggerInstance.Infof("%s %s", icon, msg)
+	case zapcore.WarnLevel:
+		sugaredLoggerInstance.Warnf("%s %s", icon, msg)
+	case zapcore.ErrorLevel:
+		sugaredLoggerInstance.Errorf("%s %s", icon, msg)
+	case zapcore.DPanicLevel, zapcore.PanicLevel, zapcore.FatalLevel:
+		sugaredLoggerInstance.Errorf("%s %s", icon, msg)
+	}
+}
+
+// =================== 预定义图标函数 ===================
+
+func Success(args ...interface{}) { logWithIcon(zapcore.InfoLevel, "✅", fmt.Sprint(args...)) }
+func Successf(format string, args ...interface{}) {
+	logWithIcon(zapcore.InfoLevel, "✅", fmt.Sprintf(format, args...))
+}
+
+func ServiceIsOn(args ...interface{}) { logWithIcon(zapcore.InfoLevel, "⚙️", fmt.Sprint(args...)) }
+func ServiceIsOnf(format string, args ...interface{}) {
+	logWithIcon(zapcore.InfoLevel, "⚙️", fmt.Sprintf(format, args...))
+}
+
+func NetworkHealth(args ...interface{}) { logWithIcon(zapcore.InfoLevel, "🌐", fmt.Sprint(args...)) }
+func NetworkHealthf(format string, args ...interface{}) {
+	logWithIcon(zapcore.InfoLevel, "🌐", fmt.Sprintf(format, args...))
+}
+
+func Stop(args ...interface{}) { logWithIcon(zapcore.InfoLevel, "🛑", fmt.Sprint(args...)) }
+func Stopf(format string, args ...interface{}) {
+	logWithIcon(zapcore.InfoLevel, "🛑", fmt.Sprintf(format, args...))
+}
+
+func Info(args ...interface{}) { logWithIcon(zapcore.InfoLevel, "💡", fmt.Sprint(args...)) }
+func Infof(format string, args ...interface{}) {
+	logWithIcon(zapcore.InfoLevel, "💡", fmt.Sprintf(format, args...))
+}
+
+func Warning(args ...interface{}) { logWithIcon(zapcore.WarnLevel, "⚠️", fmt.Sprint(args...)) }
+func Warningf(format string, args ...interface{}) {
+	logWithIcon(zapcore.WarnLevel, "⚠️", fmt.Sprintf(format, args...))
+}
+
+func Debug(args ...interface{}) { logWithIcon(zapcore.DebugLevel, "🐞", fmt.Sprint(args...)) }
+func Debugf(format string, args ...interface{}) {
+	logWithIcon(zapcore.DebugLevel, "🐞", fmt.Sprintf(format, args...))
+}
+
+func Critical(args ...interface{}) { logWithIcon(zapcore.ErrorLevel, "🔥", fmt.Sprint(args...)) }
+func Criticalf(format string, args ...interface{}) {
+	logWithIcon(zapcore.ErrorLevel, "🔥", fmt.Sprintf(format, args...))
 }
