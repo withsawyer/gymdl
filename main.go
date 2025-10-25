@@ -56,8 +56,12 @@ func printBanner() {
 
 // initWebDAV 初始化webdav服务
 func initWebDAV(c *config.WebDAVConfig) {
-	utils.ServiceIsOnf("已加载webdav服务")
-	return
+	core.InitWebDAV(c)
+	if core.GlobalWebDAV.CheckConnection() {
+		utils.ServiceIsOnf("已加载webdav服务")
+	} else {
+		utils.Warning("WebDAV service is not available")
+	}
 }
 
 // initCookieCloud 初始化cookiecloud
@@ -155,15 +159,16 @@ func main() {
 	}
 	defer utils.Sync()
 
-	// 初始化webdav+连通性检测
+	// 初始化cookiecloud
+	initCookieCloud(c.CookieCloud)
+
+	// 初始化AI服务 暂时停用以节省api-key
+	//initAI(c.AI)
+
+	// 初始化webdav
 	if c.MusicTidy.Mode == 2 {
 		initWebDAV(c.WebDAV)
 	}
-	// 初始化cookiecloud+连通性检测
-	initCookieCloud(c.CookieCloud)
-
-	// 初始化AI服务+连通性检测 暂时停用以节省api-key
-	//initAI(c.AI)
 
 	// 创建可取消上下文
 	ctx, cancel := context.WithCancel(context.Background())
