@@ -1,18 +1,11 @@
-package handlers
+package bot
 
 import (
 	"fmt"
 
-	"github.com/nichuanfang/gymdl/utils"
 	"go.uber.org/zap"
 	tb "gopkg.in/telebot.v4"
 )
-
-var logger *zap.Logger
-
-func init() {
-	logger = utils.Logger()
-}
 
 // StartCommand 响应 /start 命令
 func StartCommand(c tb.Context) error {
