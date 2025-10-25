@@ -49,7 +49,7 @@ FROM python:3.12-slim
 
 # 安装运行依赖（删除了 libicu-dev）
 RUN apt update && apt install -y --no-install-recommends \
-    tzdata ca-certificates wget curl tar unzip libicu-i18n libicu-dev && \
+    tzdata ca-certificates wget curl tar unzip libicu-dev && \
     ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo Asia/Shanghai > /etc/timezone && \
     rm -rf /var/lib/apt/lists/*
