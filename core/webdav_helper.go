@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -183,98 +182,6 @@ func (w *WebDAV) List(remoteDir string) ([]string, error) {
 		names = append(names, f.Name())
 	}
 	return names, nil
-}
-
-// -------------------- 流式上传/下载 --------------------
-
-func (w *WebDAV) UploadStream(localPath, remotePath string, callback func(written int64)) error {
-	if localPath == "" || remotePath == "" {
-		return fmt.Errorf("localPath and remotePath cannot be empty")
-	}
-
-	file, err := os.Open(localPath)
-	if err != nil {
-		return fmt.Errorf("failed to open local file: %v", err)
-	}
-	defer file.Close()
-
-	remoteFullPath := w.makeRemotePath(remotePath)
-	if err := w.ensureRemoteDir(filepath.Dir(remoteFullPath)); err != nil {
-		return err
-	}
-
-	buffer := make([]byte, 64*1024)
-	var total int64
-
-	for {
-		n, err := file.Read(buffer)
-		if n > 0 {
-			if err2 := w.Client.WriteStream(remoteFullPath, strings.NewReader(string(buffer[:n])), 0644); err2 != nil {
-				logger.Warn(fmt.Sprintf("⚠️ WebDAV uploadStream failed for %s: %v", remotePath, err2))
-				return err2
-			}
-			total += int64(n)
-			if callback != nil {
-				callback(total)
-			}
-		}
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return err
-		}
-	}
-	return nil
-}
-
-func (w *WebDAV) DownloadStream(remotePath, localPath string, callback func(written int64)) error {
-	if remotePath == "" || localPath == "" {
-		return fmt.Errorf("remotePath and localPath cannot be empty")
-	}
-
-	remoteFullPath := w.makeRemotePath(remotePath)
-	reader, err := w.Client.ReadStream(remoteFullPath)
-	if err != nil {
-		logger.Warn(fmt.Sprintf("⚠️ WebDAV downloadStream failed for %s: %v", remotePath, err))
-		return fmt.Errorf("failed to open remote file stream: %v", err)
-	}
-	defer reader.Close()
-
-	if err := os.MkdirAll(filepath.Dir(localPath), 0o755); err != nil {
-		return fmt.Errorf("failed to create local directories: %v", err)
-	}
-
-	file, err := os.Create(localPath)
-	if err != nil {
-		logger.Warn(fmt.Sprintf("⚠️ WebDAV failed to create local file: %v", err))
-		return fmt.Errorf("failed to create local file: %v", err)
-	}
-	defer file.Close()
-
-	buffer := make([]byte, 64*1024)
-	var total int64
-
-	for {
-		n, err := reader.Read(buffer)
-		if n > 0 {
-			if _, err2 := file.Write(buffer[:n]); err2 != nil {
-				logger.Warn(fmt.Sprintf("⚠️ WebDAV failed to write local file: %v", err2))
-				return err2
-			}
-			total += int64(n)
-			if callback != nil {
-				callback(total)
-			}
-		}
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return err
-		}
-	}
-	return nil
 }
 
 // -------------------- 工具方法 --------------------
