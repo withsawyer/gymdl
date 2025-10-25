@@ -1,13 +1,14 @@
 package config
 
 type Config struct {
-	WebConfig   *WebConfig         `json:"web_config"`   // web配置
-	CookieCloud *CookieCloudConfig `json:"cookie_cloud"` // cookiecloud配置
-	MusicTidy   *MusicTidyConfig   `json:"music_tidy"`   // 音乐整理配置
-	WebDAV      *WebDAVConfig      `json:"webdav"`       // webdav配置
-	Log         *LogConfig         `json:"log"`          // 日志配置
-	Telegram    TelegramConfig     `json:"telegram"`     // telegram配置
-	AI          *AIConfig          `json:"ai"`           // AI配置
+	WebConfig        *WebConfig         `json:"web_config"`        // web配置
+	CookieCloud      *CookieCloudConfig `json:"cookie_cloud"`      // cookiecloud配置
+	MusicTidy        *MusicTidyConfig   `json:"music_tidy"`        // 音乐整理配置
+	WebDAV           *WebDAVConfig      `json:"webdav"`            // webdav配置
+	Log              *LogConfig         `json:"log"`               // 日志配置
+	Telegram         TelegramConfig     `json:"telegram"`          // telegram配置
+	AI               *AIConfig          `json:"ai"`                // AI配置
+	AdditionalConfig *AdditionalConfig  `json:"additional_config"` //附属配置
 }
 
 type WebConfig struct {
@@ -61,4 +62,8 @@ type AIConfig struct {
 	Model        string `json:"model"`         // 使用的模型
 	ApiKey       string `json:"api_key"`       // apiKey
 	SystemPrompt string `json:"system_prompt"` // 默认系统提示词
+}
+
+type AdditionalConfig struct {
+	EnableCron bool `json:"enable_cron"` //是否启用定时任务
 }

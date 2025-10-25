@@ -38,11 +38,14 @@
     "webhook_url": "",
     "webhook_port": 9000
   },
-    "ai": {
-        "enable": false,
-        "base_url": "",
-        "model": "",
-        "api_key": "",
-        "system_prompt": ""
-    }
+  "ai": {
+    "enable": false,
+    "base_url": "",
+    "model": "",
+    "api_key": "",
+    "system_prompt": ""
+  },
+  "additional_config": {
+    "enable_cron": false
+  }
 }

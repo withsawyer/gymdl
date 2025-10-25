@@ -182,13 +182,19 @@ func main() {
 	wg := &sync.WaitGroup{}
 
 	// 用 map 映射模块启动逻辑，更优雅地管理协程
-	services := map[string]func(context.Context, *sync.WaitGroup, *config.Config){
-		"cron": initCron,
+	services := map[string]func(context.Context, *sync.WaitGroup, *config.Config){}
+
+	//是否启用定时任务
+	if c.AdditionalConfig.EnableCron {
+		services["cron"] = initCron
 	}
 
+	//是否启用web服务
 	if c.WebConfig.Enable {
 		services["web"] = initGin
 	}
+
+	//是否启用telegram
 	if c.Telegram.Enable {
 		services["telegram"] = initBot
 	}

@@ -44,6 +44,8 @@ func NewBotApp(cfg *config.Config) (*BotApp, error) {
 		cfg: cfg,
 	}
 
+	app.registerCommands()
+
 	app.registerHandlers()
 
 	return app, nil
@@ -59,4 +61,9 @@ func (app *BotApp) Start() {
 // Stop 关闭机器人
 func (app *BotApp) Stop() {
 	app.bot.Stop()
+}
+
+// registerCommands 注册命令 只需运行一次
+func (app *BotApp) registerCommands() {
+
 }
