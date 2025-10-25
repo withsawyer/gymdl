@@ -10,10 +10,13 @@ func (app *BotApp) registerHandlers() {
 	app.bot.Use(app.AuthMiddleware)
 
 	//欢迎语
-	app.bot.Handle("/start", handlers.HandleStartCommand)
+	app.bot.Handle("/start", handlers.StartCommand)
+
+	//帮助信息
+	app.bot.Handle("/help", handlers.HelpCommand)
 
 	//指令注册器
-	app.bot.Handle("/setCommands", handlers.InitCommands)
+	app.bot.Handle("/setCommands", handlers.SetCommands)
 
 	//普通文本
 	app.bot.Handle(tb.OnText, handlers.HandleText)
