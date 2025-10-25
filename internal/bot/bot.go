@@ -51,6 +51,8 @@ func NewBotApp(cfg *config.Config) (*BotApp, error) {
 
 // Start 启动机器人
 func (app *BotApp) Start() {
+	//移除webhook
+	_ = app.bot.RemoveWebhook(true)
 	app.bot.Start()
 }
 

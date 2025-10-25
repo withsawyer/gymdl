@@ -10,7 +10,7 @@ import (
 // LoggingMiddleware 日志中间件
 func (app *BotApp) LoggingMiddleware(next tb.HandlerFunc) tb.HandlerFunc {
 	return func(c tb.Context) error {
-		logger.Info("Received message from userID=" + fmt.Sprint(c.Sender().ID))
+		logger.Info("[Telegram] Received message from userID=" + fmt.Sprint(c.Sender().ID))
 		return next(c)
 	}
 }
@@ -24,7 +24,7 @@ func (app *BotApp) AuthMiddleware(next tb.HandlerFunc) tb.HandlerFunc {
 				return next(c)
 			}
 		}
-		logger.Error(fmt.Sprintf("Unauthorized access from userID=%d", userID))
+		logger.Error(fmt.Sprintf("[Telegram] Unauthorized access from userID=%d", userID))
 		return c.Send("Unauthorized")
 	}
 }

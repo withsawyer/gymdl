@@ -25,19 +25,17 @@ import (
 
 var (
 	configFile   string
-	version      bool
+	versionFlag  bool
 	buildVersion = "dev-main"
 )
 
 func init() {
-	flag.StringVar(&configFile, "c", "./config.json", "config file")
-	flag.BoolVar(&version, "v", false, "display version")
+	flag.StringVar(&configFile, "c", "./config.json", "指定配置文件路径")
+	flag.BoolVar(&versionFlag, "v", false, "显示版本信息")
 	flag.Parse()
 }
 
-// =================================基础服务================================================
-
-// printBanner 打印启动横幅
+// 打印启动横幅
 func printBanner() {
 	green := "\033[32m"
 	reset := "\033[0m"
@@ -49,59 +47,57 @@ func printBanner() {
   | |_// / /  | |  ||  | |_/|| |_/\
   \____\/_/   \_/  \|  \____/\____/
 ==========================================
-          🚀 Service Starting...
+          🚀 服务启动中...
 ==========================================
 `
 	fmt.Println(green + banner + reset)
 }
 
-// initWebDAV 初始化webdav服务
+// 初始化 WebDAV 服务
 func initWebDAV(c *config.WebDAVConfig) {
 	core.InitWebDAV(c)
 	if core.GlobalWebDAV.CheckConnection() {
-		utils.ServiceIsOnf("已加载webdav服务")
+		utils.ServiceIsOn("WebDAV 服务已加载")
 	} else {
-		utils.Warning("WebDAV service is not available")
+		utils.Warning("WebDAV 服务不可用，请检查配置或网络连接")
 	}
 }
 
-// initCookieCloud 初始化cookiecloud
-func initCookieCloud(cookieCloudConfig *config.CookieCloudConfig) {
-	core.InitCookieCloud(cookieCloudConfig) // 初始化全局 CookieCloud
+// 初始化 CookieCloud 服务
+func initCookieCloud(cfg *config.CookieCloudConfig) {
+	core.InitCookieCloud(cfg)
 	if core.GlobalCookieCloud.CheckConnection() {
-		utils.ServiceIsOnf("已加载cookiecloud服务")
+		utils.ServiceIsOn("CookieCloud 服务已加载")
 	} else {
-		utils.Warning("CookieCloud service is not available")
+		utils.Warning("CookieCloud 服务不可用，请检查配置或网络连接")
 	}
 }
 
-// initAI 初始化AI服务
+// 初始化 AI 服务
 func initAI(c *config.AIConfig) {
 	core.InitAI(c)
 	if core.GlobalAI.CheckConnection() {
-		utils.ServiceIsOnf("已加载AI服务")
+		utils.ServiceIsOn("AI 服务已加载")
 	} else {
-		utils.Warning("AI service is not available")
+		utils.Warning("AI 服务不可用，请检查配置或网络连接")
 	}
-
 }
 
-// =================================后台服务================================================
-
-// initCron 启动定时任务
+// 启动定时任务
 func initCron(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 	defer wg.Done()
 	s := cron.InitScheduler(c)
 	s.Start()
-	utils.Success("Scheduler is started")
+	utils.Success("定时任务调度器已启动")
 	<-ctx.Done()
-	utils.Stop("定时任务已关闭")
+	_ = s.Shutdown()
+	utils.Stop("定时任务调度器已关闭")
 }
 
-// initGin 启动Web服务
+// 启动 Gin Web 服务
 func initGin(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 	defer wg.Done()
-	// 设置运行模式 debug/release/test
+
 	gin.SetMode(c.WebConfig.GinMode)
 	r := router.SetupRouter(c)
 
@@ -111,97 +107,98 @@ func initGin(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 	}
 
 	go func() {
-		var httpFlag string
+		protocol := "http"
 		if c.WebConfig.Https {
-			httpFlag = "https"
-		} else {
-			httpFlag = "http"
+			protocol = "https"
 		}
-		utils.Successf(fmt.Sprintf("Gin server is starting on %s://%s:%d", httpFlag, c.WebConfig.AppDomain, c.WebConfig.AppPort))
+		utils.Successf("Gin Web 服务已启动：%s://%s:%d", protocol, c.WebConfig.AppDomain, c.WebConfig.AppPort)
+
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			utils.Logger().Error("Gin server error", zap.Any("error", err))
+			utils.Logger().Error("Gin Web 服务运行出错", zap.Error(err))
 		}
 	}()
+
 	<-ctx.Done()
-	utils.Stop("Gin服务已关闭")
+	utils.Stop("Gin Web 服务正在关闭...")
+
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		utils.Logger().Error("Gin服务关闭错误", zap.Any("error", err))
+		utils.Logger().Error("Gin Web 服务关闭时发生错误", zap.Error(err))
 	}
 }
 
-// initGin 启动tg机器人
+// 启动 Telegram Bot
 func initBot(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 	defer wg.Done()
+
 	app, err := bot.NewBotApp(c)
 	if err != nil {
-		panic(err)
-	}
-	go func() {
-		utils.Success("Telegram Bot is started")
-		app.Start()
-	}()
-	<-ctx.Done()
-	app.Stop()
-	utils.Stop("Telegram Bot is stopped")
-}
-
-// =====================================程序入口================================================
-
-func main() {
-	if version {
-		fmt.Printf("version: %s, build with: %s\n", buildVersion, runtime.Version())
+		utils.Logger().Error("创建 Telegram Bot 应用失败", zap.Error(err))
 		return
 	}
-	// banner
+
+	modeText := "轮询模式"
+	if c.Telegram.Mode == 2 {
+		modeText = fmt.Sprintf("Webhook 模式（端口: %d, URL: %s）", c.Telegram.WebhookPort, c.Telegram.WebhookURL)
+	}
+
+	go func() {
+		utils.Success(fmt.Sprintf("Telegram Bot 已启动，运行模式：【%s】", modeText))
+		app.Start()
+	}()
+
+	<-ctx.Done()
+	app.Stop()
+	utils.Stop("Telegram Bot 已停止运行")
+}
+
+// ===================== 程序入口 =====================
+func main() {
+	if versionFlag {
+		fmt.Printf("版本号: %s，构建环境: %s\n", buildVersion, runtime.Version())
+		return
+	}
+
 	printBanner()
 
-	// 加载配置
+	// 加载配置文件
 	c := config.LoadConfig(configFile)
 
 	// 初始化日志模块
-	err := utils.InitLogger(c.Log)
-	if err != nil {
+	if err := utils.InitLogger(c.Log); err != nil {
+		fmt.Println("日志模块初始化失败：", err)
 		return
 	}
 	defer utils.Sync()
 
-	// 初始化cookiecloud
+	// 初始化各服务
 	initCookieCloud(c.CookieCloud)
 
-	// 初始化AI服务
 	if c.AI.Enable {
 		initAI(c.AI)
 	}
-
-	// 初始化webdav
 	if c.MusicTidy.Mode == 2 {
 		initWebDAV(c.WebDAV)
 	}
 
-	// 创建可取消上下文
 	ctx, cancel := context.WithCancel(context.Background())
-
 	wg := &sync.WaitGroup{}
+
 	wg.Add(3)
+	go initCron(ctx, wg, c) // 定时任务
+	go initGin(ctx, wg, c)  // Web 服务
+	go initBot(ctx, wg, c)  // Telegram Bot
 
-	// 【协程1】 启动定时任务
-	go initCron(ctx, wg, c)
-	// 【协程2】 启动web服务Gin
-	go initGin(ctx, wg, c)
-	// 【协程3】 启动telegram机器人
-	go initBot(ctx, wg, c)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	// 捕捉系统信号，优雅退出
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-	// 文丑丑
-	<-sig
-	utils.Logger().Info("收到退出信号，开始关闭服务...")
-	cancel() // 通知所有协程退出
+	sig := <-sigChan
+	utils.Logger().Info(fmt.Sprintf("收到退出信号 [%s]，正在关闭服务...", sig))
 
-	// 阻塞主协程
+	cancel() // 通知协程退出
 	wg.Wait()
-	utils.Logger().Info("所有服务已退出，程序结束")
+
+	utils.Logger().Info("所有服务已正常退出，程序结束")
 }
