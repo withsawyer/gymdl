@@ -16,9 +16,9 @@
 -   [x] 初始化 AI
 -   [x] 搭建 telegram 框架[telebot](https://github.com/tucnak/telebot)
 -   [x] telebot 的中间件实现(日志,鉴权)
+-   [x] telegram 指令处理器开发
 -   [ ] telegram 消息处理器开发
--   [ ] telegram 指令处理器开发
--   [ ] 各个音乐平台的链接识别,下载,刮削,整理
+-   [ ] 各个音乐平台的链接识别,下载,刮削,整理开发
   - [ ] 网易云
   - [ ] AppleMusic
   - [ ] YoutubeMusic
