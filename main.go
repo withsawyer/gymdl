@@ -162,8 +162,10 @@ func main() {
 	// 初始化cookiecloud
 	initCookieCloud(c.CookieCloud)
 
-	// 初始化AI服务 暂时停用以节省api-key
-	//initAI(c.AI)
+	// 初始化AI服务
+	if c.AI.Enable {
+		initAI(c.AI)
+	}
 
 	// 初始化webdav
 	if c.MusicTidy.Mode == 2 {

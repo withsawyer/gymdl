@@ -10,10 +10,12 @@
 -   [x] 通过Github自动化构建
 -   [x] 支持指定多个 cookiecloud-key 多端同步
 -   [x] 初始化 cookiecloud
--   [ ] 研究 cookiecloud 的同步机制以及其存储方式,更新方式
--   [ ] 初始化 webdav
--   [ ] 初始化 AI
+-   [x] 研究 cookiecloud 的同步机制以及其存储方式,更新方式
+-   [x] 初始化 webdav
+-   [x] webdav支持上传文件
+-   [x] 初始化 AI
 -   [ ] 搭建 telegram 框架[telebot](https://github.com/tucnak/telebot)
 -   [ ] telebot 的中间件实现(日志,鉴权)
 -   [ ] telegram 消息处理器开发
 -   [ ] telegram 指令处理器开发
+-   [ ] 目录监听,触发音乐刮削整理

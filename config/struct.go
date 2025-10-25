@@ -51,6 +51,7 @@ type TelegramConfig struct {
 }
 
 type AIConfig struct {
+	Enable       bool   `json:"enable"`        //是否开启AI
 	BaseUrl      string `json:"base_url"`      // baseurl
 	Model        string `json:"model"`         // 使用的模型
 	ApiKey       string `json:"api_key"`       // apiKey

@@ -34,6 +34,7 @@
         "bot_token": ""
     },
     "ai": {
+        "enable": false,
         "base_url": "",
         "model": "",
         "api_key": "",
