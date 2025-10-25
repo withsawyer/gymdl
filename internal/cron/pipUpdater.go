@@ -1,7 +1,7 @@
 package cron
 
 import (
-    "os/exec"
+	"os/exec"
 )
 
 // installPipDependency 安装pip依赖(执行一次)
@@ -10,10 +10,10 @@ func installPipDependency() {
 	output, err := cmd.CombinedOutput()
 	logger.Debug("\n" + string(output))
 	if err != nil {
-		logger.Error("【Pip Dependency】Install failed: " + err.Error())
+		logger.Error("⚠️Pip Dependency Install failed: " + err.Error())
 		return
 	}
-	logger.Info("【Pip Dependency】Installed successfully.")
+	logger.Info("💡Pip Dependency Installed successfully.")
 }
 
 // updatePipDependency 定时更新pip依赖
@@ -22,9 +22,9 @@ func updatePipDependency() {
 	out, err := updateCmd.CombinedOutput()
 	logger.Debug("\n" + string(out))
 	if err != nil {
-		logger.Error("【Pip Dependency】Update failed: " + err.Error())
+		logger.Error("⚠️Pip Dependency Update failed: " + err.Error())
 		return
 	}
 
-	logger.Info("【Pip Dependency】All outdated packages have been updated.")
+	logger.Info("💡Pip Dependency has updated successfully")
 }

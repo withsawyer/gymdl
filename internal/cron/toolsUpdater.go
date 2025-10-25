@@ -46,12 +46,12 @@ var (
 func installUm() {
 	version := getLatestVersion()
 	if version == "" {
-		logger.Error("未获取到最新版本，安装失败")
+		logger.Error("⚠️未获取到最新版本，安装失败")
 		return
 	}
 
 	if !shouldUpdate(version) {
-		logger.Info("【Um】已安装，版本: " + version)
+		logger.Info("💡Um Installed successfully")
 		return
 	}
 
@@ -59,7 +59,7 @@ func installUm() {
 	logger.Info("Downloading: " + url)
 
 	if err := downloadAndExtract(url, destDir); err != nil {
-		logger.Error("安装失败: " + err.Error())
+		logger.Error("Installed failed: " + err.Error())
 		return
 	}
 
@@ -68,7 +68,7 @@ func installUm() {
 	localVersionCache.version = version
 	localVersionCache.mu.Unlock()
 
-	logger.Info("【Um】安装完成，版本: " + version)
+	logger.Info("💡Um Installed successfully")
 }
 
 // updateUm 检查并更新 Um
@@ -79,11 +79,11 @@ func updateUm() {
 	}
 
 	if !shouldUpdate(version) {
-		logger.Debug("Um 已是最新版本: " + version)
+		logger.Debug("💡Um 已是最新版本: " + version)
 		return
 	}
 
-	logger.Info("检测到新版本: " + version + "，正在更新 Um...")
+	logger.Info("💡检测到新版本: " + version + "，正在更新 Um...")
 	installUm()
 }
 
@@ -134,19 +134,19 @@ func getLatestVersion() string {
 	url := "https://git.um-react.app/um/cli/releases/"
 	resp, err := httpClient.Get(url)
 	if err != nil {
-		logger.Error("获取 Releases 页面失败: " + err.Error())
+		logger.Error("⚠️获取 Releases 页面失败: " + err.Error())
 		return ""
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		logger.Error("获取 Releases 页面失败，状态码: " + fmt.Sprint(resp.StatusCode))
+		logger.Error("⚠️获取 Releases 页面失败，状态码: " + fmt.Sprint(resp.StatusCode))
 		return ""
 	}
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		logger.Error("解析页面 HTML 失败: " + err.Error())
+		logger.Error("⚠️解析页面 HTML 失败: " + err.Error())
 		return ""
 	}
 
@@ -155,7 +155,7 @@ func getLatestVersion() string {
 	re := regexp.MustCompile(`v\d+\.\d+\.\d+`)
 	match := re.FindString(text)
 	if match == "" {
-		logger.Error("未匹配到版本号")
+		logger.Error("⚠️未匹配到版本号")
 		return ""
 	}
 

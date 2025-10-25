@@ -59,13 +59,13 @@ func (cc *CookieCloud) CheckConnection() bool {
 	getUrl := fmt.Sprintf("%s/get/%s", strings.TrimSuffix(cc.Config.CookieCloudUrl, "/"), cc.Config.CookieCloudUUID)
 	resp, err := cc.Client.Get(getUrl)
 	if err != nil {
-		logger.Warn(fmt.Sprintf("【CookieCloud】failed to request server: %v", err))
+		logger.Warn(fmt.Sprintf("⚠️CookieCloud failed to request server: %v", err))
 		return false
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		logger.Warn(fmt.Sprintf("【CookieCloud】server returned status %d", resp.StatusCode))
+		logger.Warn(fmt.Sprintf("⚠️CookieCloud server returned status %d", resp.StatusCode))
 		return false
 	}
 	return true
@@ -74,11 +74,11 @@ func (cc *CookieCloud) CheckConnection() bool {
 // Sync 同步 CookieCloud 的 cookie 到本地
 func (cc *CookieCloud) Sync() {
 	if cc.Config == nil || len(cc.Config.CookieCloudKEY) == 0 {
-		logger.Error("【CookieCloud】config or keys are empty")
+		logger.Error("⚠️CookieCloud config or keys are empty")
 		return
 	}
 	if cc.Config.CookieFile == "" {
-		logger.Error("【CookieCloud】CookieFile is empty")
+		logger.Error("⚠️CookieCloud CookieFile is empty")
 		return
 	}
 
@@ -89,34 +89,34 @@ func (cc *CookieCloud) Sync() {
 	dstPath := fmt.Sprintf("%s/%s", dstDir, cc.Config.CookieFile)
 
 	if err := os.MkdirAll(dstDir, 0o755); err != nil {
-		logger.Error(fmt.Sprintf("【CookieCloud】failed to create dir %s: %v", dstDir, err))
+		logger.Error(fmt.Sprintf("⚠️CookieCloud failed to create dir %s: %v", dstDir, err))
 		return
 	}
 
 	data, err := cc.fetchEncryptedData()
 	if err != nil {
-		logger.Warn(fmt.Sprintf("【CookieCloud】%v", err))
+		logger.Warn(fmt.Sprintf("⚠️CookieCloud %v", err))
 		return
 	}
 
 	decrypted := cc.decryptData(data)
 	if decrypted == nil {
-		logger.Error("【CookieCloud】all keys failed to decrypt cookie")
+		logger.Error("⚠️CookieCloud all keys failed to decrypt cookie")
 		return
 	}
 
 	netscapeData, err := ConvertToNetscapeFormat(decrypted)
 	if err != nil {
-		logger.Error(fmt.Sprintf("【CookieCloud】failed to convert to Netscape format: %v", err))
+		logger.Error(fmt.Sprintf("⚠️CookieCloud failed to convert to Netscape format: %v", err))
 		return
 	}
 
 	if err := os.WriteFile(dstPath, netscapeData, 0o600); err != nil {
-		logger.Error(fmt.Sprintf("【CookieCloud】failed to write cookie file %s: %v", dstPath, err))
+		logger.Error(fmt.Sprintf("⚠️CookieCloud failed to write cookie file %s: %v", dstPath, err))
 		return
 	}
 
-	logger.Info("【CookieCloud】cookie updated successfully")
+	logger.Info("💡CookieCloud cookie updated successfully")
 }
 
 // fetchEncryptedData 获取加密的 cookie 数据
