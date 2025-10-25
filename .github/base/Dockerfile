@@ -47,22 +47,36 @@ RUN wget -q https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.gz && \
 # ==============================
 FROM python:3.12-slim
 
-ENV TZ=Asia/Shanghai \
-    PATH="/root/.deno/bin:/app/data/bin:${PATH}" \
-    DEBIAN_FRONTEND=noninteractive
 
-# 安装运行依赖 + unzip（Deno 安装需要）
+# 安装运行依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    tzdata ca-certificates curl unzip && \
+    tzdata ca-certificates wget curl unzip && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone && \
     rm -rf /var/lib/apt/lists/*
 
 # 安装 Deno 并清理缓存
 RUN curl -fsSL https://deno.land/install.sh | sh && \
-    rm -rf /root/.cache/deno
+    rm -rf /root/.cache/deno 
+
+# 下载并安装 N_m3u8DL-RE
+ENV NM3U8DL_RE_TAG=v0.3.0-beta
+ENV NM3U8DL_RE_FILE=N_m3u8DL-RE_${NM3U8DL_RE_TAG}_linux-musl-x64_20241203.tar.gz
+ENV DOWNLOAD_URL="https://github.com/nilaoda/N_m3u8DL-RE/releases/download/${NM3U8DL_RE_TAG}/${NM3U8DL_RE_FILE}"
+
+RUN wget "${DOWNLOAD_URL}" -O /tmp/${NM3U8DL_RE_FILE} \
+    && tar -xzf /tmp/${NM3U8DL_RE_FILE} -C /usr/local/bin/ --strip-components=1 N_m3u8DL-RE \
+    && chmod +x /usr/local/bin/N_m3u8DL-RE \
+    && rm /tmp/${NM3U8DL_RE_FILE}
 
 # 拷贝 FFmpeg 静态二进制
 COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
 COPY --from=builder /usr/local/lib /usr/local/lib
 COPY --from=builder /usr/local/include /usr/local/include
+
+
+ENV TZ=Asia/Shanghai \
+    PATH="/root/.deno/bin:/app/data/bin:${PATH}" \
+    DEBIAN_FRONTEND=noninteractive
+    
+WORKDIR /app
