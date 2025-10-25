@@ -62,10 +62,10 @@ RUN curl -fsSL https://deno.land/install.sh | sh && \
 # 下载并安装 N_m3u8DL-RE
 # 下载、解压、移动并清理压缩包
 RUN wget -O /tmp/N_m3u8DL-RE.tar.gz "https://github.com/nilaoda/N_m3u8DL-RE/releases/download/v0.3.0-beta/N_m3u8DL-RE_v0.3.0-beta_linux-musl-x64_20241203.tar.gz" \
-    && tar -xzf /tmp/N_m3u8DL-RE_v0.3.0-beta_linux-musl-x64_20241203.tar.gz -C /tmp \
+    && tar -xzf /tmp/N_m3u8DL-RE.tar.gz -C /tmp \
     && mv /tmp/N_m3u8DL-RE /usr/local/bin/N_m3u8DL-RE \
     && chmod +x /usr/local/bin/N_m3u8DL-RE \
-    && rm -f /tmp/N_m3u8DL-RE_v0.3.0-beta_linux-musl-x64_20241203.tar.gz
+    && rm -f /tmp/N_m3u8DL-RE.tar.gz
 
 # 拷贝 FFmpeg 静态二进制
 COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
