@@ -9,7 +9,10 @@ import (
 	tb "gopkg.in/telebot.v4"
 )
 
-var logger *zap.Logger
+var (
+	logger *zap.Logger
+	app    *BotApp
+)
 
 type BotApp struct {
 	bot *tb.Bot
@@ -39,13 +42,12 @@ func NewBotApp(cfg *config.Config) (*BotApp, error) {
 		return nil, err
 	}
 
-	app := &BotApp{
+	app = &BotApp{
 		bot: bot,
 		cfg: cfg,
 	}
 
 	app.registerCommands()
-
 	app.registerHandlers()
 
 	return app, nil

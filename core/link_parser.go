@@ -6,12 +6,13 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/handler"
 )
 
 // MusicHandler 音乐处理接口
 type MusicHandler interface {
-	HandlerMusic(url string)
+	HandlerMusic(url string, cfg *config.Config)
 }
 
 // platformMatcher 平台匹配规则
