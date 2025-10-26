@@ -175,6 +175,8 @@ func (cc *CookieCloud) decryptData(encrypted string) []byte {
 					resultCh <- decryptResult{Key: key, Decrypted: dec}
 					cancel()
 				})
+			} else {
+				logger.Debug(fmt.Sprintf("加密key【%s】解密失败", key))
 			}
 		}(key)
 	}
