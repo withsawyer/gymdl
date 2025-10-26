@@ -14,8 +14,8 @@ func (sc *SoundCloudHandler) Platform() string {
 	return "SoundCloud"
 }
 
-func (sc *SoundCloudHandler) DownloadMusic(url string, cfg *config.Config) error {
-	return nil
+func (sc *SoundCloudHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo, error) {
+	return &SongInfo{}, nil
 }
 
 // 构建下载命令
@@ -24,7 +24,7 @@ func (sc *SoundCloudHandler) DownloadCommand(cfg *config.Config, url string) *ex
 }
 
 // 音乐整理之前的处理
-func (sc *SoundCloudHandler) BeforeTidy(cfg *config.Config) error {
+func (sc *SoundCloudHandler) BeforeTidy(cfg *config.Config, songInfo *SongInfo) error {
 	return nil
 }
 
@@ -34,12 +34,12 @@ func (sc *SoundCloudHandler) NeedRemoveDRM(cfg *config.Config) bool {
 }
 
 // 移除DRM
-func (sc *SoundCloudHandler) DRMRemove(cfg *config.Config) error {
+func (sc *SoundCloudHandler) DRMRemove(cfg *config.Config, songInfo *SongInfo) error {
 	return nil
 }
 
 // 音乐整理
-func (sc *SoundCloudHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV) error {
+func (sc *SoundCloudHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV, songInfo *SongInfo) error {
 	return nil
 }
 

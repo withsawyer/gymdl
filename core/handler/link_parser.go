@@ -11,22 +11,35 @@ import (
 	"github.com/nichuanfang/gymdl/core"
 )
 
+// 音乐信息
+type SongInfo struct {
+	SongName    string //音乐名称
+	SongArtists string
+	SongAlbum   string
+	FileExt     string //格式
+	MusicSize   int    //音乐大小
+	Bitrate     string //码率
+	Duration    int    //时长
+	PicUrl      string //封面图url
+	Tidy        string //入库方式(默认/webdav)
+}
+
 // MusicHandler 音乐处理接口
 type MusicHandler interface {
 	//平台名称
 	Platform() string
 	//下载音乐
-	DownloadMusic(url string, cfg *config.Config) error
+	DownloadMusic(url string, cfg *config.Config) (*SongInfo, error)
 	//构建下载命令
 	DownloadCommand(cfg *config.Config, url string) *exec.Cmd
-	//音乐整理之前的处理
-	BeforeTidy(cfg *config.Config) error
+	//音乐整理之前的处理(如嵌入元数据,刮削等)
+	BeforeTidy(cfg *config.Config, songInfo *SongInfo) error
 	//是否需要移除DRM
 	NeedRemoveDRM(cfg *config.Config) bool
 	//移除DRM
-	DRMRemove(cfg *config.Config) error
+	DRMRemove(cfg *config.Config, songInfo *SongInfo) error
 	//音乐整理
-	TidyMusic(cfg *config.Config, webdav *core.WebDAV) error
+	TidyMusic(cfg *config.Config, webdav *core.WebDAV, songInfo *SongInfo) error
 	//加密后缀
 	EncryptedExts() []string
 	//非加密后缀

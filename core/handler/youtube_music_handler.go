@@ -14,8 +14,8 @@ func (ytm *YoutubeMusicHandler) Platform() string {
 	return "YoutubeMusic"
 }
 
-func (ytm *YoutubeMusicHandler) DownloadMusic(url string, cfg *config.Config) error {
-	return nil
+func (ytm *YoutubeMusicHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo, error) {
+	return &SongInfo{}, nil
 }
 
 // 构建下载命令
@@ -24,7 +24,7 @@ func (ytm *YoutubeMusicHandler) DownloadCommand(cfg *config.Config, url string) 
 }
 
 // 音乐整理之前的逻辑
-func (ytm *YoutubeMusicHandler) BeforeTidy(cfg *config.Config) error {
+func (ytm *YoutubeMusicHandler) BeforeTidy(cfg *config.Config, songInfo *SongInfo) error {
 	return nil
 }
 
@@ -34,12 +34,12 @@ func (ytm *YoutubeMusicHandler) NeedRemoveDRM(cfg *config.Config) bool {
 }
 
 // 移除DRM
-func (ytm *YoutubeMusicHandler) DRMRemove(cfg *config.Config) error {
+func (ytm *YoutubeMusicHandler) DRMRemove(cfg *config.Config, songInfo *SongInfo) error {
 	return nil
 }
 
 // 音乐整理
-func (ytm *YoutubeMusicHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV) error {
+func (ytm *YoutubeMusicHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV, songInfo *SongInfo) error {
 	return nil
 }
 

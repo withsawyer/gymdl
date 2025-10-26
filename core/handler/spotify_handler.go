@@ -14,8 +14,8 @@ func (sp *SpotifyHandler) Platform() string {
 	return "Spotify"
 }
 
-func (sp *SpotifyHandler) DownloadMusic(url string, cfg *config.Config) error {
-	return nil
+func (sp *SpotifyHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo, error) {
+	return &SongInfo{}, nil
 }
 
 // 构建下载命令
@@ -24,7 +24,7 @@ func (sp *SpotifyHandler) DownloadCommand(cfg *config.Config, url string) *exec.
 }
 
 // 音乐整理之前的逻辑
-func (sp *SpotifyHandler) BeforeTidy(cfg *config.Config) error {
+func (sp *SpotifyHandler) BeforeTidy(cfg *config.Config, songInfo *SongInfo) error {
 	return nil
 }
 
@@ -34,12 +34,12 @@ func (sp *SpotifyHandler) NeedRemoveDRM(cfg *config.Config) bool {
 }
 
 // 移除DRM
-func (sp *SpotifyHandler) DRMRemove(cfg *config.Config) error {
+func (sp *SpotifyHandler) DRMRemove(cfg *config.Config, songInfo *SongInfo) error {
 	return nil
 }
 
 // 音乐整理
-func (sp *SpotifyHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV) error {
+func (sp *SpotifyHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV, songInfo *SongInfo) error {
 	return nil
 }
 

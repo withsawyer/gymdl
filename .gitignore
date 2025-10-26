@@ -31,8 +31,6 @@ data/bin/*
 !data/bin/.gitkeep
 data/dist/*
 !data/dist/.gitkeep
-data/cache/*
-!data/cache/.gitkeep
 data/temp/*
 !data/temp/.gitkeep
 data/logs/*

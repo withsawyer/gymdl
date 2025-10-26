@@ -14,8 +14,8 @@ func (qm *QQHandler) Platform() string {
 	return "QQ音乐"
 }
 
-func (qm *QQHandler) DownloadMusic(url string, cfg *config.Config) error {
-	return nil
+func (qm *QQHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo, error) {
+	return &SongInfo{}, nil
 }
 
 // 构建下载命令
@@ -24,7 +24,7 @@ func (qm *QQHandler) DownloadCommand(cfg *config.Config, url string) *exec.Cmd {
 }
 
 // BeforeTidy 整理之前的处理
-func (qm *QQHandler) BeforeTidy(cfg *config.Config) error {
+func (qm *QQHandler) BeforeTidy(cfg *config.Config, songInfo *SongInfo) error {
 	return nil
 }
 
@@ -34,12 +34,12 @@ func (qm *QQHandler) NeedRemoveDRM(cfg *config.Config) bool {
 }
 
 // 移除DRM
-func (qm *QQHandler) DRMRemove(cfg *config.Config) error {
+func (qm *QQHandler) DRMRemove(cfg *config.Config, songInfo *SongInfo) error {
 	return nil
 }
 
 // 音乐整理
-func (qm *QQHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV) error {
+func (qm *QQHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV, songInfo *SongInfo) error {
 	return nil
 }
 
