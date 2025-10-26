@@ -248,7 +248,7 @@ func (ncm *NCMHandler) BeforeTidy(cfg *config.Config, info *SongInfo) error {
 	tempPath := filepath.Join(constants.NCMTempDir, ncm.safeTempFileName(info))
 
 	// 打开原文件
-	f, err := os.OpenFile(rawPath, os.O_RDWR, os.ModePerm)
+	f, err := os.Open(rawPath)
 	if err != nil {
 		return fmt.Errorf("打开文件失败: %w", err)
 	}
@@ -278,9 +278,9 @@ func (ncm *NCMHandler) BeforeTidy(cfg *config.Config, info *SongInfo) error {
 	if err = tag.Save(f2); err != nil {
 		return fmt.Errorf("保存元数据失败: %w", err)
 	}
-	f2.Close()
-	f.Close()
-	os.Remove(rawPath)
+	_ = f2.Close()
+	_ = f.Close()
+	_ = os.Remove(rawPath)
 	err = os.Rename(tempPath, rawPath)
 	if err != nil {
 		return err
