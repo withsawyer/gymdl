@@ -170,6 +170,9 @@ func VerifyMD5(filePath string, md5str string) (bool, error) {
 
 // 解析 MusicID
 func ParseMusicID(text string) int {
+	if strings.Contains(text, "163cn.tv") || strings.Contains(text, "163cn.link") {
+		text = GetRedirectUrl(text)
+	}
 	var replacer = strings.NewReplacer("\n", "", " ", "")
 	messageText := replacer.Replace(text)
 	musicUrl := regUrl.FindStringSubmatch(messageText)

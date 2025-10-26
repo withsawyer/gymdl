@@ -38,7 +38,6 @@ func (ncm *NCMHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo,
 	if err := os.MkdirAll(constants.NCMTempDir, 0755); err != nil {
 		return nil, fmt.Errorf("创建临时目录失败: %w", err)
 	}
-
 	musicID := utils.ParseMusicID(url)
 	detail, songURL, err := ncm.fetchSongData(musicID, cfg)
 	if err != nil {
@@ -127,7 +126,7 @@ func (ncm *NCMHandler) downloadFile(url, fileName, saveDir string) error {
 	d := downloader.NewDownloader().
 		SetSavePath(saveDir).
 		SetBreakPoint(true).
-		SetTimeOut(120 * time.Second)
+		SetTimeOut(300 * time.Second)
 
 	task, _ := d.NewDownloadTask(url)
 	task.CleanTempFiles()

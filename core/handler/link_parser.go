@@ -55,9 +55,19 @@ type platformMatcher struct {
 
 var platforms = []platformMatcher{
 	{
-		domains: []string{"music.163.com", "y.music.163.com"},
+		domains: []string{
+			"music.163.com",
+			"y.music.163.com",
+			"163cn.tv",
+			"163cn.link",
+		},
 		patterns: []*regexp.Regexp{
-			regexp.MustCompile(`^https?://(music\.163\.com|y\.music\.163\.com)/(#)?/?(song|playlist|album)\?id=\d+`),
+			// 网页或移动端链接
+			regexp.MustCompile(`^https?://(music\.163\.com|y\.music\.163\.com)/(#)?/?(song|playlist|album|artist)\?id=\d+`),
+			// 网易云短链（App 内分享）
+			regexp.MustCompile(`^https?://163cn\.tv/\w+`),
+			//其他平台
+			regexp.MustCompile(`^https?://163cn\.link/\w+`),
 		},
 		handler: &NCMHandler{},
 	},
