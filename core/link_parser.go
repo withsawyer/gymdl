@@ -2,6 +2,7 @@ package core
 
 import (
 	"net/url"
+	"os/exec"
 	"regexp"
 	"strings"
 	"unicode"
@@ -12,7 +13,18 @@ import (
 
 // MusicHandler 音乐处理接口
 type MusicHandler interface {
-	HandlerMusic(url string, cfg *config.Config)
+	//下载音乐
+	DownloadMusic(url string, cfg *config.Config) error
+	//构建下载命令
+	DownloadCommand(cfg *config.Config) *exec.Cmd
+	//音乐整理之前的处理
+	BeforeTidy(cfg *config.Config) error
+	//是否需要移除DRM
+	NeedRemoveDRM(cfg *config.Config) bool
+	//移除DRM
+	DRMRemove(cfg *config.Config) error
+	//音乐整理
+	TidyMusic(cfg *config.Config) error
 }
 
 // platformMatcher 平台匹配规则

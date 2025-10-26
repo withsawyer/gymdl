@@ -209,3 +209,20 @@ func Critical(args ...interface{}) { logWithIcon(zapcore.ErrorLevel, "🔥", fmt
 func Criticalf(format string, args ...interface{}) {
 	logWithIcon(zapcore.ErrorLevel, "🔥", fmt.Sprintf(format, args...))
 }
+
+// 格式化类(不带图标)
+func InfoWithFormat(format string, args ...interface{}) {
+	Logger().Info(fmt.Sprintf(format, args...))
+}
+func WarnWithFormat(format string, args ...interface{}) {
+	Logger().Warn(fmt.Sprintf(format, args...))
+}
+func ErrorWithFormat(format string, args ...interface{}) {
+	Logger().Error(fmt.Sprintf(format, args...))
+}
+func DebugWithFormat(format string, args ...interface{}) {
+	Logger().Debug(fmt.Sprintf(format, args...))
+}
+func FatalWithFormat(format string, args ...interface{}) {
+	Logger().Fatal(fmt.Sprintf(format, args...))
+}

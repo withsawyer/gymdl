@@ -21,9 +21,14 @@ func HandleText(c tb.Context) error {
 	}
 	logger.Info("[Telegram] 处理链接:" + link)
 	bot.Edit(msg, "链接分析成功,准备下载...")
-	handler.HandlerMusic(link, app.cfg)
-	//音乐下载成功
+	err := handler.DownloadMusic(link, app.cfg)
+	//模拟音乐下载
 	time.Sleep(time.Second * 2)
+	if err != nil {
+		bot.Edit(msg, "音乐下载失败:"+err.Error())
+		return err
+	}
+	//音乐下载成功
 	bot.Edit(msg, "音乐下载成功!")
 	return nil
 }
