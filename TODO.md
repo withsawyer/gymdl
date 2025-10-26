@@ -19,7 +19,7 @@
 -   [x] telegram 指令处理器开发
 -   [ ] telegram 消息处理器开发
 -   [ ] 各个音乐平台的链接识别,下载,刮削,整理开发
-  - [ ] 网易云
+  - [ ] 网易云(目前元数据嵌入有点问题)
   - [ ] AppleMusic
   - [ ] YoutubeMusic
   - [ ] Soundcloud
