@@ -4,6 +4,7 @@ import (
 	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/core"
 )
 
 // 网易云音乐处理器
@@ -14,7 +15,7 @@ func (ncm *NCMHandler) DownloadMusic(url string, cfg *config.Config) error {
 }
 
 // 构建下载命令
-func (ncm *NCMHandler) DownloadCommand(cfg *config.Config) *exec.Cmd {
+func (ncm *NCMHandler) DownloadCommand(cfg *config.Config, url string) *exec.Cmd {
 	return nil
 }
 
@@ -34,6 +35,16 @@ func (ncm *NCMHandler) DRMRemove(cfg *config.Config) error {
 }
 
 // 音乐整理
-func (ncm *NCMHandler) TidyMusic(cfg *config.Config) error {
+func (ncm *NCMHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV) error {
 	return nil
+}
+
+// 加密后缀
+func (ncm *NCMHandler) EncryptedExts() []string {
+	return []string{".ncm"}
+}
+
+// 非加密后缀
+func (ncm *NCMHandler) DecryptedExts() []string {
+	return []string{".flac", ".mp3", ".aac", "m4a", "ogg"}
 }

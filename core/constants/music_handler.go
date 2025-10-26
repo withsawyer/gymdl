@@ -1,22 +1,26 @@
 package constants
 
+import "path/filepath"
+
+var BaseTempDir = filepath.Join("data", "temp")
+
 // =============================临时文件夹常量====================================
 // 苹果音乐临时文件夹
-const AppleMusicTempDir = "./data/temp/AppleMusic"
+var AppleMusicTempDir = filepath.Join(BaseTempDir, "AppleMusic")
 
 // 网易云音乐临时文件夹
-const NCMTempDir = "./data/temp/NCM"
+var NCMTempDir = filepath.Join(BaseTempDir, "NCM")
 
 // QQ音乐临时文件夹
-const QQTempDir = "./data/temp/QQ"
+var QQTempDir = filepath.Join(BaseTempDir, "QQ")
 
 // Youtube音乐临时文件夹
-const YoutubeTempDir = "./data/temp/Youtube"
+var YoutubeTempDir = filepath.Join(BaseTempDir, "Youtube")
 
 // SoundCloud临时文件夹
-const SoundcloudTempDir = "./data/temp/Soundcloud"
+var SoundcloudTempDir = filepath.Join(BaseTempDir, "Soundcloud")
 
 // Spotify临时文件夹
-const SpotifyTempDir = "./data/temp/Spotify"
+var SpotifyTempDir = filepath.Join(BaseTempDir, "Spotify")
 
 //====================================================================

@@ -4,6 +4,7 @@ import (
 	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/core"
 )
 
 // SoundCloud音乐处理器
@@ -14,7 +15,7 @@ func (sc *SoundCloudHandler) DownloadMusic(url string, cfg *config.Config) error
 }
 
 // 构建下载命令
-func (sc *SoundCloudHandler) DownloadCommand(cfg *config.Config) *exec.Cmd {
+func (sc *SoundCloudHandler) DownloadCommand(cfg *config.Config, url string) *exec.Cmd {
 	return nil
 }
 
@@ -34,6 +35,16 @@ func (sc *SoundCloudHandler) DRMRemove(cfg *config.Config) error {
 }
 
 // 音乐整理
-func (sc *SoundCloudHandler) TidyMusic(cfg *config.Config) error {
+func (sc *SoundCloudHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV) error {
 	return nil
+}
+
+// 加密后缀
+func (sc *SoundCloudHandler) EncryptedExts() []string {
+	return []string{""}
+}
+
+// 非加密后缀
+func (sc *SoundCloudHandler) DecryptedExts() []string {
+	return []string{".aac", ".m4a", ".flac", "mp3", "ogg"}
 }

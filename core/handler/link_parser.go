@@ -1,4 +1,4 @@
-package core
+package handler
 
 import (
 	"net/url"
@@ -8,7 +8,7 @@ import (
 	"unicode"
 
 	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core/handler"
+	"github.com/nichuanfang/gymdl/core"
 )
 
 // MusicHandler 音乐处理接口
@@ -16,7 +16,7 @@ type MusicHandler interface {
 	//下载音乐
 	DownloadMusic(url string, cfg *config.Config) error
 	//构建下载命令
-	DownloadCommand(cfg *config.Config) *exec.Cmd
+	DownloadCommand(cfg *config.Config, url string) *exec.Cmd
 	//音乐整理之前的处理
 	BeforeTidy(cfg *config.Config) error
 	//是否需要移除DRM
@@ -24,7 +24,11 @@ type MusicHandler interface {
 	//移除DRM
 	DRMRemove(cfg *config.Config) error
 	//音乐整理
-	TidyMusic(cfg *config.Config) error
+	TidyMusic(cfg *config.Config, webdav *core.WebDAV) error
+	//加密后缀
+	EncryptedExts() []string
+	//非加密后缀
+	DecryptedExts() []string
 }
 
 // platformMatcher 平台匹配规则
@@ -40,7 +44,7 @@ var platforms = []platformMatcher{
 		patterns: []*regexp.Regexp{
 			regexp.MustCompile(`^https?://(music\.163\.com|y\.music\.163\.com)/(#)?/?(song|playlist|album)\?id=\d+`),
 		},
-		handler: &handler.NCMHandler{},
+		handler: &NCMHandler{},
 	},
 	{
 		domains: []string{"youtube.com", "music.youtube.com", "youtu.be"},
@@ -48,35 +52,35 @@ var platforms = []platformMatcher{
 			regexp.MustCompile(`v=[\w-]+`), // 精简匹配
 			regexp.MustCompile(`^https?://youtu\.be/[\w-]+`),
 		},
-		handler: &handler.YoutubeMusicHandler{},
+		handler: &YoutubeMusicHandler{},
 	},
 	{
 		domains: []string{"music.apple.com"},
 		patterns: []*regexp.Regexp{
 			regexp.MustCompile(`/(song|album|playlist)/[^/]+/(id)?\d+`),
 		},
-		handler: &handler.AppleMusicHandler{},
+		handler: &AppleMusicHandler{},
 	},
 	{
 		domains: []string{"soundcloud.com", "snd.sc"},
 		patterns: []*regexp.Regexp{
 			regexp.MustCompile(`/[\w-]+(/sets)?/[\w-]+`),
 		},
-		handler: &handler.SoundCloudHandler{},
+		handler: &SoundCloudHandler{},
 	},
 	{
 		domains: []string{"y.qq.com", "c.y.qq.com", "m.y.qq.com"},
 		patterns: []*regexp.Regexp{
 			regexp.MustCompile(`/(song|playlist|album)`),
 		},
-		handler: &handler.QQHandler{},
+		handler: &QQHandler{},
 	},
 	{
 		domains: []string{"open.spotify.com", "play.spotify.com"},
 		patterns: []*regexp.Regexp{
 			regexp.MustCompile(`/(track|album|playlist)/[\w-]+`),
 		},
-		handler: &handler.SpotifyHandler{},
+		handler: &SpotifyHandler{},
 	},
 }
 

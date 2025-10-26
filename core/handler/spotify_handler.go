@@ -4,6 +4,7 @@ import (
 	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/core"
 )
 
 // 处理spotify music
@@ -14,7 +15,7 @@ func (sp *SpotifyHandler) DownloadMusic(url string, cfg *config.Config) error {
 }
 
 // 构建下载命令
-func (sp *SpotifyHandler) DownloadCommand(cfg *config.Config) *exec.Cmd {
+func (sp *SpotifyHandler) DownloadCommand(cfg *config.Config, url string) *exec.Cmd {
 	return nil
 }
 
@@ -34,6 +35,16 @@ func (sp *SpotifyHandler) DRMRemove(cfg *config.Config) error {
 }
 
 // 音乐整理
-func (sp *SpotifyHandler) TidyMusic(cfg *config.Config) error {
+func (sp *SpotifyHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV) error {
 	return nil
+}
+
+// 加密后缀
+func (sp *SpotifyHandler) EncryptedExts() []string {
+	return []string{""}
+}
+
+// 非加密后缀
+func (sp *SpotifyHandler) DecryptedExts() []string {
+	return []string{".aac", ".m4a", ".flac", "mp3", "ogg"}
 }

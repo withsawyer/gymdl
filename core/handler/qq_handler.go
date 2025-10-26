@@ -4,6 +4,7 @@ import (
 	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/core"
 )
 
 // QQ音乐处理器
@@ -14,7 +15,7 @@ func (qm *QQHandler) DownloadMusic(url string, cfg *config.Config) error {
 }
 
 // 构建下载命令
-func (qm *QQHandler) DownloadCommand(cfg *config.Config) *exec.Cmd {
+func (qm *QQHandler) DownloadCommand(cfg *config.Config, url string) *exec.Cmd {
 	return nil
 }
 
@@ -34,6 +35,16 @@ func (qm *QQHandler) DRMRemove(cfg *config.Config) error {
 }
 
 // 音乐整理
-func (qm *QQHandler) TidyMusic(cfg *config.Config) error {
+func (qm *QQHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV) error {
 	return nil
+}
+
+// 加密后缀
+func (qm *QQHandler) EncryptedExts() []string {
+	return []string{".mflac"}
+}
+
+// 非加密后缀
+func (qm *QQHandler) DecryptedExts() []string {
+	return []string{".aac", ".m4a", ".flac", "mp3", "ogg"}
 }

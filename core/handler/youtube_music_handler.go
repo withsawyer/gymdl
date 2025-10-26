@@ -4,6 +4,7 @@ import (
 	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/core"
 )
 
 // 处理youtube music
@@ -14,7 +15,7 @@ func (ytm *YoutubeMusicHandler) DownloadMusic(url string, cfg *config.Config) er
 }
 
 // 构建下载命令
-func (ytm *YoutubeMusicHandler) DownloadCommand(cfg *config.Config) *exec.Cmd {
+func (ytm *YoutubeMusicHandler) DownloadCommand(cfg *config.Config, url string) *exec.Cmd {
 	return nil
 }
 
@@ -34,6 +35,16 @@ func (ytm *YoutubeMusicHandler) DRMRemove(cfg *config.Config) error {
 }
 
 // 音乐整理
-func (ytm *YoutubeMusicHandler) TidyMusic(cfg *config.Config) error {
+func (ytm *YoutubeMusicHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV) error {
 	return nil
+}
+
+// 加密后缀
+func (ytm *YoutubeMusicHandler) EncryptedExts() []string {
+	return []string{""}
+}
+
+// 非加密后缀
+func (ytm *YoutubeMusicHandler) DecryptedExts() []string {
+	return []string{".aac", ".m4a", ".flac", "mp3", "ogg"}
 }

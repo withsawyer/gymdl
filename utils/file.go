@@ -1,10 +1,12 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // IsDir 判断是否为目录
@@ -66,20 +68,137 @@ func CopyFile(dstName, srcName string) (written int64, err error) {
 	return io.Copy(dst, src)
 }
 
-// MoveFile 移动文件（跨分区时会用拷贝+删除）
-func MoveFile(dstName, srcName string) (written int64, err error) {
-	err = os.Rename(srcName, dstName)
+// SanitizeFileName 处理非法字符，确保跨平台兼容性
+func SanitizeFileName(name string) string {
+	invalidChars := []string{"/", "\\", ":", "*", "?", "\"", "<", ">", "|"}
+	for _, c := range invalidChars {
+		name = strings.ReplaceAll(name, c, "_")
+	}
+	return name
+}
+
+// contains 判断 slice 是否包含元素
+func Contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
+}
+
+// MoveFile移动文件
+func MoveFile(srcPath, destPath string) error {
+	// 1. 尝试使用 os.Rename（原子操作，高效）
+	err := os.Rename(srcPath, destPath)
 	if err == nil {
-		// 同分区直接移动成功
-		return 0, nil
+		return nil // 移动成功
 	}
 
-	// 如果跨分区，使用拷贝+删除方式
-	written, err = CopyFile(dstName, srcName)
+	// 检查目标目录是否存在。如果不存在，尝试创建它。
+	if errors.Is(err, os.ErrInvalid) || strings.Contains(err.Error(), "invalid cross-device link") {
+		// os.Rename 失败，继续回退到复制-删除逻辑 (跨文件系统)
+	} else if os.IsNotExist(err) {
+		// 如果错误是目标路径不存在，先尝试创建目标路径的父目录
+		destDir := filepath.Dir(destPath)
+		if mkdirErr := os.MkdirAll(destDir, 0755); mkdirErr != nil {
+			// 如果创建目录失败，直接返回目录创建错误
+			return fmt.Errorf("移动文件失败: 目标目录创建失败: %w", mkdirErr)
+		}
+
+		// 尝试再次使用 os.Rename
+		err = os.Rename(srcPath, destPath)
+		if err == nil {
+			return nil // 再次尝试移动成功
+		}
+	}
+
+	// 2. 如果 os.Rename 失败（通常是跨文件系统），执行复制-删除（Copy-and-Delete）
+
+	// a. 复制文件
+	if err := copyFile(srcPath, destPath); err != nil {
+		return fmt.Errorf("移动文件失败: 复制文件时发生错误: %w", err)
+	}
+
+	// b. 删除原始文件
+	if err := os.Remove(srcPath); err != nil {
+		// 复制成功但删除源文件失败。为了保持“移动”的语义，
+		// 我们应该清理目标文件并返回错误。
+		_ = os.Remove(destPath) // 尝试清理目标文件，忽略清理时的错误
+		return fmt.Errorf("移动文件失败: 成功复制但无法删除源文件 %s (目标文件已回滚/删除): %w", srcPath, err)
+	}
+
+	return nil
+}
+
+// copyFile 执行文件复制
+func copyFile(src, dst string) (err error) {
+	in, err := os.Open(src)
 	if err != nil {
-		return written, err
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		// 复制过程中发生错误时，确保目标文件被清理
+		if err != nil {
+			os.Remove(dst)
+		}
+		out.Close()
+	}()
+
+	// 尝试获取源文件信息
+	si, err := os.Stat(src)
+	if err != nil {
+		return err // 无法获取源文件信息，则无法复制
 	}
 
-	err = os.Remove(srcName)
-	return written, err
+	// 使用缓冲区进行复制 (例如 64KB)
+	buffer := make([]byte, 64*1024)
+	_, err = io.CopyBuffer(out, in, buffer)
+	if err != nil {
+		return err
+	}
+
+	// 确保所有数据都写入磁盘
+	if err := out.Sync(); err != nil {
+		return err
+	}
+
+	// 尝试保留源文件的权限
+	if err := os.Chmod(dst, si.Mode()); err != nil {
+		// 记录错误，但不返回，因为文件内容已复制成功
+		// logger.Warnf("无法设置目标文件权限: %v", err)
+	}
+
+	// 尝试保留源文件的修改时间 (重要的元数据)
+	if err := os.Chtimes(dst, si.ModTime(), si.ModTime()); err != nil {
+		// 记录错误，但不返回
+		// logger.Warnf("无法设置目标文件修改时间: %v", err)
+	}
+
+	return nil
+}
+
+// 过滤音乐文件
+func FilterMusicFile(file os.DirEntry, encryptedExts []string, decryptedExts []string) bool {
+	if file.IsDir() {
+		return false
+	}
+	ext := strings.ToLower(filepath.Ext(file.Name()))
+	for _, v := range decryptedExts {
+		if ext == v {
+			return true
+		}
+	}
+	for _, v := range encryptedExts {
+		if ext == v {
+			return true
+		}
+	}
+	return false
 }
