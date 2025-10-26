@@ -168,6 +168,15 @@ func (ncm *NCMHandler) safeFileName(info *SongInfo) string {
 		info.FileExt))
 }
 
+func (ncm *NCMHandler) safeTempFileName(info *SongInfo) string {
+	replacer := strings.NewReplacer("/", " ", "?", " ", "*", " ", ":", " ",
+		"|", " ", "\\", " ", "<", " ", ">", " ", "\"", " ")
+	return replacer.Replace(fmt.Sprintf("%s - %s.%s",
+		strings.ReplaceAll(info.SongArtists, "/", ","),
+		fmt.Sprintf("%s_temp", info.SongName),
+		info.FileExt))
+}
+
 /* ---------------------- 整理逻辑 ---------------------- */
 
 func (ncm *NCMHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV, songInfo *SongInfo) error {
@@ -235,12 +244,12 @@ func (ncm *NCMHandler) tidyToWebDAV(cfg *config.Config, files []os.DirEntry, web
 
 func (ncm *NCMHandler) BeforeTidy(cfg *config.Config, info *SongInfo) error {
 	path := filepath.Join(constants.NCMTempDir, ncm.safeFileName(info))
+	tempPath := filepath.Join(constants.NCMTempDir, ncm.safeTempFileName(info))
 	f, err := os.OpenFile(path, os.O_RDWR, 0644)
 	if err != nil {
 		return fmt.Errorf("打开文件失败: %w", err)
 	}
 	defer f.Close()
-
 	tag, err := audiometa.OpenTag(f)
 	if err != nil {
 		return fmt.Errorf("读取音频标签失败: %w", err)
@@ -254,9 +263,18 @@ func (ncm *NCMHandler) BeforeTidy(cfg *config.Config, info *SongInfo) error {
 		tag.SetCoverArt(image)
 	}
 
-	if err := tag.Save(f); err != nil {
+	f2, err := os.Create(tempPath)
+	if err != nil {
+		return fmt.Errorf("创建临时文件失败: %w", err)
+	}
+	defer f2.Close()
+
+	if err := tag.Save(f2); err != nil {
 		return fmt.Errorf("保存元数据失败: %w", err)
 	}
+
+	utils.MoveFile(tempPath, path)
+
 	utils.InfoWithFormat("[NCM] 🧩 已嵌入元数据: %s - %s", info.SongArtists, info.SongName)
 	return nil
 }
