@@ -169,12 +169,14 @@ func main() {
 	defer utils.Sync()
 
 	// 初始化各服务
-	initCookieCloud(c.CookieCloud)
+	if c.AdditionalConfig.EnableCron {
+		initCookieCloud(c.CookieCloud)
+	}
 
 	if c.AI.Enable {
 		initAI(c.AI)
 	}
-	if c.MusicTidy.Mode == 2 {
+	if c.MusicTidy.Mode == 2 && c.AdditionalConfig.EnableCron {
 		initWebDAV(c.WebDAV)
 	}
 
