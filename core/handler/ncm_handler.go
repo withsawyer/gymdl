@@ -17,7 +17,6 @@ import (
 	"github.com/XiaoMengXinX/Music163Api-Go/types"
 	ncmutils "github.com/XiaoMengXinX/Music163Api-Go/utils"
 	downloader "github.com/XiaoMengXinX/SimpleDownloader"
-
 	"github.com/gcottom/audiometa/v3"
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core"
@@ -243,37 +242,49 @@ func (ncm *NCMHandler) tidyToWebDAV(cfg *config.Config, files []os.DirEntry, web
 /* ---------------------- 元数据嵌入 ---------------------- */
 
 func (ncm *NCMHandler) BeforeTidy(cfg *config.Config, info *SongInfo) error {
-	path := filepath.Join(constants.NCMTempDir, ncm.safeFileName(info))
+	// 原文件路径
+	rawPath := filepath.Join(constants.NCMTempDir, ncm.safeFileName(info))
+	// 临时文件路径
 	tempPath := filepath.Join(constants.NCMTempDir, ncm.safeTempFileName(info))
-	f, err := os.OpenFile(path, os.O_RDWR, 0644)
+
+	// 打开原文件
+	f, err := os.OpenFile(rawPath, os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("打开文件失败: %w", err)
 	}
-	defer f.Close()
+	// 读取音频标签
 	tag, err := audiometa.OpenTag(f)
 	if err != nil {
 		return fmt.Errorf("读取音频标签失败: %w", err)
 	}
 
+	// 设置元数据
 	tag.SetArtist(info.SongArtists)
 	tag.SetTitle(info.SongName)
 	tag.SetAlbum(info.SongAlbum)
 
+	// 设置封面图（如果获取成功）
 	if image, err := utils.FetchImage(info.PicUrl); err == nil {
 		tag.SetCoverArt(image)
 	}
 
+	// 创建临时文件（用于保存修改后的数据）
 	f2, err := os.Create(tempPath)
 	if err != nil {
 		return fmt.Errorf("创建临时文件失败: %w", err)
 	}
-	defer f2.Close()
 
-	if err := tag.Save(f2); err != nil {
+	// 将标签保存到临时文件
+	if err = tag.Save(f2); err != nil {
 		return fmt.Errorf("保存元数据失败: %w", err)
 	}
-
-	utils.MoveFile(tempPath, path)
+	f2.Close()
+	f.Close()
+	os.Remove(rawPath)
+	err = os.Rename(tempPath, rawPath)
+	if err != nil {
+		return err
+	}
 
 	utils.InfoWithFormat("[NCM] 🧩 已嵌入元数据: %s - %s", info.SongArtists, info.SongName)
 	return nil
