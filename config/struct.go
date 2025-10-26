@@ -22,7 +22,7 @@ type WebConfig struct {
 type CookieCloudConfig struct {
 	CookieCloudUrl  string   `json:"cookiecloud_url"`  // cookiecloud 地址
 	CookieCloudUUID string   `json:"cookiecloud_uuid"` // cookiecloud uuid
-	CookieCloudKEY  []string `json:"cookiecloud_key"`  // cookiecloud key 数组
+	CookieCloudKEY  []string `json:"cookiecloud_key"`  // cookiecloud key 数组 （tips：如果有多个同步端需要填上所有的key，否则会解密失败）
 	CookieFile      string   `json:"cookie_file"`      // cookie文件名
 	CookieFilePath  string   `json:"cookie_file_path"` // cookie存储目录
 	ExpireTime      int      `json:"expire_time"`      // cookie文件过期时间(分钟) 根据自己需求控制
