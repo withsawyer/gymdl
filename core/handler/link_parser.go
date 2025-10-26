@@ -13,6 +13,8 @@ import (
 
 // MusicHandler 音乐处理接口
 type MusicHandler interface {
+	//平台名称
+	Platform() string
 	//下载音乐
 	DownloadMusic(url string, cfg *config.Config) error
 	//构建下载命令

@@ -10,6 +10,10 @@ import (
 // SoundCloud音乐处理器
 type SoundCloudHandler struct{}
 
+func (sc *SoundCloudHandler) Platform() string {
+	return "SoundCloud"
+}
+
 func (sc *SoundCloudHandler) DownloadMusic(url string, cfg *config.Config) error {
 	return nil
 }

@@ -10,6 +10,10 @@ import (
 // QQ音乐处理器
 type QQHandler struct{}
 
+func (qm *QQHandler) Platform() string {
+	return "QQ音乐"
+}
+
 func (qm *QQHandler) DownloadMusic(url string, cfg *config.Config) error {
 	return nil
 }

@@ -18,6 +18,10 @@ import (
 // AppleMusicHandler 实现 MusicHandler 接口
 type AppleMusicHandler struct{}
 
+func (am *AppleMusicHandler) Platform() string {
+	return "AppleMusic"
+}
+
 // DownloadMusic 使用 gamdl 下载 Apple Music 内容
 func (am *AppleMusicHandler) DownloadMusic(url string, cfg *config.Config) error {
 	start := time.Now()
@@ -50,6 +54,7 @@ func (am *AppleMusicHandler) DownloadCommand(cfg *config.Config, url string) *ex
 		"--cookies-path", cookiePath,
 		"--download-mode", "nm3u8dlre",
 		"--output-path", constants.BaseTempDir,
+		"--temp-path", constants.BaseTempDir,
 		"--album-folder-template", "AppleMusic",
 		"--compilation-folder-template", "AppleMusic",
 		"--no-album-folder-template", "AppleMusic",

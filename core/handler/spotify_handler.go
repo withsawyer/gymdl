@@ -10,6 +10,10 @@ import (
 // 处理spotify music
 type SpotifyHandler struct{}
 
+func (sp *SpotifyHandler) Platform() string {
+	return "Spotify"
+}
+
 func (sp *SpotifyHandler) DownloadMusic(url string, cfg *config.Config) error {
 	return nil
 }

@@ -10,6 +10,10 @@ import (
 // 网易云音乐处理器
 type NCMHandler struct{}
 
+func (ncm *NCMHandler) Platform() string {
+	return "网易云音乐"
+}
+
 func (ncm *NCMHandler) DownloadMusic(url string, cfg *config.Config) error {
 	return nil
 }

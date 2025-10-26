@@ -10,6 +10,10 @@ import (
 // 处理youtube music
 type YoutubeMusicHandler struct{}
 
+func (ytm *YoutubeMusicHandler) Platform() string {
+	return "YoutubeMusic"
+}
+
 func (ytm *YoutubeMusicHandler) DownloadMusic(url string, cfg *config.Config) error {
 	return nil
 }

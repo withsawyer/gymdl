@@ -202,3 +202,19 @@ func FilterMusicFile(file os.DirEntry, encryptedExts []string, decryptedExts []s
 	}
 	return false
 }
+
+// TruncateString 将字符串安全截断到指定长度。
+// 若字符串长度超过 limit，则截断并在末尾追加 "..."。
+func TruncateString(s string, limit int) string {
+	if limit <= 0 {
+		return ""
+	}
+	runes := []rune(s)
+	if len(runes) <= limit {
+		return s
+	}
+	if limit > 3 {
+		return string(runes[:limit-3]) + "..."
+	}
+	return string(runes[:limit])
+}
