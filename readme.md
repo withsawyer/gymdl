@@ -2,7 +2,7 @@
 
 # 🎧 GYMDL — Music Never Sleeps
 
-_一个跨平台音乐同步、刮削与整理的自动化工具。  
+_一个跨平台音乐下载、CookieCloud深度集成、整理的自动化工具。  
 让你的音乐世界，在云端自由流动。_
 
 ![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go)
