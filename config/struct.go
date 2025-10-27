@@ -6,14 +6,14 @@ type Config struct {
 	MusicTidy        *MusicTidyConfig   `json:"music_tidy"`        // 音乐整理配置
 	WebDAV           *WebDAVConfig      `json:"webdav"`            // webdav配置
 	Log              *LogConfig         `json:"log"`               // 日志配置
-	Telegram         TelegramConfig     `json:"telegram"`          // telegram配置
+	Telegram         *TelegramConfig     `json:"telegram"`          // telegram配置
 	AI               *AIConfig          `json:"ai"`                // AI配置
-	AdditionalConfig *AdditionalConfig  `json:"additional_config"` //附属配置
-	ProxyConfig      *ProxyConfig       `json:"proxy"`             //代理配置
+	AdditionalConfig *AdditionalConfig  `json:"additional_config"` // 附属配置
+	ProxyConfig      *ProxyConfig       `json:"proxy"`             // 代理配置
 }
 
 type WebConfig struct {
-	Enable    bool   `json:"enable"`     //是否启用该服务
+	Enable    bool   `json:"enable"`     // 是否启用该服务
 	AppDomain string `json:"app_domain"` // web服务domain
 	Https     bool   `json:"https"`      // 是否开启了 https
 	AppPort   int    `json:"app_port"`   // web服务监听端口
@@ -23,7 +23,7 @@ type WebConfig struct {
 type CookieCloudConfig struct {
 	CookieCloudUrl  string   `json:"cookiecloud_url"`  // cookiecloud 地址
 	CookieCloudUUID string   `json:"cookiecloud_uuid"` // cookiecloud uuid
-	CookieCloudKEY  []string `json:"cookiecloud_key"`  // cookiecloud key 数组 （tips：如果有多个同步端需要填上所有的key，否则会解密失败）
+	CookieCloudKEY  string `json:"cookiecloud_key"`  // cookiecloud 密码（tips：如果有多个同步端需要上传需要绑定同一个key）
 	CookieFile      string   `json:"cookie_file"`      // cookie文件名
 	CookieFilePath  string   `json:"cookie_file_path"` // cookie存储目录
 	ExpireTime      int      `json:"expire_time"`      // cookie文件过期时间(分钟) 根据自己需求控制
@@ -48,17 +48,17 @@ type LogConfig struct {
 }
 
 type TelegramConfig struct {
-	Enable       bool     `json:"enable"`        //是否启用该服务
+	Enable       bool     `json:"enable"`        // 是否启用该服务
 	Mode         int      `json:"mode"`          // 运行模式: 1长轮询, 2Webhook   开发环境推荐1,生产环境推荐2
 	ChatID       string   `json:"chat_id"`       // chat_id 机器人ID
 	BotToken     string   `json:"bot_token"`     // telegram机器人token
-	AllowedUsers []string `json:"allowed_users"` //白名单列表 填用户ID
-	WebhookURL   string   `json:"webhook_url"`   //webhook地址 运行模式为2时必填
-	WebhookPort  int      `json:"webhook_port"`  //webhook模式监听的端口
+	AllowedUsers []string `json:"allowed_users"` // 白名单列表 填用户ID
+	WebhookURL   string   `json:"webhook_url"`   // webhook地址 运行模式为2时必填
+	WebhookPort  int      `json:"webhook_port"`  // webhook模式监听的端口
 }
 
 type AIConfig struct {
-	Enable       bool   `json:"enable"`        //是否开启AI
+	Enable       bool   `json:"enable"`        // 是否开启AI
 	BaseUrl      string `json:"base_url"`      // baseurl
 	Model        string `json:"model"`         // 使用的模型
 	ApiKey       string `json:"api_key"`       // apiKey
@@ -66,14 +66,14 @@ type AIConfig struct {
 }
 
 type AdditionalConfig struct {
-	EnableCron bool `json:"enable_cron"` //是否启用定时任务
+	EnableCron bool `json:"enable_cron"` // 是否启用定时任务
 }
 
 type ProxyConfig struct {
-	Scheme string `json:"scheme"` //代理类型 http/socks5
-	Host   string `json:"host"`   //代理地址
-	Port   int    `json:"port"`   //代理端口
-	User   string `json:"user"`   //代理用户名
-	Pass   string `json:"pass"`   //代理密码
-	Auth   bool   `json:"auth"`   //是否需要认证
+	Scheme string `json:"scheme"` // 代理类型 http/socks5
+	Host   string `json:"host"`   // 代理地址
+	Port   int    `json:"port"`   // 代理端口
+	User   string `json:"user"`   // 代理用户名
+	Pass   string `json:"pass"`   // 代理密码
+	Auth   bool   `json:"auth"`   // 是否需要认证
 }
