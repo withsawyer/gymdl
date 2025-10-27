@@ -2,6 +2,7 @@ package cron
 
 import (
 	"archive/tar"
+	"archive/zip"
 	"bufio"
 	"compress/gzip"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -166,6 +168,12 @@ func getLatestVersion() string {
 
 // buildUmURL 构建下载 URL
 func buildUmURL(version string) string {
+	if runtime.GOOS == "windows" {
+		return fmt.Sprintf(
+			"https://git.um-react.app/um/cli/releases/download/%s/um-%s-amd64-%s.zip",
+			version, runtime.GOOS, version,
+		)
+	}
 	return fmt.Sprintf(
 		"https://git.um-react.app/um/cli/releases/download/%s/um-%s-amd64-%s.tar.gz",
 		version, runtime.GOOS, version,
@@ -184,11 +192,28 @@ func downloadAndExtract(url, destDir string) error {
 		return fmt.Errorf("下载失败，状态码: %d", resp.StatusCode)
 	}
 
-	return extractUmBinary(resp.Body, destDir)
+	// 根据扩展名自动选择解压方式
+	if strings.HasSuffix(url, ".zip") {
+		tmpFile, err := os.CreateTemp("", "um-*.zip")
+		if err != nil {
+			return fmt.Errorf("创建临时文件失败: %w", err)
+		}
+		defer os.Remove(tmpFile.Name())
+
+		if _, err := io.Copy(tmpFile, resp.Body); err != nil {
+			return fmt.Errorf("写入临时文件失败: %w", err)
+		}
+		if err := tmpFile.Close(); err != nil {
+			return fmt.Errorf("关闭临时文件失败: %w", err)
+		}
+		return extractUmZip(tmpFile.Name(), destDir)
+	}
+
+	return extractUmTarGz(resp.Body, destDir)
 }
 
-// extractUmBinary 从 tar.gz 流中提取 Um
-func extractUmBinary(r io.Reader, destDir string) error {
+// extractUmTarGz 从 tar.gz 流中提取 Um
+func extractUmTarGz(r io.Reader, destDir string) error {
 	gzr, err := gzip.NewReader(r)
 	if err != nil {
 		return fmt.Errorf("gzip 解压失败: %w", err)
@@ -215,6 +240,30 @@ func extractUmBinary(r io.Reader, destDir string) error {
 	return fmt.Errorf("未找到二进制文件: " + target)
 }
 
+// extractUmZip 从 zip 文件中提取 Um
+func extractUmZip(zipPath, destDir string) error {
+	r, err := zip.OpenReader(zipPath)
+	if err != nil {
+		return fmt.Errorf("zip 打开失败: %w", err)
+	}
+	defer r.Close()
+
+	target := umBinaryName()
+
+	for _, f := range r.File {
+		if filepath.Base(f.Name) == target {
+			rc, err := f.Open()
+			if err != nil {
+				return fmt.Errorf("zip 文件打开失败: %w", err)
+			}
+			defer rc.Close()
+			return saveFile(rc, filepath.Join(destDir, target))
+		}
+	}
+
+	return fmt.Errorf("未找到二进制文件: " + target)
+}
+
 // umBinaryName 返回系统对应的 Um 文件名
 func umBinaryName() string {
 	if runtime.GOOS == "windows" {
@@ -225,6 +274,10 @@ func umBinaryName() string {
 
 // saveFile 保存文件并设置可执行权限，使用缓冲写入
 func saveFile(r io.Reader, path string) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return fmt.Errorf("创建目录失败: %w", err)
+	}
+
 	out, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("创建文件失败: %w", err)
