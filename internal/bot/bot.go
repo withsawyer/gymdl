@@ -46,10 +46,7 @@ func NewBotApp(cfg *config.Config) (*BotApp, error) {
 		bot: bot,
 		cfg: cfg,
 	}
-
-	app.registerCommands()
 	app.registerHandlers()
-
 	return app, nil
 }
 
