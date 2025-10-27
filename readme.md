@@ -1,55 +1,85 @@
-<div align="center">
+# 🎵 GYMDL - 跨平台智能音乐下载与管理工具
 
-# 🎧 GYMDL — Music Never Sleeps
-
-_一个跨平台音乐下载、CookieCloud深度集成、整理的自动化工具。  
-让你的音乐世界，在云端自由流动。_
-
-![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Build](https://img.shields.io/github/actions/workflow/status/yourname/cookiesync/build.yml?logo=github)
-![Telegram](https://img.shields.io/badge/telegram-bot-blue?logo=telegram)
-
-</div>
+[![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go)]()
+[![License](https://img.shields.io/badge/license-MIT-green)]()
+[![Build Status](https://img.shields.io/github/actions/workflow/status/nichuanfang/gymdl/release.yml?logo=github)]()
+[![Telegram](https://img.shields.io/badge/telegram-bot-blue?logo=telegram)]()
 
 ---
 
-## 🧠 概念
+## 项目简介
 
-*GYMDL* 是一个用 **Go** 构建的模块化音乐管理系统，  
-集成了 **多平台音乐同步、AI 助手、Telegram 控制、WebDAV 存储** 等功能。
-
-> [!NOTE]
-> 🎵 将网易云、Spotify、Apple Music、QQ 音乐、SoundCloud、YouTube Music 全部聚合在一起，  
-> 能够智能嗅探各种链接，**下载、整理、同步**到本地或 NAS。
+GYMDL 是一个基于 **Go** 语言开发的现代化音乐下载与管理系统，  
+支持多平台音乐链接智能识别、下载、解密、整理及同步，集成了 CookieCloud、WebDAV、Telegram Bot 和 AI 助手等多项功能，助力打造无缝的音乐体验。
 
 ---
 
-## 🧩 功能概览
+## 核心功能
 
-| 模块 | 描述 | 状态 |
-|------|------|------|
-| ⚙️ 模块化框架 | 支持插件式加载、配置文件驱动 | ✅ 已完成 |
-| 🧾 日志系统 | Zap 集成，支持多级别与分模块控制 | ✅ 已完成 |
-| ⏰ 定时任务 | 基于 gocron 实现任务调度与中间件 | ✅ 已完成 |
-| 🍪 CookieCloud | 自动化同步 Cookie 助力下载 | ✅ 已完成 |
-| ☁️ WebDAV 支持 | 通过 WebDAV 上传到 NAS，无需手动上传 | ✅ 已完成 |
-| 🤖 Telegram Bot | 控制台与命令入口，带鉴权与日志中间件 | ✅ 已完成 |
-| 🎧 音乐平台集成 | 网易云 / Spotify / Apple Music / QQ / YouTube Music / SoundCloud | 🚧 开发中 |
-| 🔄 目录监听 | 自动触发刮削、整理、上传流程 | 🚧 规划中 |
-| 🧠 AI 模块 | 智能理解需求，协助整理与同步 | 🚧 规划中 |
-| 💻 WebUI | 可视化界面 | 🚧 规划中 |
+- 🎯 **多平台支持**：网易云音乐、Apple Music、Spotify、QQ 音乐、YouTube Music、SoundCloud 等主流音乐平台。
+- 🔗 **智能链接解析**：自动识别并处理多种音乐链接格式。
+- 🍪 **CookieCloud 集成**：自动同步 Cookie，提升下载成功率。
+- ☁️ **WebDAV 支持**：自动上传整理后的音乐文件到 NAS 或云存储。
+- 🤖 **Telegram Bot**：通过 Telegram 机器人实现远程控制与通知。
+- ⏰ **定时任务调度**：基于 gocron 实现自动化任务管理。
+- 🧠 **AI 助手**：智能问答与辅助功能（规划中）。
+- 💻 **WebUI**：未来支持可视化管理界面(规划中)。
 
 ---
 
-## 🛠️ 技术栈
+## 技术栈
 
-```text
-Go 1.22+
-├── Gin           → Web框架
-├── Zap           → 日志系统
-├── Gocron        → 定时任务
-├── Telebot       → Telegram Bot 框架
-├── WebDAV        → 云存储接口
-├── Github Action → CI/CD 自动构建
-└── AI 模块       → 智能命令与音乐识别
+- **Go 1.22+**：高性能后端语言。
+- **Gin**：轻量级 Web 框架。
+- **Zap**：高效结构化日志库。
+- **gocron**：灵活的定时任务调度。
+- **Telebot**：Telegram Bot 框架。
+- **gowebdav**：WebDAV 客户端。
+- **OpenAI API**：AI 智能问答支持。
+- **GitHub Actions**：CI/CD 自动化构建与发布。
+
+---
+
+## 快速开始
+
+1. 克隆仓库并编译：
+
+   ```bash
+   git clone https://github.com/nichuanfang/gymdl.git
+   cd gymdl
+   make release
+   ```
+
+2. 编辑 `config.json`，配置 CookieCloud、WebDAV、Telegram 等参数。
+
+3. 运行程序：
+
+   ```bash
+   ./gymdl -c config.json
+   ```
+
+4. 通过 Telegram 机器人发送音乐链接，享受自动下载与整理。
+
+---
+
+## 贡献指南
+
+欢迎提交 Issue 和 Pull Request，  
+请遵守代码规范，保持代码整洁，详细描述变更内容。
+
+---
+
+## 许可证
+
+本项目采用 [MIT 许可证](LICENSE) 开源。
+
+---
+
+## 联系方式
+
+- GitHub: [nichuanfang](https://github.com/nichuanfang)
+- Gmail : f18326186224@gmail.com
+
+---
+
+感谢使用 GYMDL，愿你的音乐永不停歇！ 🎶
