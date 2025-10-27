@@ -1,51 +1,55 @@
 {
-    "web_config": {
-        "enable": false,
-        "app_domain": "localhost",
-        "https": false,
-        "app_port": 8080,
-        "gin_mode": "debug"
-    },
-    "cookie_cloud": {
-        "cookiecloud_url": "",
-        "cookiecloud_uuid": "",
-        "cookiecloud_key": [""],
-        "cookie_file_path": "",
-        "cookie_file": "",
-        "expire_time": 180
-    },
-    "music_tidy": {
-        "mode": 1,
-        "dist_dir": "data/dist"
-    },
-    "webdav": {
-        "webdav_url": "",
-        "webdav_user": "",
-        "webdav_pass": "",
-        "webdav_dir": ""
-    },
-    "log": {
-        "mode": 1,
-        "level": 2,
-        "file": "data/logs/run.log"
-    },
+  "web_config": {
+    "enable": false, // 是否启用 web 服务
+    "app_domain": "localhost", // web 服务域名
+    "https": false, // 是否开启 HTTPS
+    "app_port": 8080, // web 服务监听端口
+    "gin_mode": "debug" // Gin 运行模式: 可选 [debug, release, test]
+  },
+  "cookie_cloud": {
+    "cookiecloud_url": "", // CookieCloud 服务地址
+    "cookiecloud_uuid": "", // CookieCloud UUID
+    "cookiecloud_key": [
+      ""
+    ], // CookieCloud key 数组 (多个同步端需填写全部，否则解密失败)
+    "cookie_file_path": "", // Cookie 文件存储目录
+    "cookie_file": "", // Cookie 文件名
+    "expire_time": 180 // Cookie 文件过期时间(分钟)
+  },
+  "music_tidy": {
+    "mode": 1, // 音乐整理模式: 1=整理到 DistDir, 2=整理到 WebDAVDir
+    "dist_dir": "data/dist" // 当 mode=1 时使用的本地整理目录
+  },
+  "webdav": {
+    "webdav_url": "", // WebDAV 服务地址
+    "webdav_user": "", // WebDAV 用户名
+    "webdav_pass": "", // WebDAV 密码
+    "webdav_dir": "" // WebDAV 目标路径
+  },
+  "log": {
+    "mode": 1, // 日志模式: 1=标准输出, 2=日志文件, 3=标准输出+文件
+    "level": 2, // 日志等级: 1=debug, 2=info, 3=warn, 4=error, 5=fatal
+    "file": "data/logs/run.log" // 日志文件路径
+  },
   "telegram": {
-    "enable": false,
-    "mode": 1,
-    "chat_id": "",
-    "bot_token": "",
-    "allowed_users": [""],
-    "webhook_url": "",
-    "webhook_port": 9000
+    "enable": false, // 是否启用 Telegram 通知服务
+    "mode": 1, // 运行模式: 1=长轮询, 2=Webhook (推荐开发用1, 生产用2)
+    "chat_id": "", // 机器人 chat_id
+    "bot_token": "", // Telegram Bot Token
+    "allowed_users": [
+      ""
+    ], // 用户白名单列表 (Telegram 用户 ID)
+    "webhook_url": "", // Webhook 地址 (mode=2 时必填)
+    "webhook_port": 9000 // Webhook 模式下监听端口
   },
   "ai": {
-    "enable": false,
-    "base_url": "",
-    "model": "",
-    "api_key": "",
-    "system_prompt": ""
+    "enable": false, // 是否启用 AI 功能
+    "base_url": "", // AI 接口的 Base URL
+    "model": "", // 使用的 AI 模型名称
+    "api_key": "", // AI 服务的 API Key
+    "system_prompt": "" // 默认系统提示词
   },
   "additional_config": {
-    "enable_cron": false
+    "enable_cron": false // 是否启用定时任务功能
   }
 }
