@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"os/exec"
+    "errors"
+    "os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core"
@@ -15,7 +16,7 @@ func (sp *SpotifyHandler) Platform() string {
 }
 
 func (sp *SpotifyHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo, error) {
-	return &SongInfo{}, nil
+	return &SongInfo{}, errors.New("🚧 开发中")
 }
 
 // 构建下载命令

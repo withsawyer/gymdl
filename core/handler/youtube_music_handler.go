@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
@@ -15,7 +16,7 @@ func (ytm *YoutubeMusicHandler) Platform() string {
 }
 
 func (ytm *YoutubeMusicHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo, error) {
-	return &SongInfo{}, nil
+	return &SongInfo{}, errors.New("🚧 开发中")
 }
 
 // 构建下载命令
