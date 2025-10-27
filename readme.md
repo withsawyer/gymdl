@@ -31,7 +31,7 @@ _一个跨平台音乐下载、CookieCloud深度集成、整理的自动化工�
 | 🧾 日志系统 | Zap 集成，支持多级别与分模块控制 | ✅ 已完成 |
 | ⏰ 定时任务 | 基于 gocron 实现任务调度与中间件 | ✅ 已完成 |
 | 🍪 CookieCloud | 自动化同步 Cookie 助力下载 | ✅ 已完成 |
-| ☁️ WebDAV 支持 | 上传、同步、备份你的音乐库 | ✅ 已完成 |
+| ☁️ WebDAV 支持 | 通过WEBDAV上传到NAS,无需手动上传 | ✅ 已完成 |
 | 🤖 Telegram Bot | 控制台与命令入口，带鉴权与日志中间件 | ✅ 已完成 |
 | 🎧 音乐平台集成 | 网易云 / Spotify / Apple Music / QQ / YouTube Music / SoundCloud | 🚧 开发中 |
 | 🔄 目录监听 | 自动触发刮削、整理、上传流程 | 🚧 规划中 |
