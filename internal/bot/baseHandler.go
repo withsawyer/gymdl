@@ -58,7 +58,9 @@ func HandleText(c tb.Context) error {
 	}
 
 	utils.InfoWithFormat("[Telegram] 整理成功，开始入库...")
-	_, _ = bot.Edit(msg, fmt.Sprintf("✅ 已识别 **%s** 链接\n\n🎵 开始入库...", executor.Platform()), tb.ModeMarkdown)
+	if app.cfg.MusicTidy.Mode == 2 {
+		_, _ = bot.Edit(msg, fmt.Sprintf("✅ 已识别 **%s** 链接\n\n🎵 开始入库...", executor.Platform()), tb.ModeMarkdown)
+	}
 
 	// 5️⃣ 成功反馈
 	duration := time.Since(start)
