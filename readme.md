@@ -19,15 +19,12 @@ _一个跨平台音乐下载、CookieCloud深度集成、整理的自动化工�
 *GYMDL* 是一个用 **Go** 构建的模块化音乐管理系统，  
 集成了 **多平台音乐同步、AI 助手、Telegram 控制、WebDAV 存储** 等功能。
 
-
-
 > [!NOTE]
-> 🎵 把网易云、Spotify、Apple Music、QQ 
-> 音乐、SoundCloud、YouTube Music 全部聚合在一起，
-> 能够智能嗅探各种链接 ,**下载**、**整理**、**同步**到您的本地或者NAS
- 
+> 🎵 将网易云、Spotify、Apple Music、QQ 音乐、SoundCloud、YouTube Music 全部聚合在一起，  
+> 能够智能嗅探各种链接，**下载、整理、同步**到本地或 NAS。
 
 ---
+
 ## 🧩 功能概览
 
 | 模块 | 描述 | 状态 |
@@ -36,11 +33,11 @@ _一个跨平台音乐下载、CookieCloud深度集成、整理的自动化工�
 | 🧾 日志系统 | Zap 集成，支持多级别与分模块控制 | ✅ 已完成 |
 | ⏰ 定时任务 | 基于 gocron 实现任务调度与中间件 | ✅ 已完成 |
 | 🍪 CookieCloud | 自动化同步 Cookie 助力下载 | ✅ 已完成 |
-| ☁️ WebDAV 支持 | 通过WEBDAV上传到NAS,无需手动上传 | ✅ 已完成 |
+| ☁️ WebDAV 支持 | 通过 WebDAV 上传到 NAS，无需手动上传 | ✅ 已完成 |
 | 🤖 Telegram Bot | 控制台与命令入口，带鉴权与日志中间件 | ✅ 已完成 |
 | 🎧 音乐平台集成 | 网易云 / Spotify / Apple Music / QQ / YouTube Music / SoundCloud | 🚧 开发中 |
 | 🔄 目录监听 | 自动触发刮削、整理、上传流程 | 🚧 规划中 |
-| 🧠 AI 模块 | 智能理解你的需求，协助整理与同步 | 🚧 规划中 |
+| 🧠 AI 模块 | 智能理解需求，协助整理与同步 | 🚧 规划中 |
 | 💻 WebUI | 可视化界面 | 🚧 规划中 |
 
 ---
