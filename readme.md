@@ -2,7 +2,7 @@
 
 ### 🚀 跨平台智能音乐下载与管理工具
 
-[![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go)]()
+[![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go)]()
 [![License](https://img.shields.io/badge/License-MIT-green)]()
 [![Build](https://img.shields.io/github/actions/workflow/status/nichuanfang/gymdl/release.yml?logo=github)]()
 [![Telegram](https://img.shields.io/badge/Telegram-Bot-blue?logo=telegram)]()
@@ -114,10 +114,10 @@ make release
 * ✅ 使用 [CookieCloud 插件](https://chromewebstore.google.com/detail/cookiecloud/ffjiejobkoibkjlhjnlgmcnnigeelbdl?hl=en) 同步 Cookie
 * ✅ 根据部署方式配置环境：
 
-| 部署方式             | 要求                                                                   |
-| ---------------- | -------------------------------------------------------------------- |
-| 🐳 **Docker 部署** | 仅需正确配置 `config.json`                                                 |
-| 💻 **本地部署**      | 除配置文件外，还需：<br>• 已安装并配置 **ffmpeg**<br>• 已安装 **N_m3u8DL-RE** 并加入系统环境变量 |
+| 部署方式             | 要求                                                                                                                                |
+| ---------------- |-----------------------------------------------------------------------------------------------------------------------------------|
+| 🐳 **Docker 部署** | 仅需正确配置 `config.json`                                                                                                              |
+| 💻 **本地部署**      | 除配置文件外，还需配置以下环境才可以解锁全部服务：<br>• 已安装 **ffmpeg**<br>• 已安装 **yt-dlp**<br>• 已安装 **gamdl**<br>• 已安装 **spotdl**<br>• 已安装 **N_m3u8DL-RE** |
 
 ---
 
