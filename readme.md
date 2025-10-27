@@ -34,11 +34,12 @@
 ## 🧩 技术栈
 
 | 模块           | 技术            |
-| ------------ | ------------- |
+|--------------| ------------- |
 | 核心语言         | Go 1.24       |
 | Web 框架       | Gin           |
 | 日志系统         | Zap           |
 | 定时调度         | gocron        |
+| 目录监控         | fsnotify        |
 | Telegram Bot | Telebot       |
 | 云存储          | gowebdav      |
 | AI 支持        | OpenAI API    |
