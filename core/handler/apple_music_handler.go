@@ -1,20 +1,18 @@
 package handler
 
 import (
-	"errors"
-	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"time"
+    "errors"
+    "fmt"
+    "os"
+    "os/exec"
+    "path/filepath"
+    "strings"
+    "time"
 
-	"github.com/gcottom/audiometa/v3"
-	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core"
-	"github.com/nichuanfang/gymdl/core/constants"
-	"github.com/nichuanfang/gymdl/utils"
+    "github.com/nichuanfang/gymdl/config"
+    "github.com/nichuanfang/gymdl/core"
+    "github.com/nichuanfang/gymdl/core/constants"
+    "github.com/nichuanfang/gymdl/utils"
 )
 
 type AppleMusicHandler struct{}
@@ -68,7 +66,7 @@ func (am *AppleMusicHandler) DownloadCommand(cfg *config.Config, url string) *ex
 		"--single-disc-folder-template", "{title}",
 		"--multi-disc-folder-template", "{title}",
 		"--no-synced-lyrics",
-		url,
+        url,
 	}
 	return exec.Command("gamdl", args...)
 }
@@ -76,77 +74,17 @@ func (am *AppleMusicHandler) DownloadCommand(cfg *config.Config, url string) *ex
 /* ---------------------- DRM 处理 ---------------------- */
 
 func (am *AppleMusicHandler) BeforeTidy(cfg *config.Config, songInfo *SongInfo) error {
-	path, err := am.findLatestDecryptedFile()
-	if err != nil {
-		return err
-	}
-
-	// 只打开一次文件获取标签和文件大小
-	f, err := os.Open(path)
-	if err != nil {
-		return fmt.Errorf("打开文件失败: %w", err)
-	}
-	defer f.Close()
-
-	// 获取文件信息（大小）
-	info, err := f.Stat()
-	if err != nil {
-		return fmt.Errorf("获取文件信息失败: %w", err)
-	}
-	songInfo.MusicSize = int(info.Size())
-	songInfo.FileExt = strings.TrimPrefix(strings.ToLower(filepath.Ext(path)), ".")
-
-	// 读取音频标签
-	tag, err := audiometa.OpenTag(f)
-	if err != nil {
-		utils.WarnWithFormat("[AppleMusic] ⚠️ 读取音频标签失败: %v", err)
-	} else {
-		songInfo.SongName = tag.GetTitle()
-		songInfo.SongArtists = tag.GetArtist()
-		songInfo.SongAlbum = tag.GetAlbum()
-	}
-
-	// 使用 ffprobe 获取比特率和时长
-	// 将命令参数拆开，避免多余的 shell 执行
-	cmd := exec.Command("ffprobe",
-		"-v", "error",
-		"-show_entries", "format=duration,bit_rate",
-		"-of", "default=noprint_wrappers=1:nokey=1",
-		path,
-	)
-
-	// 设置合理的超时，避免阻塞
-	type ffprobeResult struct {
-		out []byte
-		err error
-	}
-	ch := make(chan ffprobeResult, 1)
-	go func() {
-		out, err := cmd.Output()
-		ch <- ffprobeResult{out, err}
-	}()
-
-	select {
-	case res := <-ch:
-		if res.err != nil {
-			utils.WarnWithFormat("[AppleMusic] ⚠️ ffprobe 获取音频信息失败: %v", res.err)
-		} else {
-			lines := strings.Split(strings.TrimSpace(string(res.out)), "\n")
-			if len(lines) >= 2 {
-				if duration, err := strconv.ParseFloat(lines[0], 64); err == nil {
-					songInfo.Duration = int(duration)
-				}
-				if bitrate, err := strconv.Atoi(lines[1]); err == nil {
-					songInfo.Bitrate = strconv.Itoa(bitrate / 1000)
-				}
-			}
-		}
-	case <-time.After(5 * time.Second):
-		utils.WarnWithFormat("[AppleMusic] ⚠️ ffprobe 超时，跳过获取时长和比特率")
-	}
+    path, err := am.findLatestDecryptedFile()
+    if err != nil {
+        return err
+    }
+    err = ExtractSongInfo(songInfo, path)
+    if err != nil {
+        return err
+    }
     // 设置整理类型
     songInfo.Tidy = determineTidyType(cfg)
-	return nil
+    return nil
 }
 
 func (am *AppleMusicHandler) NeedRemoveDRM(cfg *config.Config) bool {
@@ -279,7 +217,7 @@ func (am *AppleMusicHandler) findLatestDecryptedFile() (string, error) {
 	}
 
 	if latestFile == nil {
-		return "", errors.New("未找到符合条件的解密文件")
+		return "", errors.New("未找到符合条件的音乐文件,检测是否下载失败")
 	}
 
 	return filepath.Join(constants.AppleMusicTempDir, latestFile.Name()), nil

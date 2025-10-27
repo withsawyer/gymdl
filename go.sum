@@ -1011,6 +1011,8 @@ gopkg.in/src-d/go-billy.v4 v4.3.2 h1:0SQA1pRztfTFx2miS8sA97XvooFeNOmvUenF4o0EcVg
 gopkg.in/src-d/go-billy.v4 v4.3.2/go.mod h1:nDjArDMp+XMs1aFAESLRjfGSgfvoYN0hDfzEk0GjC98=
 gopkg.in/telebot.v4 v4.0.0-beta.5 h1:uhOnORHch59vfhy09WrHLsDTwl6UIM38fiZ62jzC3dk=
 gopkg.in/telebot.v4 v4.0.0-beta.5/go.mod h1:jhcQjM/176jZm/s9Up/MzV5VFGPjyI8oiJhWvCMxayI=
+gopkg.in/vansante/go-ffprobe.v2 v2.2.1 h1:sFV08OT1eZ1yroLCZVClIVd9YySgCh9eGjBWO0oRayI=
+gopkg.in/vansante/go-ffprobe.v2 v2.2.1/go.mod h1:qF0AlAjk7Nqzqf3y333Ly+KxN3cKF2JqA3JT5ZheUGE=
 gopkg.in/yaml.v2 v2.2.1/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.2.3/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
