@@ -18,6 +18,9 @@ import (
 	ncmutils "github.com/XiaoMengXinX/Music163Api-Go/utils"
 	downloader "github.com/XiaoMengXinX/SimpleDownloader"
 	"github.com/gcottom/audiometa/v3"
+	"github.com/gcottom/flacmeta"
+	"github.com/gcottom/mp3meta"
+	"github.com/gcottom/mp4meta"
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core"
 	"github.com/nichuanfang/gymdl/core/constants"
@@ -39,7 +42,7 @@ func (ncm *NCMHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo,
 		return nil, fmt.Errorf("创建临时目录失败: %w", err)
 	}
 	musicID := utils.ParseMusicID(url)
-	detail, songURL, err := ncm.fetchSongData(musicID, cfg)
+	detail, songURL, songLyric, err := ncm.fetchSongData(musicID, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -47,8 +50,7 @@ func (ncm *NCMHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo,
 	if len(detail.Songs) == 0 || len(songURL.Data) == 0 || songURL.Data[0].Url == "" {
 		return nil, errors.New("未获取到有效歌曲信息或歌曲无下载地址")
 	}
-
-	songInfo := ncm.buildSongInfo(cfg, detail, songURL)
+	songInfo := ncm.buildSongInfo(cfg, detail, songURL, songLyric)
 	fileName := ncm.safeFileName(songInfo)
 
 	if err := ncm.downloadFile(songURL.Data[0].Url, fileName, constants.NCMTempDir); err != nil {
@@ -61,12 +63,13 @@ func (ncm *NCMHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo,
 
 /* ---------------------- 数据获取 ---------------------- */
 
-func (ncm *NCMHandler) fetchSongData(musicID int, cfg *config.Config) (*types.SongsDetailData, *types.SongsURLData, error) {
+func (ncm *NCMHandler) fetchSongData(musicID int, cfg *config.Config) (*types.SongsDetailData, *types.SongsURLData, *types.SongLyricData, error) {
 	utils.DebugWithFormat("[NCM] 请求歌曲信息中... ID=%d", musicID)
 
 	batch := api.NewBatch(
 		api.BatchAPI{Key: api.SongDetailAPI, Json: api.CreateSongDetailReqJson([]int{musicID})},
 		api.BatchAPI{Key: api.SongUrlAPI, Json: api.CreateSongURLJson(api.SongURLConfig{Ids: []int{musicID}})},
+		api.BatchAPI{Key: api.SongLyricAPI, Json: api.CreateSongLyricReqJson(musicID)},
 	)
 
 	cookiePath := filepath.Join(cfg.CookieCloud.CookieFilePath, cfg.CookieCloud.CookieFile)
@@ -79,32 +82,42 @@ func (ncm *NCMHandler) fetchSongData(musicID int, cfg *config.Config) (*types.So
 
 	result := batch.Do(req)
 	if result.Error != nil {
-		return nil, nil, fmt.Errorf("网易云API请求失败: %w", result.Error)
+		return nil, nil, nil, fmt.Errorf("网易云API请求失败: %w", result.Error)
 	}
 
 	_, parsed := batch.Parse()
 
 	var detail types.SongsDetailData
 	var urls types.SongsURLData
+	var lyrics types.SongLyricData
 
 	if err := json.Unmarshal([]byte(parsed[api.SongDetailAPI]), &detail); err != nil {
-		return nil, nil, fmt.Errorf("解析歌曲详情失败: %w", err)
+		return nil, nil, nil, fmt.Errorf("解析歌曲详情失败: %w", err)
 	}
 	if err := json.Unmarshal([]byte(parsed[api.SongUrlAPI]), &urls); err != nil {
-		return nil, nil, fmt.Errorf("解析歌曲URL失败: %w", err)
+		return nil, nil, nil, fmt.Errorf("解析歌曲URL失败: %w", err)
+	}
+	if err := json.Unmarshal([]byte(parsed[api.SongLyricAPI]), &lyrics); err != nil {
+		return nil, nil, nil, fmt.Errorf("解析歌曲歌词失败: %w", err)
 	}
 
 	utils.DebugWithFormat("[NCM] 歌曲信息获取成功: %s", detail.Songs[0].Name)
-	return &detail, &urls, nil
+	return &detail, &urls, &lyrics, nil
 }
 
 /* ---------------------- 数据构建 ---------------------- */
 
-func (ncm *NCMHandler) buildSongInfo(cfg *config.Config, detail *types.SongsDetailData, urls *types.SongsURLData) *SongInfo {
+func (ncm *NCMHandler) buildSongInfo(cfg *config.Config, detail *types.SongsDetailData, urls *types.SongsURLData, lyric *types.SongLyricData) *SongInfo {
 	s := detail.Songs[0]
 	u := urls.Data[0]
-    // 整理方式
+	// 整理方式
 	tidy := determineTidyType(cfg)
+
+	ncmLyric := utils.ParseNCMLyric(lyric)
+	if ncmLyric == "" {
+		ncmLyric = "[00:00:00]此歌曲为没有填词的纯音乐，请您欣赏"
+	}
+	year := utils.ParseNCMYear(detail)
 
 	return &SongInfo{
 		SongName:    s.Name,
@@ -116,6 +129,8 @@ func (ncm *NCMHandler) buildSongInfo(cfg *config.Config, detail *types.SongsDeta
 		Duration:    s.Dt / 1000,
 		PicUrl:      s.Al.PicUrl,
 		Tidy:        tidy,
+		Lyric:       ncmLyric,
+		Year:        year,
 	}
 }
 
@@ -262,10 +277,30 @@ func (ncm *NCMHandler) BeforeTidy(cfg *config.Config, info *SongInfo) error {
 	tag.SetArtist(info.SongArtists)
 	tag.SetTitle(info.SongName)
 	tag.SetAlbum(info.SongAlbum)
+	tag.SetAlbumArtist(info.SongArtists)
 
 	// 设置封面图（如果获取成功）
 	if image, err := utils.FetchImage(info.PicUrl); err == nil {
 		tag.SetCoverArt(image)
+	}
+
+	// ✅ 根据类型推断 设置歌词 年代
+
+	// 设置年代
+	if info.Year > 0 {
+		switch t := tag.(type) {
+		case *flacmeta.FLACTag:
+			t.SetDate(strconv.Itoa(info.Year))
+		case *mp3meta.MP3Tag:
+			t.SetYear(info.Year)
+		case *mp4meta.MP4Tag:
+			t.SetYear(info.Year)
+		}
+	}
+	// 设置歌词(无损格式嵌入不了歌词 自行去mtw刮削)
+	switch t := tag.(type) {
+	case *mp3meta.MP3Tag:
+		t.SetLyricist(info.Lyric)
 	}
 
 	// 创建临时文件（用于保存修改后的数据）

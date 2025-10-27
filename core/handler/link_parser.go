@@ -1,8 +1,8 @@
 package handler
 
 import (
-    "context"
-    "fmt"
+	"context"
+	"fmt"
 	"net/url"
 	"os"
 	"os/exec"
@@ -10,8 +10,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-    "time"
-    "unicode"
+	"time"
+	"unicode"
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core"
@@ -28,6 +28,8 @@ type SongInfo struct {
 	Bitrate     string // 码率
 	Duration    int    // 时长
 	PicUrl      string // 封面图url
+	Lyric       string //歌词
+	Year        int    //年份
 	Tidy        string // 入库方式(默认/webdav)
 }
 
@@ -200,7 +202,7 @@ func determineTidyType(cfg *config.Config) string {
 }
 
 // ExtractSongInfo 通过ffprobe-go解析歌曲信息
-func ExtractSongInfo(song *SongInfo,path string)  error {
+func ExtractSongInfo(song *SongInfo, path string) error {
 	f, err := os.Open(path)
 	if err != nil {
 		return fmt.Errorf("打开文件失败: %w", err)
@@ -221,8 +223,8 @@ func ExtractSongInfo(song *SongInfo,path string)  error {
 	if err != nil {
 		return fmt.Errorf("获取音频信息失败: %w", err)
 	}
-    song.MusicSize = int(info.Size())
-    song.FileExt = strings.TrimPrefix(strings.ToLower(filepath.Ext(path)), ".")
+	song.MusicSize = int(info.Size())
+	song.FileExt = strings.TrimPrefix(strings.ToLower(filepath.Ext(path)), ".")
 
 	// 获取基础信息
 	if data.Format != nil {
@@ -235,9 +237,9 @@ func ExtractSongInfo(song *SongInfo,path string)  error {
 
 		// 标签信息
 		if tags := data.Format.TagList; tags != nil {
-			song.SongName,_ = tags.GetString("title")
-			song.SongArtists,_ = tags.GetString("artist")
-			song.SongAlbum,_ = tags.GetString("album")
+			song.SongName, _ = tags.GetString("title")
+			song.SongArtists, _ = tags.GetString("artist")
+			song.SongAlbum, _ = tags.GetString("album")
 		}
 	}
 
