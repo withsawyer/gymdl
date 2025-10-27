@@ -20,7 +20,7 @@ _一个跨平台音乐下载、CookieCloud深度集成、整理的自动化工�
 集成了 **多平台音乐同步、AI 助手、Telegram 控制、WebDAV 存储** 等功能。
 
 > 🎵 把网易云、Spotify、Apple Music、QQ 音乐、SoundCloud、YouTube Music 全部聚合在一起，  
-> 用一个指令，同步、下载、刮削、整理，交给 AI 打理。
+> 智能嗅探多样化的链接，下载、整理、同步
 
 ---
 ## 🧩 功能概览
