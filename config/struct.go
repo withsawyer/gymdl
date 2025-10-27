@@ -9,6 +9,7 @@ type Config struct {
 	Telegram         TelegramConfig     `json:"telegram"`          // telegram配置
 	AI               *AIConfig          `json:"ai"`                // AI配置
 	AdditionalConfig *AdditionalConfig  `json:"additional_config"` //附属配置
+	ProxyConfig      *ProxyConfig       `json:"proxy"`             //代理配置
 }
 
 type WebConfig struct {
@@ -66,4 +67,13 @@ type AIConfig struct {
 
 type AdditionalConfig struct {
 	EnableCron bool `json:"enable_cron"` //是否启用定时任务
+}
+
+type ProxyConfig struct {
+	Scheme string `json:"scheme"` //代理类型 http/socks5
+	Host   string `json:"host"`   //代理地址
+	Port   int    `json:"port"`   //代理端口
+	User   string `json:"user"`   //代理用户名
+	Pass   string `json:"pass"`   //代理密码
+	Auth   bool   `json:"auth"`   //是否需要认证
 }
