@@ -103,7 +103,8 @@ func (ncm *NCMHandler) fetchSongData(musicID int, cfg *config.Config) (*types.So
 func (ncm *NCMHandler) buildSongInfo(cfg *config.Config, detail *types.SongsDetailData, urls *types.SongsURLData) *SongInfo {
 	s := detail.Songs[0]
 	u := urls.Data[0]
-	tidy := map[int]string{1: "default", 2: "webdav"}[cfg.MusicTidy.Mode]
+    // 整理方式
+	tidy := determineTidyType(cfg)
 
 	return &SongInfo{
 		SongName:    s.Name,

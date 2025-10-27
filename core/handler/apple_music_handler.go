@@ -49,16 +49,8 @@ func (am *AppleMusicHandler) DownloadMusic(url string, cfg *config.Config) (*Son
 		utils.DebugWithFormat("[AppleMusic] 下载输出:\n%s", logOut)
 	}
 	utils.InfoWithFormat("[AppleMusic] ✅ 下载完成（耗时 %v）", time.Since(start).Truncate(time.Millisecond))
-
-	var tidy string
-	if cfg.MusicTidy.Mode == 1 {
-		tidy = "default"
-	} else {
-		tidy = "webdav"
-	}
-	return &SongInfo{
-		Tidy: tidy,
-	}, nil
+    
+	return &SongInfo{}, nil
 }
 
 /* ---------------------- 构建下载命令 ---------------------- */
@@ -152,7 +144,8 @@ func (am *AppleMusicHandler) BeforeTidy(cfg *config.Config, songInfo *SongInfo) 
 	case <-time.After(5 * time.Second):
 		utils.WarnWithFormat("[AppleMusic] ⚠️ ffprobe 超时，跳过获取时长和比特率")
 	}
-
+    // 设置整理类型
+    songInfo.Tidy = determineTidyType(cfg)
 	return nil
 }
 

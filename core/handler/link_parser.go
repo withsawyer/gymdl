@@ -13,36 +13,36 @@ import (
 
 // 音乐信息
 type SongInfo struct {
-	SongName    string //音乐名称
+	SongName    string // 音乐名称
 	SongArtists string
 	SongAlbum   string
-	FileExt     string //格式
-	MusicSize   int    //音乐大小
-	Bitrate     string //码率
-	Duration    int    //时长
-	PicUrl      string //封面图url
-	Tidy        string //入库方式(默认/webdav)
+	FileExt     string // 格式
+	MusicSize   int    // 音乐大小
+	Bitrate     string // 码率
+	Duration    int    // 时长
+	PicUrl      string // 封面图url
+	Tidy        string // 入库方式(默认/webdav)
 }
 
 // MusicHandler 音乐处理接口
 type MusicHandler interface {
-	//平台名称
+	// 平台名称
 	Platform() string
-	//下载音乐
+	// 下载音乐
 	DownloadMusic(url string, cfg *config.Config) (*SongInfo, error)
-	//构建下载命令
+	// 构建下载命令
 	DownloadCommand(cfg *config.Config, url string) *exec.Cmd
-	//音乐整理之前的处理(如嵌入元数据,刮削等)
+	// 音乐整理之前的处理(如嵌入元数据,刮削等)
 	BeforeTidy(cfg *config.Config, songInfo *SongInfo) error
-	//是否需要移除DRM
+	// 是否需要移除DRM
 	NeedRemoveDRM(cfg *config.Config) bool
-	//移除DRM
+	// 移除DRM
 	DRMRemove(cfg *config.Config, songInfo *SongInfo) error
-	//音乐整理
+	// 音乐整理
 	TidyMusic(cfg *config.Config, webdav *core.WebDAV, songInfo *SongInfo) error
-	//加密后缀
+	// 加密后缀
 	EncryptedExts() []string
-	//非加密后缀
+	// 非加密后缀
 	DecryptedExts() []string
 }
 
@@ -66,7 +66,7 @@ var platforms = []platformMatcher{
 			regexp.MustCompile(`^https?://(music\.163\.com|y\.music\.163\.com)/(#)?/?(song|playlist|album|artist)\?id=\d+`),
 			// 网易云短链（App 内分享）
 			regexp.MustCompile(`^https?://163cn\.tv/\w+`),
-			//其他平台
+			// 其他平台
 			regexp.MustCompile(`^https?://163cn\.link/\w+`),
 		},
 		handler: &NCMHandler{},
@@ -185,4 +185,9 @@ func quickMatch(host string, u *url.URL) (MusicHandler, bool) {
 		}
 	}
 	return nil, false
+}
+
+// 设定整理类型
+func determineTidyType(cfg *config.Config) string {
+	return map[int]string{1: "LOCAL", 2: "WEBDAV"}[cfg.MusicTidy.Mode]
 }
