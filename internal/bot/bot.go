@@ -74,8 +74,3 @@ func (app *BotApp) Start() {
 func (app *BotApp) Stop() {
 	app.bot.Stop()
 }
-
-// registerCommands 注册命令 只需运行一次
-func (app *BotApp) registerCommands() {
-
-}

@@ -1,19 +1,17 @@
 package core
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
-	"os"
-	"strings"
-	"sync"
-	"time"
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+    "os"
+    "strings"
+    "time"
 
-	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/utils"
-	"go.uber.org/zap"
+    "github.com/nichuanfang/gymdl/config"
+    "github.com/nichuanfang/gymdl/utils"
+    "go.uber.org/zap"
 )
 
 type CookieCloud struct {
@@ -98,7 +96,7 @@ func (cc *CookieCloud) Sync() {
 
 	decrypted := cc.decryptData(data)
 	if decrypted == nil {
-		logger.Error("⚠️CookieCloud all keys failed to decrypt cookie")
+		logger.Error("⚠️CookieCloud failed to decrypt cookie")
 		return
 	}
 
@@ -146,56 +144,18 @@ func (cc *CookieCloud) fetchEncryptedData() (string, error) {
 
 // decryptData 使用配置的 key 解密数据
 func (cc *CookieCloud) decryptData(encrypted string) []byte {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	resultCh := make(chan decryptResult, 1)
-	var wg sync.WaitGroup
-	var once sync.Once
-
-	for _, key := range cc.Config.CookieCloudKEY {
-		wg.Add(1)
-		go func(key string) {
-			defer wg.Done()
-			select {
-			case <-ctx.Done():
-				return
-			default:
-			}
-
-			keyPassword := Md5String(cc.Config.CookieCloudUUID, "-", key)
-			if len(keyPassword) < 16 {
-				return
-			}
-			keyPassword = keyPassword[:16]
-
-			dec, err := DecryptCryptoJsAesMsg(keyPassword, encrypted)
-			if err == nil && len(dec) > 0 {
-				once.Do(func() {
-					resultCh <- decryptResult{Key: key, Decrypted: dec}
-					cancel()
-				})
-			} else {
-				logger.Debug(fmt.Sprintf("加密key【%s】解密失败", key))
-			}
-		}(key)
-	}
-
-	go func() {
-		wg.Wait()
-		close(resultCh)
-	}()
-
-	var result *decryptResult
-	for r := range resultCh {
-		result = &r
-		break
-	}
-
-	if result == nil {
-		return nil
-	}
-	return result.Decrypted
+    keyPassword := Md5String(cc.Config.CookieCloudUUID, "-", cc.Config.CookieCloudKEY)
+    if len(keyPassword) < 16 {
+        return nil
+    }
+    keyPassword = keyPassword[:16]
+    dec, err := DecryptCryptoJsAesMsg(keyPassword, encrypted)
+    if err == nil && len(dec) > 0 {
+            return dec
+    }else{
+        logger.Debug(fmt.Sprintf("加密key【%s】解密失败", cc.Config.CookieCloudUUID))
+        return nil
+    }
 }
 
 // ConvertToNetscapeFormat 将解密后的 cookie 转换为 Netscape 格式
