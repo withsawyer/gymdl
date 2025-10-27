@@ -22,7 +22,6 @@ _一个跨平台音乐下载、CookieCloud深度集成、整理的自动化工�
 
 
 > [!NOTE]
-
 > 🎵 把网易云、Spotify、Apple Music、QQ 
 > 音乐、SoundCloud、YouTube Music 全部聚合在一起，
 > 能够智能嗅探各种链接 ,**下载**、**整理**、**同步**到您的本地或者NAS
