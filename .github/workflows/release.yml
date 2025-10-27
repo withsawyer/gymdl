@@ -2,19 +2,17 @@ name: Build&Publish
 
 on:
   workflow_dispatch:
-  push: 
+  push:
     tags:
       - v*
 
 jobs:
   docker:
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
       packages: write
       id-token: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -26,14 +24,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image
+      - name: Build and Push Docker image
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/gymdl
-          docker build -t $IMAGE_NAME:latest .
-
-      - name: Push Docker image to GHCR
-        run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/gymdl
+          VERSION=${GITHUB_REF_NAME}
+          
+          echo "Building image: $IMAGE_NAME:$VERSION"
+          docker build -t $IMAGE_NAME:$VERSION -t $IMAGE_NAME:latest .
+          
+          echo "Pushing image to GHCR..."
+          docker push $IMAGE_NAME:$VERSION
           docker push $IMAGE_NAME:latest
   build:
     runs-on: ubuntu-latest
