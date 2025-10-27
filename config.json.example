@@ -9,9 +9,7 @@
   "cookie_cloud": {
     "cookiecloud_url": "", // CookieCloud 服务地址
     "cookiecloud_uuid": "", // CookieCloud UUID
-    "cookiecloud_key": [
-      ""
-    ], // CookieCloud key 数组 (多个同步端需填写全部，否则解密失败)
+    "cookiecloud_key": "", // CookieCloud key  (多个同步端需填写同一个key，否则会解密失败)
     "cookie_file_path": "", // Cookie 文件存储目录
     "cookie_file": "", // Cookie 文件名
     "expire_time": 180 // Cookie 文件过期时间(分钟)
@@ -50,10 +48,12 @@
     "system_prompt": "" // 默认系统提示词
   },
   "additional_config": {
-    "enable_cron": false // 是否启用定时任务功能
+    "enable_cron": false, // 是否启用定时任务功能
+    "enable_monitor": false, //是否启用目录监听
+    "monitor_dirs": [""]    //监听的目录
   },
   "proxy": {
-    "scheme": "",     // 代理类型: http/socks5  不填表示不使用代理
+    "scheme": "",    // 代理类型: http/socks5  不填表示不使用代理
     "host": "127.0.0.1",  // 代理服务器地址
     "port": 10809,       // 代理服务器端口
     "user": "",           // 代理认证用户名

@@ -19,6 +19,7 @@ import (
 	"github.com/nichuanfang/gymdl/internal/bot"
 	"github.com/nichuanfang/gymdl/internal/cron"
 	"github.com/nichuanfang/gymdl/internal/gin/router"
+	"github.com/nichuanfang/gymdl/internal/monitor"
 	"github.com/nichuanfang/gymdl/utils"
 	"go.uber.org/zap"
 )
@@ -36,10 +37,10 @@ func init() {
 }
 
 func printBanner() {
-    green := "\033[32m"
-    reset := "\033[0m"
+	green := "\033[32m"
+	reset := "\033[0m"
 
-    banner := `
+	banner := `
    ________   _     _    ____  _    
   /  __/\  \/// \__/ |  /  _ \/ \   
   | |  _ \  / | |\/| |  | | \|| |   
@@ -50,7 +51,7 @@ func printBanner() {
            🚀 服务启动中...
 =======================================
 `
-    fmt.Println(green + banner + reset)
+	fmt.Println(green + banner + reset)
 }
 
 // 初始化 WebDAV 服务
@@ -84,7 +85,7 @@ func initAI(c *config.AIConfig) {
 }
 
 // 启动定时任务
-func initCron(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
+func initCron(ctx context.Context, c *config.Config) {
 	s := cron.InitScheduler(c)
 	s.Start()
 	utils.Success("定时任务调度器已启动")
@@ -93,8 +94,31 @@ func initCron(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 	utils.Stop("定时任务调度器已关闭")
 }
 
+// 启动目录监控
+func initMonitor(ctx context.Context, c *config.Config) {
+	wm := monitor.NewWatchManager()
+
+	for _, dir := range c.AdditionalConfig.MonitorDirs {
+		// 监控主目录
+		if err := wm.AddDir(dir); err != nil {
+			utils.WarnWithFormat("[Monitor] 注册目录失败: %s (%v)", dir, err)
+			continue
+		}
+		utils.InfoWithFormat("[Monitor] 注册目录: %s", dir)
+	}
+
+	go func() {
+		utils.Success("目录监控已启动")
+		wm.StartWorkerPool(runtime.NumCPU())
+	}()
+
+	<-ctx.Done()
+	wm.Stop()
+	utils.Stop("目录监控已关闭")
+}
+
 // 启动 Gin Web 服务
-func initGin(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
+func initGin(ctx context.Context, c *config.Config) {
 	gin.SetMode(c.WebConfig.GinMode)
 	r := router.SetupRouter(c)
 
@@ -127,7 +151,7 @@ func initGin(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
 }
 
 // 启动 Telegram Bot
-func initBot(ctx context.Context, wg *sync.WaitGroup, c *config.Config) {
+func initBot(ctx context.Context, c *config.Config) {
 	app, err := bot.NewBotApp(c)
 	if err != nil {
 		utils.Logger().Error("创建 Telegram Bot 应用失败", zap.Error(err))
@@ -184,11 +208,16 @@ func main() {
 	wg := &sync.WaitGroup{}
 
 	// 用 map 映射模块启动逻辑，更优雅地管理协程
-	services := map[string]func(context.Context, *sync.WaitGroup, *config.Config){}
+	services := map[string]func(context.Context, *config.Config){}
 
 	//是否启用定时任务
 	if c.AdditionalConfig.EnableCron {
 		services["cron"] = initCron
+	}
+
+	//是否启用目录监控
+	if c.AdditionalConfig.EnableDirMonitor {
+		services["monitor"] = initMonitor
 	}
 
 	//是否启用web服务
@@ -204,9 +233,9 @@ func main() {
 	// 启动所有服务
 	for name, start := range services {
 		wg.Add(1)
-		go func(name string, start func(context.Context, *sync.WaitGroup, *config.Config)) {
+		go func(name string, start func(context.Context, *config.Config)) {
 			defer wg.Done()
-			start(ctx, wg, c)
+			start(ctx, c)
 		}(name, start)
 	}
 

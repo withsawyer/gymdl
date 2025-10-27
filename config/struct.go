@@ -6,7 +6,7 @@ type Config struct {
 	MusicTidy        *MusicTidyConfig   `json:"music_tidy"`        // 音乐整理配置
 	WebDAV           *WebDAVConfig      `json:"webdav"`            // webdav配置
 	Log              *LogConfig         `json:"log"`               // 日志配置
-	Telegram         *TelegramConfig     `json:"telegram"`          // telegram配置
+	Telegram         *TelegramConfig    `json:"telegram"`          // telegram配置
 	AI               *AIConfig          `json:"ai"`                // AI配置
 	AdditionalConfig *AdditionalConfig  `json:"additional_config"` // 附属配置
 	ProxyConfig      *ProxyConfig       `json:"proxy"`             // 代理配置
@@ -21,12 +21,12 @@ type WebConfig struct {
 }
 
 type CookieCloudConfig struct {
-	CookieCloudUrl  string   `json:"cookiecloud_url"`  // cookiecloud 地址
-	CookieCloudUUID string   `json:"cookiecloud_uuid"` // cookiecloud uuid
+	CookieCloudUrl  string `json:"cookiecloud_url"`  // cookiecloud 地址
+	CookieCloudUUID string `json:"cookiecloud_uuid"` // cookiecloud uuid
 	CookieCloudKEY  string `json:"cookiecloud_key"`  // cookiecloud 密码（tips：如果有多个同步端需要上传需要绑定同一个key）
-	CookieFile      string   `json:"cookie_file"`      // cookie文件名
-	CookieFilePath  string   `json:"cookie_file_path"` // cookie存储目录
-	ExpireTime      int      `json:"expire_time"`      // cookie文件过期时间(分钟) 根据自己需求控制
+	CookieFile      string `json:"cookie_file"`      // cookie文件名
+	CookieFilePath  string `json:"cookie_file_path"` // cookie存储目录
+	ExpireTime      int    `json:"expire_time"`      // cookie文件过期时间(分钟) 根据自己需求控制
 }
 
 type MusicTidyConfig struct {
@@ -66,7 +66,9 @@ type AIConfig struct {
 }
 
 type AdditionalConfig struct {
-	EnableCron bool `json:"enable_cron"` // 是否启用定时任务
+	EnableCron       bool     `json:"enable_cron"`    // 是否启用定时任务
+	EnableDirMonitor bool     `json:"enable_monitor"` //是否启用目录监听
+	MonitorDirs      []string `json:"monitor_dirs"`   //需要监听的目录  监听网易云/QQ下载目录=>调用um工具解锁=>整理=>telegram入库通知
 }
 
 type ProxyConfig struct {
