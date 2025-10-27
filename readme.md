@@ -19,7 +19,7 @@ GYMDL 是一个基于 **Go** 语言开发的现代化音乐下载与管理系统
 - 🎯 **多平台支持**：网易云音乐、Apple Music、Spotify、QQ 音乐、YouTube Music、SoundCloud 等主流音乐平台。
 - 🔗 **智能链接解析**：自动识别并处理多种音乐链接格式。
 - 🍪 **CookieCloud 集成**：自动同步 Cookie，提升下载成功率。
-- ☁️ **WebDAV 支持**：自动上传整理后的音乐文件到 NAS 或云存储。
+- ☁️ **WebDAV 支持**：自动整理处理好的音乐文件到本地目录或者通过Webdav上传到NAS 。
 - 🤖 **Telegram Bot**：通过 Telegram 机器人实现远程控制与通知。
 - ⏰ **定时任务调度**：基于 gocron 实现自动化任务管理。
 - 🧠 **AI 助手**：智能问答与辅助功能（规划中）。
