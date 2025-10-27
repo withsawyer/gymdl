@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"regexp"
 
@@ -269,4 +270,21 @@ func GetRedirectUrl(text string) string {
 		}
 	}
 	return text
+}
+
+// ParseNCMLyric 解析歌词
+func ParseNCMLyric(lyricsData *types.SongLyricData) string {
+	//优先用翻译歌词
+	if lyricsData.Tlyric.Lyric != "" {
+		return lyricsData.Tlyric.Lyric
+	}
+	//原始字幕
+	return lyricsData.Lrc.Lyric
+}
+
+// ParseNCMYear 解析年代
+func ParseNCMYear(detailData *types.SongsDetailData) int {
+	publishTime := int64(detailData.Songs[0].PublishTime) // 毫秒级时间戳
+	t := time.Unix(publishTime/1000, 0)
+	return t.Year()
 }
