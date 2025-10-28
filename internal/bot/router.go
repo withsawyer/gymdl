@@ -14,11 +14,14 @@ func (app *BotApp) registerHandlers() {
 	//帮助信息
 	app.bot.Handle("/help", HelpCommand)
 
-	//指令注册器
-	app.bot.Handle("/setCommands", SetCommands)
-
 	//wrapper注册器
 	app.bot.Handle("/wrapper", WrapperCommand)
+
+	//wrapper签入
+	app.bot.Handle("/signin", WrapperSignInCommand)
+
+	//指令注册器
+	app.bot.Handle("/setCommands", SetCommands)
 
 	//普通文本
 	app.bot.Handle(tb.OnText, HandleText)
