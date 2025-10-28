@@ -1,0 +1,33 @@
+name: Build  Unstable Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+
+jobs:
+  docker-unstable:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Dev Docker image
+        run: |
+          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/gymdl-unstable
+          docker build-t $IMAGE_NAME:latest .
+          
+          echo "Pushing unstable to GHCR..."
+          docker push $IMAGE_NAME:latest
