@@ -27,7 +27,7 @@ jobs:
       - name: Build and Push Dev Docker image
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/gymdl-unstable
-          docker build-t $IMAGE_NAME:latest .
+          docker build -t $IMAGE_NAME:latest .
           
           echo "Pushing unstable to GHCR..."
           docker push $IMAGE_NAME:latest
