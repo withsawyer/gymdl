@@ -2,8 +2,6 @@ package bot
 
 import (
 	"fmt"
-	"net/http"
-	"net/url"
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/utils"
@@ -28,17 +26,6 @@ func NewBotApp(cfg *config.Config) (*BotApp, error) {
 		Token: cfg.Telegram.BotToken,
 		// 默认使用 polling，后面可切换
 		Poller: &tb.LongPoller{Timeout: 10},
-	}
-
-	if cfg.ProxyConfig.Scheme != "" && cfg.ProxyConfig.Host != "" && cfg.ProxyConfig.Port != 0 {
-		botSettings.Client = &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyURL(&url.URL{
-					Scheme: cfg.ProxyConfig.Scheme,
-					Host:   fmt.Sprintf("%s:%d", cfg.ProxyConfig.Host, cfg.ProxyConfig.Port),
-				}),
-			},
-		}
 	}
 
 	if cfg.Telegram.Mode == 2 {
