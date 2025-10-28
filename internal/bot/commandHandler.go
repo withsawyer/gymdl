@@ -48,11 +48,22 @@ func HelpCommand(c tb.Context) error {
 	return nil
 }
 
+// WrapperCommand 注册wrapper并启动
+func WrapperCommand(c tb.Context) error {
+	//执行命令
+	if !app.cfg.WrapperConfig.Enable {
+		return c.Send("请先开启wrapper再使用该指令!")
+	}
+
+	return c.Send("准备颁发2FA,请稍后...")
+}
+
 // SetCommands 初始化 Telegram 命令列表
 func SetCommands(c tb.Context) error {
 	commands := []tb.Command{
 		{Text: "start", Description: "启动 Bot 👋"},
 		{Text: "help", Description: "获取帮助 📜"},
+		{Text: "wrapper", Description: "am注册 🧩"},
 	}
 
 	if err := c.Bot().SetCommands(commands); err != nil {
@@ -65,13 +76,6 @@ func SetCommands(c tb.Context) error {
 		logger.Error("Failed to send confirmation message", zap.Error(err))
 		return err
 	}
-
-	return nil
-}
-
-// WrapperCommand 注册wrapper并启动
-func WrapperCommand(c tb.Context) error {
-	//执行命令
 
 	return nil
 }

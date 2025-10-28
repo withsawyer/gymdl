@@ -1,3 +1,4 @@
 #!/bin/bash
 cd "$(dirname "$0")"
-docker-compose -f ../docker-compose-local.yml down && docker-compose -f ../docker-compose-local.yml up -d
+docker rm -f gymdl
+docker-compose -f ../docker-compose-local.yml up -d --build
