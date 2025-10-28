@@ -24,9 +24,9 @@ body:
       label: 📦 gymdl 版本
       description: |
         运行时使用的 gymdl 版本号  
-        - **Docker 部署**：填写镜像标签（例如：`ghcr.io/nichuanfang/gymdl:1.0.5`）  
-        - **可执行文件部署**：填写程序版本号（例如：`1.0.5`）
-      placeholder: 例如：1.0.5 或 ghcr.io/nichuanfang/gymdl:1.0.5
+        - **Docker 部署**：填写镜像标签（例如：`ghcr.io/nichuanfang/gymdl:v1.0.5`）  
+        - **可执行文件部署**：填写程序版本号（例如：`v1.0.5`）
+      placeholder: 例如：v1.0.5 或 ghcr.io/nichuanfang/gymdl:v1.0.5
     validations:
       required: true
 
