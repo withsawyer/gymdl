@@ -1,0 +1,36 @@
+name: 💡 Feature Request
+description: 建议新功能或改进 gymdl
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你为 gymdl 提出建议！请尽量描述清晰你的需求和使用场景。
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: 背景与动机
+      description: 你遇到了什么问题或需求？
+      placeholder: 我需要更方便地管理模型训练的日志...
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 功能建议
+      description: 请描述你希望新增或修改的功能
+      placeholder: 增加一个统一的模型注册接口...
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 替代方案
+      description: 你是否考虑过其他方案？为什么当前方案更好？
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 确认项
+      options:
+        - label: 我已检查现有 issue，确保此功能尚未被提出
+          required: true

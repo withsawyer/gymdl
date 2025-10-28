@@ -1,0 +1,121 @@
+name: 🐛 Bug Report
+description: 提交一个错误报告以帮助我们改进 gymdl
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你提交 bug！请尽量提供完整的信息以便我们快速定位问题。  
+        请根据 **部署方式** 填写对应的信息（Docker 或 可执行文件）。
+
+  - type: dropdown
+    id: deploy_method
+    attributes:
+      label: 部署方式
+      description: 请选择你运行 gymdl 的方式
+      options:
+        - Docker
+        - 可执行文件
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: gymdl 版本
+      description: 运行时使用的 gymdl 版本号（例如 1.0.5）
+      placeholder: 例如：1.0.5
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        **以下字段仅在「可执行文件部署」时需要填写** ⬇️  
+        如果你选择了 Docker，请留空即可。
+
+  - type: input
+    id: yt-dlp-version
+    attributes:
+      label: yt-dlp 版本
+      description: 可执行文件部署时使用的 yt-dlp 版本
+      placeholder: 例如：2024.10.07
+    validations:
+      required: false
+
+  - type: input
+    id: gamdl-version
+    attributes:
+      label: gamdl 版本
+      description: 可执行文件部署时使用的 gamdl 版本
+      placeholder: 例如：1.2.3
+    validations:
+      required: false
+
+  - type: input
+    id: spotdl-version
+    attributes:
+      label: spotdl 版本
+      description: 可执行文件部署时使用的 spotdl 版本
+      placeholder: 例如：4.3.2
+    validations:
+      required: false
+
+  - type: input
+    id: n_m3u8dl-re-version
+    attributes:
+      label: N_m3u8DL-RE 版本
+      description: 可执行文件部署时使用的 N_m3u8DL-RE 版本
+      placeholder: 例如：0.2.0
+    validations:
+      required: false
+
+  - type: input
+    id: os
+    attributes:
+      label: 操作系统
+      description: 你的系统信息（例如 Ubuntu 22.04 / Windows 11 / macOS 14）
+      placeholder: 例如：Windows 11
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 请详细描述你遇到的问题
+      placeholder: 出现了什么？你期望的结果是什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      description: 提供可复现问题的最小代码示例或操作步骤
+      placeholder: |
+        1. 安装 gymdl
+        2. 给出配置文件
+        3. 运行以下代码...
+        4. 观察错误
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志 / 错误输出
+      description: 请粘贴完整的错误日志（如有）
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 确认项
+      options:
+        - label: 我已使用最新版本测试此问题
+          required: true
+        - label: 我已检查现有 issue，确保此问题尚未被报告
+          required: true
+        - label: 我已阅读并理解 GitHub 首页的 README.md
+          required: true
