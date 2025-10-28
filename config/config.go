@@ -126,7 +126,4 @@ func (c *Config) setDefaults() {
 	if c.AdditionalConfig == nil {
 		c.AdditionalConfig = &AdditionalConfig{EnableCron: false, EnableDirMonitor: false, MonitorDirs: make([]string, 0)}
 	}
-	if c.ProxyConfig == nil {
-		c.ProxyConfig = &ProxyConfig{Scheme: "", Host: "127.0.0.1", Port: 10809, Auth: false}
-	}
 }
