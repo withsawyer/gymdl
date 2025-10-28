@@ -5,9 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        感谢你提交 bug 🙏  
-        请尽量提供完整、准确的信息，以帮助我们快速定位和修复问题。  
-        **请根据你的部署方式（Docker 或 可执行文件）填写对应内容。**
+        感谢你提交 bug！请尽量提供完整的信息以便我们快速定位问题
 
   - type: dropdown
     id: deploy_method
@@ -26,19 +24,16 @@ body:
       label: 📦 gymdl 版本
       description: |
         运行时使用的 gymdl 版本号  
-        - **Docker 部署**：填写镜像标签（例如：`ghcr.io/yourname/gymdl:1.0.5`）  
+        - **Docker 部署**：填写镜像标签（例如：`ghcr.io/nichuanfang/gymdl:1.0.5`）  
         - **可执行文件部署**：填写程序版本号（例如：`1.0.5`）
-      placeholder: 例如：1.0.5 或 ghcr.io/yourname/gymdl:1.0.5
+      placeholder: 例如：1.0.5 或 ghcr.io/nichuanfang/gymdl:1.0.5
     validations:
       required: true
 
   - type: markdown
     attributes:
       value: |
-        ---
-        🧱 **以下字段仅在「可执行文件」部署时需要填写**  
-        如果你使用 **Docker**，可直接跳过以下内容。
-        ---
+          **以下字段仅在部署方式为「可执行文件」时需要填写** ⬇️ 如果你选择了 Docker，请留空即可。
 
   - type: input
     id: yt-dlp-version
@@ -83,19 +78,15 @@ body:
     validations:
       required: true
 
-  - type: markdown
-    attributes:
-      value: |
-        ---
-        💻 **通用信息**
-        ---
-
-  - type: input
+  - type: dropdown
     id: os
     attributes:
       label: 🖥 操作系统
-      description: 请填写运行 gymdl 的系统信息（例如 Ubuntu 22.04 / Windows 11 / macOS 14）
-      placeholder: 例如：Windows 11
+      description: 请选择运行 gymdl 的操作系统
+      options:
+        - Windows
+        - macOS
+        - Linux
     validations:
       required: true
 
