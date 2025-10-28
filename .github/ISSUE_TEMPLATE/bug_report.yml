@@ -31,7 +31,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        **以下字段仅在「可执行文件部署」时需要填写** ⬇️  
+        **以下字段仅在部署方式为「可执行文件」时需要填写** ⬇️  
         如果你选择了 Docker，请留空即可。
 
   - type: input
