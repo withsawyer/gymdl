@@ -16,6 +16,8 @@ services:
       - ./data/temp:/app/data/temp
       # pip 缓存目录
       - ./.pipcache:/root/.cache/pip
+      # wrapper目录
+      - ./data/wrapper:/app/wrapper/rootfs/data
     expose:
       #api端口
       - 8080
