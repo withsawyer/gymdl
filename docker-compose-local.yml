@@ -1,0 +1,27 @@
+version: '3'
+services:
+  gymdl:
+    image: gymdl:latest 
+    build:
+      context: .
+    container_name: gymdl
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      #必须挂载配置文件否则项目无法启动
+      - ./config.json:/app/config.json
+      # 数据目录
+      - ./data/bin:/app/data/bin
+      - ./data/dist:/app/data/dist
+      - ./data/logs:/app/data/logs
+      - ./data/data/temp:/app/data/temp
+      # 缓存目录
+      - ./data/.pipcache:/root/.cache/pip
+    expose:
+      #api端口
+      - 8080
+      # webhook端口
+      - 9000
+    network_mode: host
+    restart: always
