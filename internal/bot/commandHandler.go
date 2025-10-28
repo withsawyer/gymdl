@@ -71,5 +71,7 @@ func SetCommands(c tb.Context) error {
 
 // WrapperCommand 注册wrapper并启动
 func WrapperCommand(c tb.Context) error {
+	//执行命令
+
 	return nil
 }

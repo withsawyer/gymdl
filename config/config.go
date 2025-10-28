@@ -123,6 +123,9 @@ func (c *Config) setDefaults() {
 	if c.AI == nil {
 		c.AI = &AIConfig{Enable: false, BaseUrl: "https://api.openai.com/v1", Model: "gpt-3.5-turbo"}
 	}
+	if c.WrapperConfig == nil {
+		c.WrapperConfig = &WrapperConfig{Enable: false}
+	}
 	if c.AdditionalConfig == nil {
 		c.AdditionalConfig = &AdditionalConfig{EnableCron: false, EnableDirMonitor: false, MonitorDirs: make([]string, 0)}
 	}
