@@ -77,8 +77,8 @@ COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
 # ==============================
 WORKDIR /app
 RUN wget -q "https://github.com/zhaarey/wrapper/releases/download/linux.V2/wrapper.x86_64.tar.gz" && \
-    wget -q "https://github.com/zhaarey/wrapper/archive/refs/heads/main.zip" &\
-    unzip main.zip &\
+    wget -q "https://github.com/zhaarey/wrapper/archive/refs/heads/main.zip" &&\
+    unzip main.zip &&\
     mv wrapper-main wrapper && \
     tar -xzf wrapper.x86_64.tar.gz -C wrapper && \
     rm -rf wrapper.x86_64.tar.gz && \
