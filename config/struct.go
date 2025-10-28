@@ -8,7 +8,6 @@ type Config struct {
 	Log              *LogConfig         `json:"log"`               // 日志配置
 	Telegram         *TelegramConfig    `json:"telegram"`          // telegram配置
 	AI               *AIConfig          `json:"ai"`                // AI配置
-	WrapperConfig    *WrapperConfig     `json:"wrapper_config"`    //wrapper配置
 	AdditionalConfig *AdditionalConfig  `json:"additional_config"` // 附属配置
 }
 
@@ -63,12 +62,6 @@ type AIConfig struct {
 	Model        string `json:"model"`         // 使用的模型
 	ApiKey       string `json:"api_key"`       // apiKey
 	SystemPrompt string `json:"system_prompt"` // 默认系统提示词
-}
-
-type WrapperConfig struct {
-	Enable      bool   `json:"enable"`       //是否开启wrapper 如果开启则支持alac
-	AppleId     string `json:"apple_id"`     //账号
-	AppleSecret string `json:"apple_secret"` //密码
 }
 
 type AdditionalConfig struct {

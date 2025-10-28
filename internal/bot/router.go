@@ -14,12 +14,6 @@ func (app *BotApp) registerHandlers() {
 	//帮助信息
 	app.bot.Handle("/help", HelpCommand)
 
-	//wrapper注册器
-	app.bot.Handle("/wrapper", WrapperCommand)
-
-	//wrapper签入
-	app.bot.Handle("/signin", WrapperSignInCommand)
-
 	//指令注册器
 	app.bot.Handle("/setCommands", SetCommands)
 
