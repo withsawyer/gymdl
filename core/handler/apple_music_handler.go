@@ -1,18 +1,18 @@
 package handler
 
 import (
-    "errors"
-    "fmt"
-    "os"
-    "os/exec"
-    "path/filepath"
-    "strings"
-    "time"
+	"errors"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"time"
 
-    "github.com/nichuanfang/gymdl/config"
-    "github.com/nichuanfang/gymdl/core"
-    "github.com/nichuanfang/gymdl/core/constants"
-    "github.com/nichuanfang/gymdl/utils"
+	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/core"
+	"github.com/nichuanfang/gymdl/core/constants"
+	"github.com/nichuanfang/gymdl/utils"
 )
 
 type AppleMusicHandler struct{}
@@ -47,7 +47,7 @@ func (am *AppleMusicHandler) DownloadMusic(url string, cfg *config.Config) (*Son
 		utils.DebugWithFormat("[AppleMusic] 下载输出:\n%s", logOut)
 	}
 	utils.InfoWithFormat("[AppleMusic] ✅ 下载完成（耗时 %v）", time.Since(start).Truncate(time.Millisecond))
-    
+
 	return &SongInfo{}, nil
 }
 
@@ -55,6 +55,7 @@ func (am *AppleMusicHandler) DownloadMusic(url string, cfg *config.Config) (*Son
 
 func (am *AppleMusicHandler) DownloadCommand(cfg *config.Config, url string) *exec.Cmd {
 	cookiePath := filepath.Join(cfg.CookieCloud.CookieFilePath, cfg.CookieCloud.CookieFile)
+	//https://github.com/glomatico/gamdl/commit/fdab6481ea246c2cf3415565c39da62a3b9dbd52 部分options改动
 	args := []string{
 		"--cookies-path", cookiePath,
 		"--download-mode", "nm3u8dlre",
@@ -63,10 +64,10 @@ func (am *AppleMusicHandler) DownloadCommand(cfg *config.Config, url string) *ex
 		"--album-folder-template", "AppleMusic",
 		"--compilation-folder-template", "AppleMusic",
 		"--no-album-folder-template", "AppleMusic",
-		"--single-disc-folder-template", "{title}",
-		"--multi-disc-folder-template", "{title}",
+		"--single-disc-file-template", "{title}",
+		"--multi-disc-file-template", "{title}",
 		"--no-synced-lyrics",
-        url,
+		url,
 	}
 	return exec.Command("gamdl", args...)
 }
@@ -74,17 +75,17 @@ func (am *AppleMusicHandler) DownloadCommand(cfg *config.Config, url string) *ex
 /* ---------------------- DRM 处理 ---------------------- */
 
 func (am *AppleMusicHandler) BeforeTidy(cfg *config.Config, songInfo *SongInfo) error {
-    path, err := am.findLatestDecryptedFile()
-    if err != nil {
-        return err
-    }
-    err = ExtractSongInfo(songInfo, path)
-    if err != nil {
-        return err
-    }
-    // 设置整理类型
-    songInfo.Tidy = determineTidyType(cfg)
-    return nil
+	path, err := am.findLatestDecryptedFile()
+	if err != nil {
+		return err
+	}
+	err = ExtractSongInfo(songInfo, path)
+	if err != nil {
+		return err
+	}
+	// 设置整理类型
+	songInfo.Tidy = determineTidyType(cfg)
+	return nil
 }
 
 func (am *AppleMusicHandler) NeedRemoveDRM(cfg *config.Config) bool {
