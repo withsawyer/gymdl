@@ -68,3 +68,8 @@ func SetCommands(c tb.Context) error {
 
 	return nil
 }
+
+// WrapperCommand 注册wrapper并启动
+func WrapperCommand(c tb.Context) error {
+	return nil
+}

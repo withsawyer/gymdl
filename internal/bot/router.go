@@ -17,6 +17,9 @@ func (app *BotApp) registerHandlers() {
 	//指令注册器
 	app.bot.Handle("/setCommands", SetCommands)
 
+	//wrapper注册器
+	app.bot.Handle("/wrapper", WrapperCommand)
+
 	//普通文本
 	app.bot.Handle(tb.OnText, HandleText)
 }
