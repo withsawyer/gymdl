@@ -47,26 +47,16 @@ body:
       value: |
           **以下字段仅在部署方式为「可执行文件」时需要填写** ⬇️ 如果你选择了 Docker，请留空即可。
 
-  - type: input
-    id: yt-dlp-version
+  - type: dropdown
+    id: python-installed
     attributes:
-      label: 🎞 yt-dlp 版本
-      description: 可执行文件部署时使用的 yt-dlp 版本
-      placeholder: 例如：2025.10.22
-
-  - type: input
-    id: gamdl-version
-    attributes:
-      label: 🎵 gamdl 版本
-      description: 可执行文件部署时使用的 gamdl 版本
-      placeholder: 例如：2.7.2
-
-  - type: input
-    id: spotdl-version
-    attributes:
-      label: 🎧 spotdl 版本
-      description: 可执行文件部署时使用的 spotdl 版本
-      placeholder: 例如：4.4.3
+      label: 🐍 python
+      description: 是否已安装 python3.12+？
+      options:
+        - 已安装
+        - 未安装
+    validations:
+      required: false
 
   - type: dropdown
     id: n_m3u8dl-re-installed
