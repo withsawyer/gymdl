@@ -62,8 +62,8 @@ body:
       label: 📺 N_m3u8DL-RE
       description: 是否已安装 N_m3u8DL-RE？
       options:
-        - 已安装
         - 未安装
+        - 已安装
     validations:
       required: true
 
@@ -73,8 +73,8 @@ body:
       label: 🎬 ffmpeg / ffprobe
       description: 是否已安装 ffmpeg 和 ffprobe？
       options:
-        - 已安装
         - 未安装
+        - 已安装
     validations:
       required: true
 
