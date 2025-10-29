@@ -1,20 +1,18 @@
+<h1 align="center">🎵 GYMDL</h1>
+<p align="center">跨平台智能音乐下载与管理工具</p>
+
 <p align="center">
-<h1>🎵 GYMDL</h1>
-<p>跨平台智能音乐下载与管理工具</p>
-<p>
     <a href="#"><img src="https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go" /></a>
     <a href="#"><img src="https://img.shields.io/badge/License-MIT-green" /></a>
     <a href="#"><img src="https://img.shields.io/github/actions/workflow/status/nichuanfang/gymdl/release.yml?logo=github" /></a>
     <a href="#"><img src="https://img.shields.io/badge/Telegram-Bot-blue?logo=telegram" /></a>
-</p>
 </p>
 
 ---
 
 ## 🧭 项目简介
 
-> **GYMDL** 是一款基于 Go 的跨平台音乐下载与管理工具，支持多平台智能识别链接、下载、解密、整理，并可同步到 WebDAV、接收
-Telegram 通知，同时支持 AI 助手扩展。
+**GYMDL** 是一款基于 Go 的跨平台音乐下载与管理工具，支持多平台智能识别链接、下载、解密、整理，并可同步到 WebDAV、接收 Telegram 通知，同时支持 AI 助手扩展。
 
 ---
 
@@ -47,79 +45,79 @@ make release
 ### 2️⃣ 配置文件示例
 
 <details>
-    <summary>点击展开 YAML 配置示例</summary>
+<summary>点击展开 YAML 配置示例</summary>
 
-    ```yaml
-    # Web 服务配置
-    web_config:
-    enable: false
-    app_domain: "localhost"
-    https: false
-    app_port: 9527
-    gin_mode: "debug"
+```yaml
+# Web 服务配置
+web_config:
+  enable: false
+  app_domain: "localhost"
+  https: false
+  app_port: 9527
+  gin_mode: "debug"
 
-    # CookieCloud 配置
-    cookie_cloud:
-    cookiecloud_url: ""
-    cookiecloud_uuid: ""
-    cookiecloud_key: ""
-    cookie_file_path: ""
-    cookie_file: ""
-    expire_time: 180
+# CookieCloud 配置
+cookie_cloud:
+  cookiecloud_url: ""
+  cookiecloud_uuid: ""
+  cookiecloud_key: ""
+  cookie_file_path: ""
+  cookie_file: ""
+  expire_time: 180
 
-    # 音乐整理配置
-    music_tidy:
-    mode: 1
-    dist_dir: "data/dist"
+# 音乐整理配置
+music_tidy:
+  mode: 1
+  dist_dir: "data/dist"
 
-    # WebDAV 配置
-    webdav:
-    webdav_url: ""
-    webdav_user: ""
-    webdav_pass: ""
-    webdav_dir: ""
+# WebDAV 配置
+webdav:
+  webdav_url: ""
+  webdav_user: ""
+  webdav_pass: ""
+  webdav_dir: ""
 
-    # 日志配置
-    log:
-    mode: 1
-    level: 2
-    file: "data/logs/run.log"
+# 日志配置
+log:
+  mode: 1
+  level: 2
+  file: "data/logs/run.log"
 
-    # Telegram 配置
-    telegram:
-    enable: false
-    mode: 1
-    chat_id: ""
-    bot_token: ""
-    allowed_users: [ "" ]
-    webhook_url: ""
-    webhook_port: 9000
+# Telegram 配置
+telegram:
+  enable: false
+  mode: 1
+  chat_id: ""
+  bot_token: ""
+  allowed_users: [ "" ]
+  webhook_url: ""
+  webhook_port: 9000
 
-    # AI 配置
-    ai:
-    enable: false
-    base_url: ""
-    model: ""
-    api_key: ""
-    system_prompt: ""
+# AI 配置
+ai:
+  enable: false
+  base_url: ""
+  model: ""
+  api_key: ""
+  system_prompt: ""
 
-    # 附加功能配置
-    additional_config:
-    enable_cron: false
-    enable_monitor: false
-    monitor_dirs: [ "" ]
-    enable_wrapper: false
+# 附加功能配置
+additional_config:
+  enable_cron: false
+  enable_monitor: false
+  monitor_dirs: [ "" ]
+  enable_wrapper: false
 
-    # 代理配置
-    proxy:
-    enable: false
-    scheme: "http"
-    host: "127.0.0.1"
-    port: 7890
-    user: ""
-    pass: ""
-    auth: false
-    ```
+# 代理配置
+proxy:
+  enable: false
+  scheme: "http"
+  host: "127.0.0.1"
+  port: 7890
+  user: ""
+  pass: ""
+  auth: false
+```
 
 </details>
 
@@ -172,10 +170,10 @@ make release
 
 ## 🤝 贡献指南
 
-> ❤️ 欢迎提交 **Issue** 或 **Pull Request**
-> • 保持代码风格一致
-> • PR 前使用 `go fmt` 格式化代码
-> • PR 中详细说明改动内容
+❤️ 欢迎提交 **Issue** 或 **Pull Request**
+• 保持代码风格一致
+• PR 前使用 `go fmt` 格式化代码
+• PR 中详细说明改动内容
 
 ---
 
