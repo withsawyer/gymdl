@@ -1,27 +1,27 @@
 package main
 
 import (
-	"context"
-	"errors"
-	"flag"
-	"fmt"
-	"net/http"
-	"os"
-	"os/signal"
-	"runtime"
-	"sync"
-	"syscall"
-	"time"
+    "context"
+    "errors"
+    "flag"
+    "fmt"
+    "net/http"
+    "os"
+    "os/signal"
+    "runtime"
+    "sync"
+    "syscall"
+    "time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core"
-	"github.com/nichuanfang/gymdl/internal/bot"
-	"github.com/nichuanfang/gymdl/internal/cron"
-	"github.com/nichuanfang/gymdl/internal/gin/router"
-	"github.com/nichuanfang/gymdl/internal/monitor"
-	"github.com/nichuanfang/gymdl/utils"
-	"go.uber.org/zap"
+    "github.com/gin-gonic/gin"
+    "github.com/nichuanfang/gymdl/config"
+    "github.com/nichuanfang/gymdl/core"
+    "github.com/nichuanfang/gymdl/internal/bot"
+    "github.com/nichuanfang/gymdl/internal/cron"
+    "github.com/nichuanfang/gymdl/internal/gin/router"
+    "github.com/nichuanfang/gymdl/internal/monitor"
+    "github.com/nichuanfang/gymdl/utils"
+    "go.uber.org/zap"
 )
 
 var (
@@ -62,6 +62,14 @@ func initWebDAV(c *config.WebDAVConfig) {
 	} else {
 		utils.Warning("WebDAV 服务不可用，请检查配置或网络连接")
 	}
+}
+
+// 初始化 Wrapper 服务
+func initWrapper() {
+    // 检测wrapper服务是否可用
+        if utils.CheckWrapperConnection("wrapper"){
+            utils.ServiceIsOn("Wrapper 服务已加载")
+        }
 }
 
 // 初始化 CookieCloud 服务
@@ -204,6 +212,10 @@ func main() {
 	if c.MusicTidy.Mode == 2 {
 		initWebDAV(c.WebDAV)
 	}
+    
+    if c.AdditionalConfig.EnableWrapper{
+        initWrapper()
+    }
 
 	ctx, cancel := context.WithCancel(context.Background())
 	wg := &sync.WaitGroup{}
@@ -211,22 +223,22 @@ func main() {
 	// 用 map 映射模块启动逻辑，更优雅地管理协程
 	services := map[string]func(context.Context, *config.Config){}
 
-	//是否启用定时任务
+	// 是否启用定时任务
 	if c.AdditionalConfig.EnableCron {
 		services["cron"] = initCron
 	}
 
-	//是否启用目录监控
+	// 是否启用目录监控
 	if c.AdditionalConfig.EnableDirMonitor {
 		services["monitor"] = initMonitor
 	}
 
-	//是否启用web服务
+	// 是否启用web服务
 	if c.WebConfig.Enable {
 		services["web"] = initGin
 	}
 
-	//是否启用telegram
+	// 是否启用telegram
 	if c.Telegram.Enable {
 		services["telegram"] = initBot
 	}
