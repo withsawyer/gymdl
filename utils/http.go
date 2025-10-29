@@ -20,7 +20,7 @@ func CheckWrapperConnection(containerName string) bool {
     pinger.Timeout = 5 * time.Second
     pinger.SetPrivileged(true)    // Linux 下需要 root 权限发送 ICMP
 
-    InfoWithFormat("开始 ping %s...\n", containerName)
+    DebugWithFormat("开始 ping %s...\n", containerName)
     err = pinger.Run() // 阻塞
     if err != nil {
         ErrorWithFormat("Ping 出错: %v\n", err)
@@ -29,7 +29,7 @@ func CheckWrapperConnection(containerName string) bool {
 
     stats := pinger.Statistics() // 获取统计信息
     if stats.PacketsRecv > 0 {
-        InfoWithFormat("%s 可达, 丢包率: %.2f%%\n", containerName, stats.PacketLoss)
+        DebugWithFormat("%s 可达, 丢包率: %.2f%%\n", containerName, stats.PacketLoss)
     } else {
         ErrorWithFormat("%s 不可达\n", containerName)
         return false
