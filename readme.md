@@ -144,17 +144,8 @@ go run main.go
 or
 
 ```bash
-# https://github.com/nichuanfang/gymdl/releases下载最新release
 ./gymdl -c config.yaml
 ```
-
-功能概览：
-
-* 自动识别链接并下载音乐
-* 音源解密
-* 监控下载目录自动解密
-* 文件整理并上传到 WebDAV 或本地目录
-* Telegram 通知与交互
 
 > [!TIP]
 > 推荐的三种运行模式 
