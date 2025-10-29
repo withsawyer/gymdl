@@ -20,7 +20,7 @@
 
 | 功能 | 状态 |
 |------|------|
-| 多平台音乐下载：网易云、Apple Music、Spotify、QQ 音乐、YouTube Music、SoundCloud | ✅ |
+| 主流音乐平台：Apple Music、Spotify、YouTube Music、SoundCloud | ✅ |
 | 智能链接识别与解析 | ✅ |
 | CookieCloud 自动同步登录状态 | ✅ |
 | WebDAV 自动上传整理后的音乐 | ✅ |
