@@ -8,9 +8,14 @@ require (
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/XiaoMengXinX/Music163Api-Go v0.1.29
 	github.com/XiaoMengXinX/SimpleDownloader v0.0.0-20221110191044-7a2606dfcf7c
+	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gcottom/audiometa/v3 v3.0.4
+	github.com/gcottom/flacmeta v0.0.6
+	github.com/gcottom/mp3meta v0.0.4
+	github.com/gcottom/mp4meta v0.0.5
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-co-op/gocron/v2 v2.17.0
+	github.com/go-ping/ping v1.2.0
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/google/uuid v1.6.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
@@ -20,6 +25,8 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.46.0
 	gopkg.in/telebot.v4 v4.0.0-beta.5
+	gopkg.in/vansante/go-ffprobe.v2 v2.2.1
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -31,14 +38,9 @@ require (
 	github.com/bytedance/sonic v1.14.1 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
-	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
-	github.com/gcottom/flacmeta v0.0.6 // indirect
-	github.com/gcottom/mp3meta v0.0.4 // indirect
-	github.com/gcottom/mp4meta v0.0.5 // indirect
 	github.com/gcottom/oggmeta v0.0.8 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
-	github.com/go-ping/ping v1.2.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.28.0 // indirect
@@ -68,5 +70,4 @@ require (
 	golang.org/x/text v0.30.0 // indirect
 	golang.org/x/tools v0.38.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
-	gopkg.in/vansante/go-ffprobe.v2 v2.2.1 // indirect
 )

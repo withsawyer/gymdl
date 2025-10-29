@@ -2,6 +2,8 @@ package bot
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/utils"
@@ -26,6 +28,32 @@ func NewBotApp(cfg *config.Config) (*BotApp, error) {
 		Token: cfg.Telegram.BotToken,
 		// 默认使用 polling，后面可切换
 		Poller: &tb.LongPoller{Timeout: 10},
+	}
+
+	// 检查是否启用代理配置
+	if cfg.ProxyConfig.Enable {
+		// 验证代理配置是否完整（Scheme、Host、Port 必须非空）
+		if cfg.ProxyConfig.Scheme != "" && cfg.ProxyConfig.Host != "" && cfg.ProxyConfig.Port != 0 {
+			// 初始化代理认证信息
+			var userinfo *url.Userinfo
+			if cfg.ProxyConfig.Auth {
+				// 如果启用认证，设置用户名和密码
+				userinfo = url.UserPassword(cfg.ProxyConfig.User, cfg.ProxyConfig.Pass)
+			}
+			// 配置 HTTP 客户端，使用代理
+			botSettings.Client = &http.Client{
+				Transport: &http.Transport{
+					Proxy: http.ProxyURL(&url.URL{
+						Scheme: cfg.ProxyConfig.Scheme,
+						Host:   fmt.Sprintf("%s:%d", cfg.ProxyConfig.Host, cfg.ProxyConfig.Port),
+						User:   userinfo,
+					}),
+				},
+			}
+		} else {
+			// 代理配置不完整，记录日志
+			utils.Logger().Info("ProxyConfig 配置不完整，未成功使用代理")
+		}
 	}
 
 	if cfg.Telegram.Mode == 2 {

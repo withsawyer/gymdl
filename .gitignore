@@ -40,3 +40,5 @@ data/logs/*
 
 config.json
 .aider*
+storage/*
+*.yaml
