@@ -1,8 +1,8 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"os"
 )
 
@@ -16,7 +16,6 @@ func LoadConfig(file string) *Config {
 		saveDefaultConfig(file, c)
 		return c
 	}
-
 	// 📖 读取文件内容
 	bytes, err := os.ReadFile(file)
 	if err != nil {
@@ -25,8 +24,8 @@ func LoadConfig(file string) *Config {
 		saveDefaultConfig(file, c)
 		return c
 	}
-
 	// 📄 检查是否为空文件
+	fmt.Printf("%s\n", string(bytes))
 	if len(bytes) == 0 {
 		fmt.Println("⚠️ 配置文件为空，生成默认配置")
 		c := createDefaultConfig()
@@ -34,9 +33,9 @@ func LoadConfig(file string) *Config {
 		return c
 	}
 
-	// 🧠 尝试解析JSON
-	c := &Config{}
-	err = json.Unmarshal(bytes, c)
+	// 🧠 尝试解析YAML
+	var c = &Config{}
+	err = yaml.Unmarshal(bytes, c)
 	if err != nil {
 		fmt.Println("⚠️ 配置文件解析失败，创建默认配置:", err)
 		backupOldConfig(file, bytes)
@@ -47,6 +46,10 @@ func LoadConfig(file string) *Config {
 
 	// 🧩 填充缺省值
 	c.setDefaults()
+
+	// 📢 打印解析后的配置
+	//fmt.Printf("解析后的配置: %+v\n", c)
+
 	return c
 }
 
@@ -59,7 +62,7 @@ func createDefaultConfig() *Config {
 
 // 💾 saveDefaultConfig 保存默认配置
 func saveDefaultConfig(file string, c *Config) {
-	data, err := json.MarshalIndent(c, "", "  ")
+	data, err := yaml.Marshal(c)
 	if err != nil {
 		fmt.Println("❌ 序列化默认配置失败:", err)
 		return
@@ -67,7 +70,7 @@ func saveDefaultConfig(file string, c *Config) {
 
 	dir := getDir(file)
 	if dir != "" {
-		os.MkdirAll(dir, 0755)
+		_ = os.MkdirAll(dir, 0755)
 	}
 
 	err = os.WriteFile(file, data, 0644)
@@ -106,13 +109,25 @@ func (c *Config) setDefaults() {
 		c.WebConfig = &WebConfig{Enable: false, AppDomain: "localhost", Https: false, AppPort: 8080, GinMode: "debug"}
 	}
 	if c.CookieCloud == nil {
-		c.CookieCloud = &CookieCloudConfig{CookieFile: "cookies.txt", CookieFilePath: "data/temp", ExpireTime: 180}
+		c.CookieCloud = &CookieCloudConfig{
+			CookieCloudUrl:  "https://cookie-cloud.aiotc.com:20005/default",
+			CookieCloudUUID: "",
+			CookieCloudKEY:  "",
+			CookieFile:      "cookies.txt",
+			CookieFilePath:  "data/temp",
+			ExpireTime:      180,
+		}
 	}
 	if c.MusicTidy == nil {
 		c.MusicTidy = &MusicTidyConfig{Mode: 1, DistDir: "data/dist"}
 	}
 	if c.WebDAV == nil {
-		c.WebDAV = &WebDAVConfig{}
+		c.WebDAV = &WebDAVConfig{
+			WebDAVUrl:  "http://fn.aiotc.com:25005",
+			WebDAVUser: "",
+			WebDAVPass: "",
+			WebDAVDir:  "",
+		}
 	}
 	if c.Log == nil {
 		c.Log = &LogConfig{Mode: 1, Level: 2, File: "data/logs/run.log"}
@@ -124,6 +139,6 @@ func (c *Config) setDefaults() {
 		c.AI = &AIConfig{Enable: false, BaseUrl: "https://api.openai.com/v1", Model: "gpt-3.5-turbo"}
 	}
 	if c.AdditionalConfig == nil {
-		c.AdditionalConfig = &AdditionalConfig{EnableCron: false, EnableDirMonitor: false, MonitorDirs: make([]string, 0),EnableWrapper: false}
+		c.AdditionalConfig = &AdditionalConfig{EnableCron: false, EnableDirMonitor: false, MonitorDirs: make([]string, 0)}
 	}
 }
