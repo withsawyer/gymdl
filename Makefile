@@ -44,10 +44,10 @@ zip_releases=$(addsuffix .zip, $(WINDOWS_ARCH_LIST))
 
 $(gz_releases): %.gz : %
 	chmod +x $(RELEASE_DIR)/$(NAME)-$(basename $@)
-	zip -m -j $(RELEASE_DIR)/$(NAME)-$(basename $@)-$(VERSION).zip $(RELEASE_DIR)/$(NAME)-$(basename $@) $(RELEASE_DIR)/config.json.example
+	zip -m -j $(RELEASE_DIR)/$(NAME)-$(basename $@)-$(VERSION).zip $(RELEASE_DIR)/$(NAME)-$(basename $@) $(RELEASE_DIR)/config.yaml.example
 
 $(zip_releases): %.zip : %
-	zip -m -j $(RELEASE_DIR)/$(NAME)-$(basename $@)-$(VERSION).zip $(RELEASE_DIR)/$(NAME)-$(basename $@).exe $(RELEASE_DIR)/config.json.example
+	zip -m -j $(RELEASE_DIR)/$(NAME)-$(basename $@)-$(VERSION).zip $(RELEASE_DIR)/$(NAME)-$(basename $@).exe $(RELEASE_DIR)/config.yaml.example
 
 release: $(gz_releases) $(zip_releases)
 

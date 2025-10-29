@@ -42,3 +42,4 @@ config.json
 .aider*
 storage/*
 *.yaml
+!docker-compose-local.yml

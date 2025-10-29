@@ -2,8 +2,9 @@ package config
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 // 🧩 LoadConfig 加载配置并填充默认值
@@ -25,7 +26,6 @@ func LoadConfig(file string) *Config {
 		return c
 	}
 	// 📄 检查是否为空文件
-	fmt.Printf("%s\n", string(bytes))
 	if len(bytes) == 0 {
 		fmt.Println("⚠️ 配置文件为空，生成默认配置")
 		c := createDefaultConfig()
@@ -48,7 +48,7 @@ func LoadConfig(file string) *Config {
 	c.setDefaults()
 
 	// 📢 打印解析后的配置
-	//fmt.Printf("解析后的配置: %+v\n", c)
+	// fmt.Printf("解析后的配置: %+v\n", c)
 
 	return c
 }

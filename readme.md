@@ -1,4 +1,4 @@
-# 🎵 **GYMDL**
+# 🎵 GYMDL
 
 ### 🚀 跨平台智能音乐下载与管理工具
 
@@ -11,39 +11,22 @@
 
 ## 🧭 项目简介
 
-**GYMDL** 是一款基于 **Go** 语言构建的现代化音乐下载与管理系统。
-它能智能识别来自多平台的音乐链接，完成 **下载、解密、整理与同步**，并集成了 **CookieCloud、WebDAV、Telegram Bot、AI 助手** 等多种功能，
-为你打造一套无缝衔接的全平台音乐体验。 🎶
+**GYMDL** 是基于 Go 的跨平台音乐下载与管理工具，支持多平台智能识别链接、下载、解密、整理，并可同步到 WebDAV、接收 Telegram
+通知、使用 AI 助手。
 
 ---
 
 ## ✨ 核心特性
 
-* 🎯 **多平台支持**：支持网易云、Apple Music、Spotify、QQ 音乐、YouTube Music、SoundCloud 等主流平台。
-* 🔗 **智能链接识别**：自动识别不同格式的音乐链接并解析下载。
-* 🍪 **CookieCloud 集成**：自动同步登录状态，提升下载成功率与音质。
-* ☁️ **WebDAV 支持**：可将处理后的音乐自动上传至 NAS。
-* 🤖 **Telegram Bot 控制**：通过机器人远程控制下载与接收通知。
-* ⏰ **定时任务调度**：内置基于 `gocron` 的自动化任务系统。
-* 📂 **目录监听（规划中）**：监听网易云/QQ下载目录,实时解锁整理。
-* 🧠 **AI 助手（规划中）**：提供音乐相关问答与智能辅助。
-* 💻 **Web UI（规划中）**：即将支持可视化的管理界面。
-
----
-
-## 🧩 技术栈
-
-| 模块           | 技术            |
-|--------------| ------------- |
-| 核心语言         | Go 1.24       |
-| Web 框架       | Gin           |
-| 日志系统         | Zap           |
-| 定时调度         | gocron        |
-| 目录监控         | fsnotify        |
-| Telegram Bot | Telebot       |
-| 云存储          | gowebdav      |
-| AI 支持        | OpenAI API    |
-| CI/CD        | GitHub Actions |
+* 🎯 多平台音乐下载：网易云、Apple Music、Spotify、QQ 音乐、YouTube Music、SoundCloud
+* 🔗 智能链接识别与解析
+* 🍪 CookieCloud 自动同步登录状态
+* ☁️ WebDAV 自动上传整理后的音乐
+* 🤖 Telegram Bot 控制下载、接收通知
+* ⏰ 定时任务调度（gocron）
+* 📂 目录监听（规划中）
+* 🧠 AI 助手（规划中）
+* 💻 Web UI（规划中）
 
 ---
 
@@ -57,94 +40,182 @@ cd gymdl
 make release
 ```
 
-### 2️⃣ 配置文件
+### 2️⃣ 配置文件示例
 
-编辑 `config.json`，填入：
+<details>
+<summary>点击展开 YAML 配置示例</summary>
 
-* CookieCloud 云端信息
-* WebDAV 存储配置
-* Telegram Bot Token
+```yaml
+# =========================
+# Web 服务配置
+# =========================
+web_config:
+  enable: false          # 是否启用 Web 服务
+  app_domain: "localhost" # Web 服务域名
+  https: false           # 是否启用 HTTPS
+  app_port: 9527         # Web 服务端口
+  gin_mode: "debug"      # Gin 运行模式: debug/release/test
 
-### 3️⃣ 运行
+# =========================
+# CookieCloud 配置
+# =========================
+cookie_cloud:
+  cookiecloud_url: ""       # CookieCloud 服务地址
+  cookiecloud_uuid: ""      # 用户 UUID
+  cookiecloud_key: ""       # 多端需一致
+  cookie_file_path: ""      # 本地存储目录
+  cookie_file: ""           # Cookie 文件名
+  expire_time: 180          # 过期时间（分钟）
 
-```bash
-./gymdl -c config.json
+# =========================
+# 音乐整理配置
+# =========================
+music_tidy:
+  mode: 1               # 整理模式: 1=本地, 2=WebDAV
+  dist_dir: "data/dist" # 本地整理目录
+
+# =========================
+# WebDAV 配置
+# =========================
+webdav:
+  webdav_url: ""
+  webdav_user: ""
+  webdav_pass: ""
+  webdav_dir: ""
+
+# =========================
+# 日志配置
+# =========================
+log:
+  mode: 1
+  level: 2
+  file: "data/logs/run.log"
+
+# =========================
+# Telegram 配置
+# =========================
+telegram:
+  enable: false
+  mode: 1
+  chat_id: ""
+  bot_token: ""
+  allowed_users: [ "" ]
+  webhook_url: ""
+  webhook_port: 9000
+
+# =========================
+# AI 配置
+# =========================
+ai:
+  enable: false
+  base_url: ""
+  model: ""
+  api_key: ""
+  system_prompt: ""
+
+# =========================
+# 附加功能配置
+# =========================
+additional_config:
+  enable_cron: false
+  enable_monitor: false
+  monitor_dirs: [ "" ]
+  enable_wrapper: false
+
+# =========================
+# 代理配置
+# =========================
+proxy:
+  enable: false
+  scheme: "http"
+  host: "127.0.0.1"
+  port: 7890
+  user: ""
+  pass: ""
+  auth: false
 ```
 
-### 4️⃣ 使用
+</details>
 
-通过 **Telegram 机器人** 发送音乐链接，GYMDL 将自动：
+> ⚡ **提示**：展开查看每个字段的详细注释说明，方便初学者直接修改配置。
 
-* 识别链接来源
-* 下载并解密音源
-* 整理命名并上传至 WebDAV 或本地目录
 
----
+### 3️⃣ 运行 GYMDL
 
-## 📘 开发教程
+```bash
+./gymdl -c config.yaml
+```
 
-1. 安装 **Go 1.24+**
-2. 克隆仓库
-3. 安装依赖
+GYMDL 的能力：
 
-   ```bash
-   go mod tidy
-   ```
-4. 启动本地开发环境
+* 链接识别与下载
+* 音源解密
+* 监控下载目录自动解密
+* 文件整理并上传到 WebDAV 或本地目录
+* Telegram 通知与交互
 
-   ```bash
-   go run main.go -c config.json
-   ```
-5. 修改代码后，可通过 `make release` 构建二进制文件。
 
----
+### 4️⃣ 使用流程
 
-## 💡 使用教程
+1. 安装 [CookieCloud 插件](https://chrome.google.com/webstore/detail/cookiecloud/ffjiejobkoibkjlhjnlgmcnnigeelbdl)
+2. 登录音乐平台并同步 Cookie
+3. 配置好 `config.yaml`
+4. 通过 Telegram Bot 发送音乐链接，GYMDL 自动处理
 
-1. 在浏览器中安装 [CookieCloud 插件](https://chromewebstore.google.com/detail/cookiecloud/ffjiejobkoibkjlhjnlgmcnnigeelbdl?hl=en)
-2. 登录各音乐平台并同步 Cookie 到云端
-3. 配置好 `config.json`
-4. 运行 GYMDL 后，通过 Telegram 机器人控制下载或查看状态
 
----
+### 5️⃣ 高音质下载前置条件
 
-## 🔧 前置条件
+* ✅ 科学上网
+* ✅ 登录对应音乐平台账号
+* ✅ CookieCloud 已同步
+* ✅ 部署方式配置环境：
 
-> 若想下载高音质音乐，请确保以下条件满足：
+| 部署方式         | 说明                                                                                                |
+|--------------|---------------------------------------------------------------------------------------------------|
+| 🐳 Docker 部署 | 仅需配置 `config.yaml` 即可                                                                             |
+| 💻 本地部署      | 需额外安装：<br>• Python 3.12+<br>• ffmpeg / ffprobe<br>• N_m3u8DL-RE<br>• MP4Box <br>• wrapper(docker) |
 
-* ✅ 科学上网问题请自行解决
-* ✅ 已登录对应音乐平台账号
-* ✅ 使用 [CookieCloud 插件](https://chromewebstore.google.com/detail/cookiecloud/ffjiejobkoibkjlhjnlgmcnnigeelbdl?hl=en) 同步 Cookie
-* ✅ 根据部署方式配置环境：
+[//]: # (## 📸 示例截图)
 
-| 部署方式             | 要求                                                                                                      |
-|------------------|---------------------------------------------------------------------------------------------------------|
-| 🐳 **Docker 部署** | 仅需正确配置 `config.json`                                                                                    |
-| 💻 **本地部署**      | 除配置文件外，还需配置以下环境才可以解锁全部服务：<br>• 已安装 **python3.12+**<br>• 已安装 **ffmpeg和ffprobe**<br>• 已安装 **N_m3u8DL-RE** |
----
+[//]: # ()
+[//]: # (<details>)
+
+[//]: # (<summary>点击查看示例 Telegram 控制截图</summary>)
+
+[//]: # ()
+[//]: # (![Telegram 示例]&#40;https://via.placeholder.com/600x300.png?text=Telegram+Bot+Example&#41;)
+
+[//]: # ()
+[//]: # (</details>)
+
+[//]: # ()
+[//]: # (<details>)
+
+[//]: # (<summary>点击查看 Web UI / 文件整理截图（规划中）</summary>)
+
+[//]: # ()
+[//]: # (![Web UI 示例]&#40;https://via.placeholder.com/600x300.png?text=Web+UI+Example&#41;)
+
+[//]: # ()
+[//]: # (</details>)
+
+[//]: # ()
+[//]: # (---)
 
 ## 🤝 贡献指南
 
-欢迎提交 **Issue** 与 **Pull Request** ❤️
-请遵循以下原则：
-
+* 提交 **Issue** 或 **Pull Request** ❤️
 * 保持代码风格一致
-* 提交前通过 `go fmt` 格式化代码
-* 在 PR 中详细说明变更内容
-
----
+* PR 前使用 `go fmt` 格式化代码
+* PR 中详细说明改动内容
 
 ## 📜 许可证
 
-本项目使用 [MIT License](LICENSE) 开源。
-
----
+MIT License ([LICENSE](LICENSE))
 
 ## 📬 联系方式
 
-* **GitHub**：[@nichuanfang](https://github.com/nichuanfang)
-* **Email**：[f18326186224@gmail.com](mailto:f18326186224@gmail.com)
-
----
+* GitHub：[@nichuanfang](https://github.com/nichuanfang)
+* Email：[f18326186224@gmail.com](mailto:f18326186224@gmail.com)
 
 > 💬 *“愿你的音乐，永不停歇。”* 🎧

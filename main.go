@@ -225,22 +225,22 @@ func main() {
 	// 用 map 映射模块启动逻辑，更优雅地管理协程
 	services := map[string]func(context.Context, *config.Config){}
 
-	//是否启用定时任务
+	// 是否启用定时任务
 	if c.AdditionalConfig.EnableCron {
 		services["cron"] = initCron
 	}
 
-	//是否启用目录监控
+	// 是否启用目录监控
 	if c.AdditionalConfig.EnableDirMonitor {
 		services["monitor"] = initMonitor
 	}
 
-	//是否启用web服务
+	// 是否启用web服务
 	if c.WebConfig.Enable {
 		services["web"] = initGin
 	}
 
-	//是否启用telegram
+	// 是否启用telegram
 	if c.Telegram.Enable {
 		services["telegram"] = initBot
 	}

@@ -1,12 +1,12 @@
-# GYMDL 配置文件 (YAML 格式)
-# 以下为详细配置项说明，默认值与 config.json.example 一致
+# GYMDL 配置文件
+# 以下为详细配置项说明
 
 # Web 服务配置
 web_config:
   enable: false  # 是否启用 web 服务
   app_domain: "localhost"  # web 服务域名
   https: false  # 是否开启 HTTPS
-  app_port: 9527  # web 服务监听端口
+  app_port: 8080  # web 服务监听端口
   gin_mode: "debug"  # Gin 运行模式: 可选 [debug, release, test]
 
 # CookieCloud 配置
@@ -20,7 +20,7 @@ cookie_cloud:
 
 # 音乐整理配置
 music_tidy:
-  mode: 1  # 音乐整理模式: 1=整理到 DistDir, 2=整理到 WebDAVDir
+  mode: 1  # 音乐整理模式: 1=整理到 dist_dir, 2=整理到 webdav_dir
   dist_dir: "data/dist"  # 当 mode=1 时使用的本地整理目录
 
 # WebDAV 配置
@@ -38,36 +38,36 @@ log:
 
 # Telegram 配置
 telegram:
-  enable: false  # 是否启用 Telegram 通知服务
+  enable: true  # 是否启用 Telegram 通知服务
   mode: 1  # 运行模式: 1=长轮询, 2=Webhook (推荐开发用1, 生产用2)
   chat_id: ""  # 机器人 chat_id
   bot_token: ""  # Telegram Bot Token
-  allowed_users: [ "" ]  # 用户白名单列表 (Telegram 用户 ID)
+  allowed_users:
+    - ""  # 用户白名单列表 (Telegram 用户 ID)
   webhook_url: ""  # Webhook 地址 (mode=2 时必填)
   webhook_port: 9000  # Webhook 模式下监听端口
 
 # AI 配置
 ai:
-  enable: false         # 是否启用 AI 功能
-  base_url: ""          # AI 接口的 Base URL
-  model: ""             # 使用的 AI 模型名称
-  api_key: ""           # AI 服务的 API Key
-  system_prompt: ""     # 默认系统提示词
+  enable: false  # 是否启用 AI 功能
+  base_url: ""  # AI 接口的 Base URL
+  model: ""  # 使用的 AI 模型名称
+  api_key: ""  # AI 服务的 API Key
+  system_prompt: ""  # 默认系统提示词
 
 # 附加配置
 additional_config:
-  enable_cron: false            # 是否启用定时任务功能
-  enable_monitor: false         # 是否启用目录监听
-  monitor_dirs: [ "" ]          # 监听的目录
-  enable_wrapper: false         # 是否启用wrapper
-
+  enable_cron: false  # 是否启用定时任务功能 只有开启此配置才会尝试同步cookie文件(重要)
+  enable_monitor: false  # 是否启用目录监听 开启后监听下载目录使用um cli自动解密
+  monitor_dirs:
+    - ""  # 监听的目录,下载器监控
+  enable_wrapper: false  # 是否启用 wrapper 需要使用docker启动wrapper服务 容器名称wrapper 需要过2FA验证
 
 # 代理配置
 proxy:
-  enable: false         # 是否启用代理
-  scheme: "http"        # 代理协议: http/https/socks5
-  host: "127.0.0.1"     # 代理主机
-  port: 7890            # 代理端口
-  user: ""              # 代理用户名
-  pass: ""              # 代理密码
-  auth: false           # 是否启用代理认证
+  scheme: ""  # 代理协议: http/https/socks5
+  host: "127.0.0.1"  # 代理主机
+  port: 10809  # 代理端口
+  user: ""  # 代理用户名
+  pass: ""  # 代理密码
+  auth: false  # 是否启用代理认证
