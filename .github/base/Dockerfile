@@ -67,7 +67,15 @@ RUN apt update && apt install -y --no-install-recommends \
     tzdata ca-certificates wget curl tar unzip libicu-dev && \
     ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo Asia/Shanghai > /etc/timezone && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* 
+
+# 安装 GPAC
+WORKDIR /tmp
+RUN wget https://download.tsi.telecom-paristech.fr/gpac/new_builds/gpac_latest_head_linux64.deb -O gpac.deb && \
+    apt-get update && apt-get install -y --no-install-recommends \
+      libgl1 \
+      && dpkg -i gpac.deb || apt-get install -yf && \
+    rm -rf /var/lib/apt/lists/* /tmp/*
 
 # 安装 Deno
 RUN curl -fsSL https://deno.land/install.sh | sh && \
