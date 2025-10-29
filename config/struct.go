@@ -66,6 +66,7 @@ type AIConfig struct {
 
 type AdditionalConfig struct {
 	EnableCron       bool     `json:"enable_cron"`    // 是否启用定时任务
-	EnableDirMonitor bool     `json:"enable_monitor"` //是否启用目录监听
-	MonitorDirs      []string `json:"monitor_dirs"`   //需要监听的目录  监听网易云/QQ下载目录=>调用um工具解锁=>整理=>telegram入库通知
+	EnableDirMonitor bool     `json:"enable_monitor"` // 是否启用目录监听
+	MonitorDirs      []string `json:"monitor_dirs"`   // 需要监听的目录  监听网易云/QQ下载目录=>调用um工具解锁=>整理=>telegram入库通知
+    EnableWrapper    bool     `json:"enable_wrapper"` // 是否启动wrapper 
 }
