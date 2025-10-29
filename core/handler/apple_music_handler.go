@@ -24,6 +24,17 @@ func (am *AppleMusicHandler) Platform() string { return "AppleMusic" }
 /* ---------------------- 下载逻辑 ---------------------- */
 
 func (am *AppleMusicHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo, error) {
+    if cfg.AdditionalConfig.EnableWrapper{
+            utils.Logger().Debug("使用增强版am下载器")
+		return am.wrapDownload(url, cfg)
+	} else {
+        utils.Logger().Debug("使用默认am下载器")
+		return am.defaultDownload(url, cfg)
+	}
+}
+
+// defaultDownload 默认下载器
+func (am *AppleMusicHandler)defaultDownload(url string, cfg *config.Config) (*SongInfo, error) {
 	start := time.Now()
 	tempDir := constants.AppleMusicTempDir
 
@@ -51,11 +62,16 @@ func (am *AppleMusicHandler) DownloadMusic(url string, cfg *config.Config) (*Son
 	return &SongInfo{}, nil
 }
 
+// wrapDownload 增强版下载器
+func (am *AppleMusicHandler)wrapDownload(string, *config.Config) (*SongInfo, error) {
+	return &SongInfo{}, nil
+}
+
 /* ---------------------- 构建下载命令 ---------------------- */
 
 func (am *AppleMusicHandler) DownloadCommand(cfg *config.Config, url string) *exec.Cmd {
 	cookiePath := filepath.Join(cfg.CookieCloud.CookieFilePath, cfg.CookieCloud.CookieFile)
-	//https://github.com/glomatico/gamdl/commit/fdab6481ea246c2cf3415565c39da62a3b9dbd52 部分options改动
+	// https://github.com/glomatico/gamdl/commit/fdab6481ea246c2cf3415565c39da62a3b9dbd52 部分options改动
 	args := []string{
 		"--cookies-path", cookiePath,
 		"--download-mode", "nm3u8dlre",

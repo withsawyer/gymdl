@@ -65,7 +65,7 @@ func initWebDAV(c *config.WebDAVConfig) {
 }
 
 // 初始化 Wrapper 服务
-func initWrapper() {
+func initWrapper(c *config.Config) {
 	// 检测wrapper服务是否可用
 	if utils.CheckWrapperConnection("wrapper") {
 		utils.ServiceIsOn("Wrapper 服务已加载")
@@ -216,7 +216,7 @@ func main() {
 	}
 
 	if c.AdditionalConfig.EnableWrapper {
-		initWrapper()
+		initWrapper(c)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
