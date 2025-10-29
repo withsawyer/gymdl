@@ -39,7 +39,15 @@ RUN wget -q https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.gz && \
       --enable-static && \
     make -j"$(nproc)" && make install && \
     strip /usr/local/bin/ffmpeg /usr/local/bin/ffprobe && \
-    rm -rf /tmp/build
+    rm -rf /tmp/build 
+
+# 编译 GPAC（MP4Box）
+RUN git clone --depth=1 https://github.com/gpac/gpac.git /tmp/gpac && \
+    cd /tmp/gpac && \
+    ./configure --static-bin --disable-x11 --disable-pulseaudio --disable-oss-audio && \
+    make -j"$(nproc)" && make install && \
+    strip /usr/local/bin/MP4Box && \
+    rm -rf /tmp/gpac /tmp/build
 
 
 # ==============================
@@ -60,11 +68,11 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o amdl .
 # ==============================
 # 第三阶段：生产镜像
 # ==============================
-FROM python:3.12-slim-bookworm
+FROM python:3.12-slim
 
 # 安装运行依赖
 RUN apt update && apt install -y --no-install-recommends \
-    tzdata ca-certificates wget curl tar unzip libicu-dev gpac && \
+    tzdata ca-certificates wget curl tar unzip libicu-dev && \
     ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo Asia/Shanghai > /etc/timezone && \
     rm -rf /var/lib/apt/lists/* 
@@ -92,8 +100,8 @@ RUN wget -q "https://github.com/zhaarey/wrapper/releases/download/linux.V2/wrapp
     rm -rf wrapper.x86_64.tar.gz main.zip && \
     cd wrapper && chmod +x wrapper
 
-# 拷贝 ffmpeg 二进制
-COPY --from=ffmpeg-builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
+# 拷贝 FFmpeg + MP4Box 二进制
+COPY --from=ffmpeg-builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/MP4Box /usr/local/bin/
 
 # 拷贝 go 程序
 COPY --from=go-builder /go/src/app/amdl /usr/local/bin/
