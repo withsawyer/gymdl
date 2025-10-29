@@ -60,22 +60,14 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o amdl .
 # ==============================
 # 第三阶段：生产镜像
 # ==============================
-FROM python:3.12-slim
+FROM python:3.12-slim-bookworm
 
 # 安装运行依赖
 RUN apt update && apt install -y --no-install-recommends \
-    tzdata ca-certificates wget curl tar unzip libicu-dev && \
+    tzdata ca-certificates wget curl tar unzip libicu-dev gpac && \
     ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo Asia/Shanghai > /etc/timezone && \
     rm -rf /var/lib/apt/lists/* 
-
-# 安装 GPAC
-WORKDIR /tmp
-RUN wget https://download.tsi.telecom-paristech.fr/gpac/new_builds/gpac_latest_head_linux64.deb -O gpac.deb && \
-    apt-get update && apt-get install -y --no-install-recommends \
-      libgl1 \
-      && dpkg -i gpac.deb || apt-get install -yf && \
-    rm -rf /var/lib/apt/lists/* /tmp/*
 
 # 安装 Deno
 RUN curl -fsSL https://deno.land/install.sh | sh && \
