@@ -8,10 +8,13 @@ ENV TZ=Asia/Shanghai \
     FFMPEG_VERSION=6.1 \
     FDKAAC_VERSION=2.0.2
 
-RUN apt update && apt install -y --no-install-recommends \
+# 安装构建所需的工具和 -dev 依赖（包含 zlib 等）
+RUN apt-get update && apt-get install -y --no-install-recommends \
     tzdata ca-certificates curl wget git build-essential pkg-config \
-    yasm nasm libtool autoconf automake cmake && \
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    yasm nasm libtool autoconf automake cmake \
+    zlib1g-dev libssl-dev libpng-dev libjpeg-dev libfreetype6-dev \
+    libopenjp2-7-dev libbz2-dev liblzma-dev libx264-dev \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /tmp/build
