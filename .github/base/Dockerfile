@@ -69,6 +69,16 @@ RUN curl -L -o N_m3u8DL-RE.tar.gz \
     chmod +x /usr/local/bin/N_m3u8DL-RE && \
     rm -rf /tmp/*
 
+RUN wget -q "https://github.com/zhaarey/wrapper/releases/download/linux.V2/wrapper.x86_64.tar.gz" && \
+    wget -q "https://github.com/zhaarey/wrapper/archive/refs/heads/main.zip" &\
+    unzip main.zip &\
+    mv wrapper-main wrapper && \
+    tar -xzf wrapper.x86_64.tar.gz -C wrapper && \
+    rm -rf wrapper.x86_64.tar.gz && \
+    rm -rf main.zip && \
+    cd wrapper && \
+    chmod +x wrapper
+
 # 拷贝 FFmpeg 静态二进制
 COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
 
