@@ -12,23 +12,30 @@
 
 ## 🧭 项目简介
 
-**GYMDL** 是一款基于 Go 的跨平台音乐下载与管理工具，支持多平台智能识别链接、下载、解密、整理，并可同步到 WebDAV、接收 Telegram 通知，同时支持 AI 助手扩展。
+**GYMDL** 是一款跨平台智能音乐下载与管理工具，基于 Go
+开发，支持自动识别主流音乐平台的音乐链接，并实现高效下载、解密与整理。  
+同时提供 CookieCloud 自动同步登录、WebDAV 上传、下载器监控、Telegram Bot 控制与通知等功能，让音乐管理更智能、更便捷。
+
 
 ---
 
 ## ✨ 核心特性
 
-| 功能 | 状态 |
-|------|------|
-| 主流音乐平台：Apple Music、Spotify、YouTube Music、SoundCloud | ✅ |
-| 智能链接识别与解析 | ✅ |
-| CookieCloud 自动同步登录状态 | ✅ |
-| WebDAV 自动上传整理后的音乐 | ✅ |
-| Telegram Bot 控制下载、接收通知 | ✅ |
-| 定时任务调度（gocron） | ✅ |
-| 目录监听 | ⚠️ 规划中 |
-| AI 助手 | ⚠️ 规划中 |
-| Web UI | ⚠️ 规划中 |
+| 功能                                                   | 状态     |
+|------------------------------------------------------|--------|
+| 主流音乐平台：Apple Music、Spotify、YouTube Music、SoundCloud等 | ✅      |
+| 智能链接识别与解析                                            | ✅      |
+| CookieCloud 自动同步登录状态                                 | ✅      |
+| WebDAV 自动上传整理后的音乐                                    | ✅      |
+| Telegram Bot 控制下载、接收通知                               | ✅      |
+| 定时任务调度（gocron）                                       | ✅      |
+| wrapper集成                                            | 🚧 开发中 |
+| 下载器监控                                                | ⚠️ 规划中 |
+| 支持下载列表                                               | ⚠️ 规划中 |
+| 视频下载                                                 | ⚠️ 规划中 |
+| 多个通知渠道                                               | ⚠️ 规划中 |
+| AI 助手                                                | ⚠️ 规划中 |
+| Web UI                                               | ⚠️ 规划中 |
 
 ---
 
@@ -37,86 +44,90 @@
 ### 1️⃣ 获取项目并编译
 
 ```bash
-git clone https://github.com/nichuanfang/gymdl.git
-cd gymdl
+git clone https://github.com/nichuanfang/gymdl.git .
 make release
 ````
 
-### 2️⃣ 配置文件示例
+### 2️⃣ 配置文件 `config.yaml` 示例
 
 <details>
 <summary>点击展开 YAML 配置示例</summary>
 
 ```yaml
+# GYMDL 配置文件
+# 以下为详细配置项说明
+
 # Web 服务配置
 web_config:
-  enable: false
-  app_domain: "localhost"
-  https: false
-  app_port: 9527
-  gin_mode: "debug"
+  enable: false  # 是否启用 web 服务
+  app_domain: "localhost"  # web 服务域名
+  https: false  # 是否开启 HTTPS
+  app_port: 8080  # web 服务监听端口
+  gin_mode: "debug"  # Gin 运行模式: 可选 [debug, release, test]
 
 # CookieCloud 配置
 cookie_cloud:
-  cookiecloud_url: ""
-  cookiecloud_uuid: ""
-  cookiecloud_key: ""
-  cookie_file_path: ""
-  cookie_file: ""
-  expire_time: 180
+  cookiecloud_url: ""  # CookieCloud 服务地址
+  cookiecloud_uuid: ""  # CookieCloud UUID
+  cookiecloud_key: ""  # CookieCloud key (多个同步端需填写同一个key，否则会解密失败)
+  cookie_file_path: ""  # Cookie 文件存储目录
+  cookie_file: ""  # Cookie 文件名
+  expire_time: 180  # Cookie 文件过期时间(分钟)
 
 # 音乐整理配置
 music_tidy:
-  mode: 1
-  dist_dir: "data/dist"
+  mode: 1  # 音乐整理模式: 1=整理到 dist_dir, 2=整理到 webdav_dir
+  dist_dir: "data/dist"  # 当 mode=1 时使用的本地整理目录
 
 # WebDAV 配置
 webdav:
-  webdav_url: ""
-  webdav_user: ""
-  webdav_pass: ""
-  webdav_dir: ""
+  webdav_url: ""  # WebDAV 服务地址
+  webdav_user: ""  # WebDAV 用户名
+  webdav_pass: ""  # WebDAV 密码
+  webdav_dir: ""  # WebDAV 目标路径
 
 # 日志配置
 log:
-  mode: 1
-  level: 2
-  file: "data/logs/run.log"
+  mode: 1  # 日志模式: 1=标准输出, 2=日志文件, 3=标准输出+文件
+  level: 2  # 日志等级: 1=debug, 2=info, 3=warn, 4=error, 5=fatal
+  file: "data/logs/run.log"  # 日志文件路径
 
 # Telegram 配置
 telegram:
-  enable: false
-  mode: 1
-  chat_id: ""
-  bot_token: ""
-  allowed_users: [ "" ]
-  webhook_url: ""
-  webhook_port: 9000
+  enable: true  # 是否启用 Telegram 通知服务
+  mode: 1  # 运行模式: 1=长轮询, 2=Webhook (推荐开发用1, 生产用2)
+  chat_id: ""  # 机器人 chat_id
+  bot_token: ""  # Telegram Bot Token
+  allowed_users:
+    - ""  # 用户白名单列表 (Telegram 用户 ID)
+  webhook_url: ""  # Webhook 地址 (mode=2 时必填)
+  webhook_port: 9000  # Webhook 模式下监听端口
 
 # AI 配置
 ai:
-  enable: false
-  base_url: ""
-  model: ""
-  api_key: ""
-  system_prompt: ""
+  enable: false  # 是否启用 AI 功能
+  base_url: ""  # AI 接口的 Base URL
+  model: ""  # 使用的 AI 模型名称
+  api_key: ""  # AI 服务的 API Key
+  system_prompt: ""  # 默认系统提示词
 
-# 附加功能配置
+# 附加配置
 additional_config:
-  enable_cron: false
-  enable_monitor: false
-  monitor_dirs: [ "" ]
-  enable_wrapper: false
+  enable_cron: false  # 是否启用定时任务功能 只有开启此配置才会尝试同步cookie文件(重要)
+  enable_monitor: false  # 是否启用目录监听 开启后监听下载目录使用um cli自动解密
+  monitor_dirs:
+    - ""  # 监听的目录,下载器监控
+  enable_wrapper: false  # 是否启用 wrapper 需要使用docker启动wrapper服务 容器名称wrapper 需要过2FA验证
 
 # 代理配置
 proxy:
-  enable: false
-  scheme: "http"
-  host: "127.0.0.1"
-  port: 7890
-  user: ""
-  pass: ""
-  auth: false
+  enable: false  # 是否启用代理
+  scheme: ""  # 代理协议: http/https/socks5
+  host: "127.0.0.1"  # 代理主机
+  port: 10809  # 代理端口
+  user: ""  # 代理用户名
+  pass: ""  # 代理密码
+  auth: false  # 是否启用代理认证
 ```
 
 </details>
@@ -128,6 +139,15 @@ proxy:
 ### 3️⃣ 运行 GYMDL
 
 ```bash
+git clone https://github.com/nichuanfang/gymdl.git .
+go mod tidy
+go run main.go
+```
+
+or
+
+```bash
+# https://github.com/nichuanfang/gymdl/releases下载最新release
 ./gymdl -c config.yaml
 ```
 
@@ -139,14 +159,22 @@ proxy:
 * 文件整理并上传到 WebDAV 或本地目录
 * Telegram 通知与交互
 
+> [!TIP]
+> 推荐的三种运行模式 
+>
+> 1. vps运行,telegram接收用户消息,通过webdav整理入库
+> 2. nas运行,telegram接收用户消息,直接整理到nas目录
+> 3. win/mac运行,通过下载器监控解锁客户端应用,整理入库
+
 ---
 
 ### 4️⃣ 使用流程
 
 1. 安装 [CookieCloud 插件](https://chrome.google.com/webstore/detail/cookiecloud/ffjiejobkoibkjlhjnlgmcnnigeelbdl)
-2. 登录音乐平台并同步 Cookie
+2. 登录音乐平台并同步 Cookie(需会员)
 3. 配置 `config.yaml`
-4. 通过 Telegram Bot 发送音乐链接，GYMDL 自动处理
+4. 配置好必要的运行环境
+5. 使用 `gymdl`
 
 > ⚡ **小贴士**：确保你的 Cookie 有效，否则下载高音质音乐可能失败。
 
@@ -155,16 +183,16 @@ proxy:
 ### 5️⃣ 高音质下载前置条件
 
 | 条件              | 说明   |
-| --------------- | ---- |
+|-----------------|------|
 | 科学上网            | ✅    |
-| 登录音乐平台账号        | ✅    |
+| 登录音乐平台会员账号      | ✅    |
 | CookieCloud 已同步 | ✅    |
 | 部署方式            | 详见下表 |
 
-| 部署方式         | 说明                                                                                               |
-| ------------ | ------------------------------------------------------------------------------------------------ |
-| 🐳 Docker 部署 | 仅需配置 `config.yaml`                                                                               |
-| 💻 本地部署      | 需额外安装：<br>• Python 3.12+<br>• ffmpeg / ffprobe<br>• N_m3u8DL-RE<br>• MP4Box<br>• wrapper(docker) |
+| 部署方式         | 说明                                                                                                    |
+|--------------|-------------------------------------------------------------------------------------------------------|
+| 🐳 Docker 部署 | <br>• 配置 `config.yaml`<br>• 部署`wrapper`<br>                                                           |
+| 💻 本地部署      | 需额外安装：<br>• `Python(3.12+)`<br>• `ffmpeg` / `ffprobe`<br>• `N_m3u8DL-RE`<br>• `MP4Box`<br>• `wrapper` |
 
 ---
 
