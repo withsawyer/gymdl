@@ -12,7 +12,7 @@ func CheckWrapperConnection(containerName string) bool {
     // 你必须启用wrapper
     pinger, err := ping.NewPinger(containerName)
     if err != nil {
-        ErrorWithFormat("创建 pinger 失败: %v\n", err)
+        DebugWithFormat("创建 pinger 失败: %v\n", err)
         return false
     }
 
@@ -23,7 +23,7 @@ func CheckWrapperConnection(containerName string) bool {
     DebugWithFormat("开始 ping %s...\n", containerName)
     err = pinger.Run() // 阻塞
     if err != nil {
-        ErrorWithFormat("Ping 出错: %v\n", err)
+        DebugWithFormat("Ping 出错: %v\n", err)
         return false
     }
 
@@ -31,7 +31,7 @@ func CheckWrapperConnection(containerName string) bool {
     if stats.PacketsRecv > 0 {
         DebugWithFormat("%s 可达, 丢包率: %.2f%%\n", containerName, stats.PacketLoss)
     } else {
-        ErrorWithFormat("%s 不可达\n", containerName)
+        DebugWithFormat("%s 不可达\n", containerName)
         return false
     }
     return true
