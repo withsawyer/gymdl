@@ -32,6 +32,7 @@ jobs:
           echo "Building image: $IMAGE_NAME:$VERSION"
           docker build -t $IMAGE_NAME:$VERSION -t $IMAGE_NAME:latest .
           
+          
           echo "Pushing image to GHCR..."
           docker push $IMAGE_NAME:$VERSION
           docker push $IMAGE_NAME:latest

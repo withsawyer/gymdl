@@ -69,6 +69,7 @@ RUN curl -L -o N_m3u8DL-RE.tar.gz \
     chmod +x /usr/local/bin/N_m3u8DL-RE && \
     rm -rf /tmp/*
 
+WORKDIR /app
 RUN wget -q "https://github.com/zhaarey/wrapper/releases/download/linux.V2/wrapper.x86_64.tar.gz" && \
     wget -q "https://github.com/zhaarey/wrapper/archive/refs/heads/main.zip" &&\
     unzip main.zip &&\
@@ -85,5 +86,3 @@ COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
 ENV TZ=Asia/Shanghai \
     PATH="/root/.deno/bin:/app/data/bin:${PATH}" \
     DEBIAN_FRONTEND=noninteractive
-    
-WORKDIR /app
