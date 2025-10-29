@@ -96,7 +96,7 @@ RUN wget -q "https://github.com/zhaarey/wrapper/releases/download/linux.V2/wrapp
 COPY --from=ffmpeg-builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
 
 # 拷贝 go 程序
-COPY --from=go-builder /go/src/app/amdl /usr/local/bin/amdl
+COPY --from=go-builder /go/src/app/amdl /usr/local/bin/
 
 ENV TZ=Asia/Shanghai \
     PATH="/root/.deno/bin:/app/data/bin:${PATH}" \
