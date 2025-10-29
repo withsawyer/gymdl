@@ -65,6 +65,7 @@ additional_config:
 
 # 代理配置
 proxy:
+  enable: false  # 是否启用代理
   scheme: ""  # 代理协议: http/https/socks5
   host: "127.0.0.1"  # 代理主机
   port: 10809  # 代理端口

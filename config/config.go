@@ -110,7 +110,7 @@ func (c *Config) setDefaults() {
 	}
 	if c.CookieCloud == nil {
 		c.CookieCloud = &CookieCloudConfig{
-			CookieCloudUrl:  "https://cookie-cloud.aiotc.com:20005/default",
+			CookieCloudUrl:  "",
 			CookieCloudUUID: "",
 			CookieCloudKEY:  "",
 			CookieFile:      "cookies.txt",
@@ -123,7 +123,7 @@ func (c *Config) setDefaults() {
 	}
 	if c.WebDAV == nil {
 		c.WebDAV = &WebDAVConfig{
-			WebDAVUrl:  "http://fn.aiotc.com:25005",
+			WebDAVUrl:  "",
 			WebDAVUser: "",
 			WebDAVPass: "",
 			WebDAVDir:  "",
@@ -140,5 +140,10 @@ func (c *Config) setDefaults() {
 	}
 	if c.AdditionalConfig == nil {
 		c.AdditionalConfig = &AdditionalConfig{EnableCron: false, EnableDirMonitor: false, MonitorDirs: make([]string, 0)}
+	}
+	if c.ProxyConfig == nil {
+		c.ProxyConfig = &ProxyConfig{
+			Enable: false,
+		}
 	}
 }
