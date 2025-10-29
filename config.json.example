@@ -51,6 +51,6 @@
     "enable_cron": false, // 是否启用定时任务功能
     "enable_monitor": false, //是否启用目录监听
     "monitor_dirs": [""],    //监听的目录,
-    enable_wrapper: false //是否启用wrapper
+    "enable_wrapper": false //是否启用wrapper
   }
 }
