@@ -18,9 +18,9 @@ cookie_cloud:
   cookie_file: ""  # Cookie 文件名
   expire_time: 180  # Cookie 文件过期时间(分钟)
 
-# 音乐整理配置
-music_tidy:
-  mode: 1  # 音乐整理模式: 1=整理到 dist_dir, 2=整理到 webdav_dir
+# 资源整理配置
+tidy:
+  mode: 1  # 资源整理模式: 1=整理到 dist_dir, 2=整理到 webdav_dir
   dist_dir: "data/dist"  # 当 mode=1 时使用的本地整理目录
 
 # WebDAV 配置
