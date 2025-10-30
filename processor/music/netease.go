@@ -1,6 +1,7 @@
 package music
 
 import (
+	"github.com/nichuanfang/gymdl/utils"
 	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
@@ -12,70 +13,75 @@ import (
 
 type NetEaseProcessor struct {
 	cfg     *config.Config
-	tempDir string
 	songs   []*SongInfo
+	tempDir string
 }
 
-func NewNetEaseProcessor(cfg *config.Config, baseTempDir string) processor.Processor{
-	return &NetEaseProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
+// Init  初始化
+func (p *NetEaseProcessor) Init(cfg *config.Config) {
+	p.cfg = cfg
+	p.songs = make([]*SongInfo, 0)
+	p.tempDir = processor.BuildOutputDir(NCMTempDir)
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
 
-func (am *NetEaseProcessor) Handle(link string) (string, error) {
+func (p *NetEaseProcessor) Handle(link string) (string, error) {
 	panic("implement me")
 }
 
-func (am *NetEaseProcessor) Category() domain.ProcessorCategory {
+func (p *NetEaseProcessor) Category() domain.ProcessorCategory {
 	return domain.CategoryMusic
 }
 
-func (am *NetEaseProcessor) Name() domain.LinkType {
+func (p *NetEaseProcessor) Name() domain.LinkType {
 	return domain.LinkNetEase
 }
 
-func (am *NetEaseProcessor) Songs() []*SongInfo {
-	return am.songs
+func (p *NetEaseProcessor) Songs() []*SongInfo {
+	return p.songs
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
 
-func (ncm *NetEaseProcessor) DownloadMusic(url string) error {
+func (p *NetEaseProcessor) DownloadMusic(url string) error {
+
+	utils.InfoWithFormat("55.69 MiB / 55.69 MiB [==============] 598.77 MiB p/s 100.00% 32s：%s", url)
+
+	return nil
+}
+
+func (p *NetEaseProcessor) DownloadCommand(url string) *exec.Cmd {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ncm *NetEaseProcessor) DownloadCommand(url string) *exec.Cmd {
+func (p *NetEaseProcessor) BeforeTidy() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ncm *NetEaseProcessor) BeforeTidy() error {
+func (p *NetEaseProcessor) NeedRemoveDRM() bool {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ncm *NetEaseProcessor) NeedRemoveDRM() bool {
+func (p *NetEaseProcessor) DRMRemove() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ncm *NetEaseProcessor) DRMRemove() error {
+func (p *NetEaseProcessor) TidyMusic() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ncm *NetEaseProcessor) TidyMusic() error {
+func (p *NetEaseProcessor) EncryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ncm *NetEaseProcessor) EncryptedExts() []string {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (ncm *NetEaseProcessor) DecryptedExts() []string {
+func (p *NetEaseProcessor) DecryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }

@@ -8,12 +8,14 @@ import (
 )
 
 /* ---------------------- 视频处理接口定义 ---------------------- */
-type VideoProcessor interface {
+type Processor interface {
 	processor.Processor
 	// 视频处理器名称
 	Name() domain.LinkType
 	// 视频元信息列表
 	Videos() []*VideoInfo
+	// 下载视频
+	Download(url string) error
 }
 
 /* ---------------------- 视频结构体定义 ---------------------- */

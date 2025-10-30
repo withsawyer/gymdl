@@ -16,64 +16,67 @@ type SpotifyProcessor struct {
 	songs   []*SongInfo
 }
 
-func NewSpotifyProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
-	return &SpotifyProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
+// Init  初始化
+func (p *SpotifyProcessor) Init(cfg *config.Config) {
+	p.cfg = cfg
+	p.songs = make([]*SongInfo, 0)
+	p.tempDir = processor.BuildOutputDir(SpotifyTempDir)
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (sp *SpotifyProcessor) Handle(link string) (string, error) {
+func (p *SpotifyProcessor) Handle(link string) (string, error) {
 	panic("implement me")
 }
 
-func (sp *SpotifyProcessor) Category() domain.ProcessorCategory {
+func (p *SpotifyProcessor) Category() domain.ProcessorCategory {
 	return domain.CategoryMusic
 }
 
-func (sp *SpotifyProcessor) Name() domain.LinkType {
+func (p *SpotifyProcessor) Name() domain.LinkType {
 	return domain.LinkSpotify
 }
 
-func (sp *SpotifyProcessor) Songs() []*SongInfo {
-	return sp.songs
+func (p *SpotifyProcessor) Songs() []*SongInfo {
+	return p.songs
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
-func (sp *SpotifyProcessor) DownloadMusic(url string) error {
+func (p *SpotifyProcessor) DownloadMusic(url string) error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sp *SpotifyProcessor) DownloadCommand(url string) *exec.Cmd {
+func (p *SpotifyProcessor) DownloadCommand(url string) *exec.Cmd {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sp *SpotifyProcessor) BeforeTidy() error {
+func (p *SpotifyProcessor) BeforeTidy() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sp *SpotifyProcessor) NeedRemoveDRM() bool {
+func (p *SpotifyProcessor) NeedRemoveDRM() bool {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sp *SpotifyProcessor) DRMRemove() error {
+func (p *SpotifyProcessor) DRMRemove() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sp *SpotifyProcessor) TidyMusic() error {
+func (p *SpotifyProcessor) TidyMusic() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sp *SpotifyProcessor) EncryptedExts() []string {
+func (p *SpotifyProcessor) EncryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sp *SpotifyProcessor) DecryptedExts() []string {
+func (p *SpotifyProcessor) DecryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }

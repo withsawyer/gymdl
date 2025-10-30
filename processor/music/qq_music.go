@@ -16,65 +16,68 @@ type QQMusicProcessor struct {
 	songs   []*SongInfo
 }
 
-func NewQQMusicProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
-	return &QQMusicProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
+// Init  初始化
+func (p *QQMusicProcessor) Init(cfg *config.Config) {
+	p.cfg = cfg
+	p.songs = make([]*SongInfo, 0)
+	p.tempDir = processor.BuildOutputDir(QQTempDir)
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (am *QQMusicProcessor) Handle(link string) (string, error) {
+func (p *QQMusicProcessor) Handle(link string) (string, error) {
 	panic("implement me")
 }
 
-func (am *QQMusicProcessor) Category() domain.ProcessorCategory {
+func (p *QQMusicProcessor) Category() domain.ProcessorCategory {
 	return domain.CategoryMusic
 }
 
-func (am *QQMusicProcessor) Name() domain.LinkType {
+func (p *QQMusicProcessor) Name() domain.LinkType {
 	return domain.LinkQQMusic
 }
 
-func (am *QQMusicProcessor) Songs() []*SongInfo {
-	return am.songs
+func (p *QQMusicProcessor) Songs() []*SongInfo {
+	return p.songs
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
 
-func (qm *QQMusicProcessor) DownloadMusic(url string) error {
+func (p *QQMusicProcessor) DownloadMusic(url string) error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (qm *QQMusicProcessor) DownloadCommand(url string) *exec.Cmd {
+func (p *QQMusicProcessor) DownloadCommand(url string) *exec.Cmd {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (qm *QQMusicProcessor) BeforeTidy() error {
+func (p *QQMusicProcessor) BeforeTidy() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (qm *QQMusicProcessor) NeedRemoveDRM() bool {
+func (p *QQMusicProcessor) NeedRemoveDRM() bool {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (qm *QQMusicProcessor) DRMRemove() error {
+func (p *QQMusicProcessor) DRMRemove() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (qm *QQMusicProcessor) TidyMusic() error {
+func (p *QQMusicProcessor) TidyMusic() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (qm *QQMusicProcessor) EncryptedExts() []string {
+func (p *QQMusicProcessor) EncryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (qm *QQMusicProcessor) DecryptedExts() []string {
+func (p *QQMusicProcessor) DecryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }

@@ -16,64 +16,67 @@ type YoutubeMusicProcessor struct {
 	songs   []*SongInfo
 }
 
-func NewYoutubeMusicProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
-	return &YoutubeMusicProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
+// Init  初始化
+func (p *YoutubeMusicProcessor) Init(cfg *config.Config) {
+	p.cfg = cfg
+	p.songs = make([]*SongInfo, 0)
+	p.tempDir = processor.BuildOutputDir(YoutubeTempDir)
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (am *YoutubeMusicProcessor) Handle(link string) (string, error) {
+func (p *YoutubeMusicProcessor) Handle(link string) (string, error) {
 	panic("implement me")
 }
 
-func (am *YoutubeMusicProcessor) Category() domain.ProcessorCategory {
+func (p *YoutubeMusicProcessor) Category() domain.ProcessorCategory {
 	return domain.CategoryMusic
 }
 
-func (am *YoutubeMusicProcessor) Name() domain.LinkType {
+func (p *YoutubeMusicProcessor) Name() domain.LinkType {
 	return domain.LinkYoutubeMusic
 }
 
-func (sp *YoutubeMusicProcessor) Songs() []*SongInfo {
-	return sp.songs
+func (p *YoutubeMusicProcessor) Songs() []*SongInfo {
+	return p.songs
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
-func (ytm *YoutubeMusicProcessor) DownloadMusic(url string) error {
+func (p *YoutubeMusicProcessor) DownloadMusic(url string) error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ytm *YoutubeMusicProcessor) DownloadCommand(url string) *exec.Cmd {
+func (p *YoutubeMusicProcessor) DownloadCommand(url string) *exec.Cmd {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ytm *YoutubeMusicProcessor) BeforeTidy() error {
+func (p *YoutubeMusicProcessor) BeforeTidy() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ytm *YoutubeMusicProcessor) NeedRemoveDRM() bool {
+func (p *YoutubeMusicProcessor) NeedRemoveDRM() bool {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ytm *YoutubeMusicProcessor) DRMRemove() error {
+func (p *YoutubeMusicProcessor) DRMRemove() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ytm *YoutubeMusicProcessor) TidyMusic() error {
+func (p *YoutubeMusicProcessor) TidyMusic() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ytm *YoutubeMusicProcessor) EncryptedExts() []string {
+func (p *YoutubeMusicProcessor) EncryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (ytm *YoutubeMusicProcessor) DecryptedExts() []string {
+func (p *YoutubeMusicProcessor) DecryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }

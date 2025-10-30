@@ -14,14 +14,18 @@ import (
 )
 
 /* ---------------------- 结构体与构造方法 ---------------------- */
+
 type AppleMusicProcessor struct {
 	cfg     *config.Config
 	tempDir string
 	songs   []*SongInfo
 }
 
-func NewAppleMusicProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
-	return &AppleMusicProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
+// Init  初始化
+func (am *AppleMusicProcessor) Init(cfg *config.Config) {
+	am.songs = make([]*SongInfo, 0)
+	am.cfg = cfg
+	am.tempDir = processor.BuildOutputDir(AppleMusicTempDir)
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */

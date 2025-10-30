@@ -2,6 +2,7 @@ package processor
 
 import (
 	"fmt"
+	"github.com/nichuanfang/gymdl/config"
 	"os"
 	"path/filepath"
 	"time"
@@ -13,6 +14,7 @@ import (
 // 顶级接口定义
 
 type Processor interface {
+	Init(cfg *config.Config)
 	Handle(link string) (string, error) // 处理链接并返回结果
 	Category() domain.ProcessorCategory // 所属分类
 }

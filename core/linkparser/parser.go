@@ -1,6 +1,7 @@
 package linkparser
 
 import (
+	"github.com/nichuanfang/gymdl/processor"
 	"net/url"
 	"regexp"
 	"strings"
@@ -13,9 +14,10 @@ import (
 
 // linkTypeMatcher 处理器匹配规则
 type linkTypeMatcher struct {
+	domains  []string // 快速判定域名
 	patterns []*regexp.Regexp
 	linkType domain.LinkType
-	domains  []string // 快速判定域名
+	handler  processor.Processor
 }
 
 /* ---------------------- 变量区 ---------------------- */
@@ -40,34 +42,34 @@ func init() {
 
 /* ---------------------- 核心方法 ---------------------- */
 
-// ⚡ ParseLink：解析链接
-func ParseLink(text string) (string, domain.LinkType) {
+// ⚡ ParseLink 解析链接
+func ParseLink(text string) (string, processor.Processor) {
 	raw := genericURLRegex.FindString(text)
 	if raw == "" {
-		return "", domain.LinkUnknown
+		return "", nil
 	}
 	// 链接清洗
 	raw = cleanURLTrailingChars(raw)
 	u, err := url.Parse(raw)
 	if err != nil {
-		return "", domain.LinkUnknown
+		return "", nil
 	}
 
 	host := strings.ToLower(u.Host)
-	linkType, ok := quickMatch(host, u)
+	handler, ok := quickMatch(host, u)
 	if ok {
-		return raw, linkType
+		return raw, handler
 	}
 
 	// fallback: 正则穷举匹配
 	for i := range linkTypeMatchers {
 		for _, r := range linkTypeMatchers[i].patterns {
 			if r.MatchString(raw) {
-				return raw, linkTypeMatchers[i].linkType
+				return raw, linkTypeMatchers[i].handler
 			}
 		}
 	}
-	return "", domain.LinkUnknown
+	return "", nil
 }
 
 /* ---------------------- 辅助方法 ---------------------- */
@@ -93,14 +95,14 @@ func cleanURLTrailingChars(s string) string {
 }
 
 // quickMatch 先基于域名进行快速判断
-func quickMatch(host string, u *url.URL) (domain.LinkType, bool) {
+func quickMatch(host string, u *url.URL) (processor.Processor, bool) {
 	if l, ok := matcherMap[host]; ok {
 		// 再进行一次轻量正则或路径判断
 		for _, re := range l.patterns {
 			if re.MatchString(u.String()) {
-				return l.linkType, true
+				return l.handler, true
 			}
 		}
 	}
-	return domain.LinkUnknown, false
+	return nil, false
 }

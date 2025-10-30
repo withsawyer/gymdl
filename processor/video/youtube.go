@@ -4,6 +4,7 @@ import (
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
+	"github.com/nichuanfang/gymdl/utils"
 )
 
 // youtube下载
@@ -16,26 +17,34 @@ type YoutubeProcessor struct {
 	videos  []*VideoInfo
 }
 
-func NewYoutubeProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
-	return &YoutubeProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
+// Init  初始化
+func (p *YoutubeProcessor) Init(cfg *config.Config) {
+	p.cfg = cfg
+	p.videos = make([]*VideoInfo, 0)
+	p.tempDir = processor.BuildOutputDir(YoutubeTempDir)
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
 
-func (yt *YoutubeProcessor) Handle(link string) (string, error) {
+func (p *YoutubeProcessor) Handle(link string) (string, error) {
 	panic("implement me")
 }
 
-func (yt *YoutubeProcessor) Category() domain.ProcessorCategory {
+func (p *YoutubeProcessor) Category() domain.ProcessorCategory {
 	return domain.CategoryVideo
 }
 
-func (yt *YoutubeProcessor) Name() domain.LinkType {
+func (p *YoutubeProcessor) Name() domain.LinkType {
 	return domain.LinkYoutube
 }
 
-func (yt *YoutubeProcessor) Videos() []*VideoInfo {
-	return yt.videos
+func (p *YoutubeProcessor) Download(url string) error {
+	utils.Debugf("开始下载视频:%s", url)
+	return nil
+}
+
+func (p *YoutubeProcessor) Videos() []*VideoInfo {
+	return p.videos
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
