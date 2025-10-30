@@ -29,7 +29,7 @@ const (
 	/* ------------------------ 音乐平台枚举 ---------------------- */
 	LinkUnknown      LinkType = ""
 	LinkAppleMusic   LinkType = "AppleMusic"
-	LinkNetEase      LinkType = "网易云"
+	LinkNetEase      LinkType = "网易云音乐"
 	LinkQQMusic      LinkType = "QQ音乐"
 	LinkSoundcloud   LinkType = "Soundcloud"
 	LinkSpotify      LinkType = "Spotify"
@@ -80,4 +80,9 @@ func RemoveTempDir(dir string) error {
 	}
 	utils.DebugWithFormat("🧹 已删除临时目录: %s\n", dir)
 	return nil
+}
+
+// DetermineTidyType 获取整理类型
+func DetermineTidyType(cfg *config.Config) string {
+	return map[int]string{1: "LOCAL", 2: "WEBDAV"}[cfg.Tidy.Mode]
 }

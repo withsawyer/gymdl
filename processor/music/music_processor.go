@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/processor"
+	"github.com/nichuanfang/gymdl/utils"
 	"gopkg.in/vansante/go-ffprobe.v2"
 )
 
@@ -76,25 +76,21 @@ var SoundcloudTempDir = filepath.Join(BaseTempDir, "Soundcloud")
 // Spotify临时文件夹
 var SpotifyTempDir = filepath.Join(BaseTempDir, "Spotify")
 
-// 设定整理类型
-func determineTidyType(cfg *config.Config) string {
-	return map[int]string{1: "LOCAL", 2: "WEBDAV"}[cfg.Tidy.Mode]
-}
-
 /* ---------------------- 音乐下载相关业务函数 ---------------------- */
 
 // ExtractSongInfo 通过ffprobe-go解析歌曲信息
-func ExtractSongInfo(song *SongInfo, path string) error {
+func ExtractSongInfo(path string) (*SongInfo, error) {
+	song := &SongInfo{}
 	f, err := os.Open(path)
 	if err != nil {
-		return fmt.Errorf("打开文件失败: %w", err)
+		return nil, fmt.Errorf("打开文件失败: %w", err)
 	}
 	defer f.Close()
 
 	// 文件信息（大小和扩展名）
 	info, err := f.Stat()
 	if err != nil {
-		return fmt.Errorf("获取文件信息失败: %w", err)
+		return nil, fmt.Errorf("获取文件信息失败: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -103,7 +99,7 @@ func ExtractSongInfo(song *SongInfo, path string) error {
 	// 用 ffprobe 获取所有元信息
 	data, err := ffprobe.ProbeURL(ctx, path)
 	if err != nil {
-		return fmt.Errorf("获取音频信息失败: %w", err)
+		return nil, fmt.Errorf("获取音频信息失败: %w", err)
 	}
 	song.MusicSize = int(info.Size())
 	song.FileExt = strings.TrimPrefix(strings.ToLower(filepath.Ext(path)), ".")
@@ -125,5 +121,31 @@ func ExtractSongInfo(song *SongInfo, path string) error {
 		}
 	}
 
-	return nil
+	return song, nil
+}
+
+// 读取音乐目录 返回元信息列表
+func ReadMusicDir(tempDir string, tidyType string, p Processor) ([]*SongInfo, error) {
+	files, err := os.ReadDir(tempDir)
+	if err != nil {
+		return nil, fmt.Errorf("读取临时目录失败: %w", err)
+	}
+	songs := make([]*SongInfo, 0, len(files))
+	for _, f := range files {
+		//目录跳过
+		if f.IsDir() {
+			continue
+		}
+		ext := strings.ToLower(filepath.Ext(f.Name()))
+		if utils.Contains(p.DecryptedExts(), ext) {
+			fullPath := filepath.Join(tempDir, f.Name())
+			song, err := ExtractSongInfo(fullPath)
+			if err != nil {
+				return nil, fmt.Errorf("处理文件 %s 失败: %w", f.Name(), err)
+			}
+			song.Tidy = tidyType
+			songs = append(songs, song)
+		}
+	}
+	return songs, nil
 }

@@ -1,13 +1,16 @@
 package music
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/core"
 	"github.com/nichuanfang/gymdl/processor"
 	"github.com/nichuanfang/gymdl/utils"
 )
@@ -71,37 +74,49 @@ func (am *AppleMusicProcessor) DownloadCommand(url string) *exec.Cmd {
 }
 
 func (am *AppleMusicProcessor) BeforeTidy() error {
-	// 读取临时文件夹
-	// 读取元信息保存到am.songs
-	// 元信息嵌入(已有跳过)
-	// 解密(无需解密跳过)
-
+	songs, err := ReadMusicDir(am.tempDir, processor.DetermineTidyType(am.cfg), am)
+	if err != nil {
+		return err
+	}
+	//更新元信息列表
+	am.songs = songs
 	return nil
 }
 
 func (am *AppleMusicProcessor) NeedRemoveDRM() bool {
-	// TODO implement me
 	return false
 }
 
 func (am *AppleMusicProcessor) DRMRemove() error {
-	// TODO implement me
 	return nil
 }
 
 func (am *AppleMusicProcessor) TidyMusic() error {
-	// TODO implement me
-	return nil
+	files, err := os.ReadDir(am.tempDir)
+	if err != nil {
+		return fmt.Errorf("读取临时目录失败: %w", err)
+	}
+	if len(files) == 0 {
+		utils.WarnWithFormat("[AppleMusic] ⚠️ 未找到待整理的音乐文件")
+		return errors.New("未找到待整理的音乐文件")
+	}
+
+	switch am.cfg.Tidy.Mode {
+	case 1:
+		return am.tidyToLocal(files)
+	case 2:
+		return am.tidyToWebDAV(files, core.GlobalWebDAV)
+	default:
+		return fmt.Errorf("未知整理模式: %d", am.cfg.Tidy.Mode)
+	}
 }
 
 func (am *AppleMusicProcessor) EncryptedExts() []string {
-	// TODO implement me
-	return nil
+	return []string{".m4p"}
 }
 
 func (am *AppleMusicProcessor) DecryptedExts() []string {
-	// TODO implement me
-	return nil
+	return []string{".aac", ".m4a", ".alac"}
 }
 
 /* ------------------------ 拓展方法 ------------------------ */
@@ -114,11 +129,13 @@ func (am *AppleMusicProcessor) defaultDownload(url string) error {
 	utils.DebugWithFormat("[AppleMusic] 执行命令: %s", strings.Join(cmd.Args, " "))
 	err := processor.CreateOutputDir(am.tempDir)
 	if err != nil {
+		_ = processor.RemoveTempDir(am.tempDir)
 		return err
 	}
 	output, err := cmd.CombinedOutput()
 	logOut := strings.TrimSpace(string(output))
 	if err != nil {
+		_ = processor.RemoveTempDir(am.tempDir)
 		utils.ErrorWithFormat("[AppleMusic] ❌ gamdl 下载失败: %v\n输出:\n%s", err, logOut)
 		return fmt.Errorf("gamdl 下载失败: %w", err)
 	}
@@ -134,4 +151,69 @@ func (am *AppleMusicProcessor) defaultDownload(url string) error {
 // wrapDownload todo 增强版下载器
 func (am *AppleMusicProcessor) wrapDownload(string) error {
 	panic("implement me")
+}
+
+// 整理到本地
+func (am *AppleMusicProcessor) tidyToLocal(files []os.DirEntry) error {
+	dstDir := am.cfg.Tidy.DistDir
+	if dstDir == "" {
+		_ = processor.RemoveTempDir(am.tempDir)
+		return errors.New("未配置输出目录")
+	}
+	if err := os.MkdirAll(dstDir, 0755); err != nil {
+		_ = processor.RemoveTempDir(am.tempDir)
+		return fmt.Errorf("创建输出目录失败: %w", err)
+	}
+
+	for _, f := range files {
+		if !utils.FilterMusicFile(f, am.EncryptedExts(), am.DecryptedExts()) {
+			utils.DebugWithFormat("[AppleMusic] 跳过非音乐文件: %s", f.Name())
+			continue
+		}
+		src := filepath.Join(am.tempDir, f.Name())
+		dst := filepath.Join(dstDir, utils.SanitizeFileName(f.Name()))
+		if err := os.Rename(src, dst); err != nil {
+			utils.WarnWithFormat("[AppleMusic] ⚠️ 移动失败 %s → %s: %v", src, dst, err)
+			continue
+		}
+		utils.InfoWithFormat("[AppleMusic] 📦 已整理: %s", dst)
+	}
+	//清除临时目录
+	err := processor.RemoveTempDir(am.tempDir)
+	if err != nil {
+		utils.WarnWithFormat("[AppleMusic] ⚠️ 删除临时目录失败: %s (%v)", am.tempDir, err)
+		return err
+	}
+	utils.DebugWithFormat("[AppleMusic] 🧹 已删除临时目录: %s", am.tempDir)
+	return nil
+}
+
+// 整理到webdav
+func (am *AppleMusicProcessor) tidyToWebDAV(files []os.DirEntry, webdav *core.WebDAV) error {
+	if webdav == nil {
+		_ = processor.RemoveTempDir(am.tempDir)
+		return errors.New("WebDAV 未初始化")
+	}
+
+	for _, f := range files {
+		if !utils.FilterMusicFile(f, am.EncryptedExts(), am.DecryptedExts()) {
+			utils.DebugWithFormat("[AppleMusic] 跳过非音乐文件: %s", f.Name())
+			continue
+		}
+
+		filePath := filepath.Join(am.tempDir, f.Name())
+		if err := webdav.Upload(filePath); err != nil {
+			utils.WarnWithFormat("[AppleMusic] ☁️ 上传失败 %s: %v", f.Name(), err)
+			continue
+		}
+		utils.InfoWithFormat("[AppleMusic] ☁️ 已上传: %s", f.Name())
+	}
+	//清除临时目录
+	err := processor.RemoveTempDir(am.tempDir)
+	if err != nil {
+		utils.WarnWithFormat("[AppleMusic] ⚠️ 删除临时目录失败: %s (%v)", am.tempDir, err)
+		return err
+	}
+	utils.DebugWithFormat("[AppleMusic] 🧹 已删除临时目录: %s", am.tempDir)
+	return nil
 }

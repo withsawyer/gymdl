@@ -263,7 +263,6 @@ func main() {
 	cancel() // 通知协程退出
 	wg.Wait()
 
-	// 清理临时目录
 	_ = utils.ClearTempDirs("data/temp")
 	utils.Logger().Info("所有服务已正常退出，程序结束")
 }
