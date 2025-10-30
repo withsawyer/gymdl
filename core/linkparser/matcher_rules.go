@@ -1,9 +1,9 @@
 package linkparser
 
 import (
+	"github.com/nichuanfang/gymdl/processor/music"
+	"github.com/nichuanfang/gymdl/processor/video"
 	"regexp"
-
-	"github.com/nichuanfang/gymdl/core/domain"
 )
 
 // 处理器规则集
@@ -27,7 +27,7 @@ var linkTypeMatchers = []linkTypeMatcher{
 			// 其他短链（新格式）
 			regexp.MustCompile(`^https?://163cn\.link/[A-Za-z0-9]+(?:\?.*)?$`),
 		},
-		linkType: domain.LinkNetEase,
+		handler: &music.NetEaseProcessor{},
 	},
 
 	/* ---------------------- YouTube / YouTube Music ---------------------- */
@@ -43,7 +43,7 @@ var linkTypeMatchers = []linkTypeMatcher{
 			// 短链格式
 			regexp.MustCompile(`^https?://youtu\.be/[\w-]+(?:\?.*)?$`),
 		},
-		linkType: domain.LinkYoutubeMusic,
+		handler: &music.YoutubeMusicProcessor{},
 	},
 
 	/* ---------------------- Apple Music ---------------------- */
@@ -62,7 +62,7 @@ var linkTypeMatchers = []linkTypeMatcher{
 			// 专辑（album）
 			regexp.MustCompile(`^https?://music\.apple\.com/[a-z]{2}/album/[A-Za-z0-9%._\-]+/\d+(?:\?.*)?$`),
 		},
-		linkType: domain.LinkAppleMusic,
+		handler: &music.AppleMusicProcessor{},
 	},
 
 	/* ---------------------- SoundCloud ---------------------- */
@@ -72,7 +72,7 @@ var linkTypeMatchers = []linkTypeMatcher{
 			// 用户主页 / 曲目 / 播放列表
 			regexp.MustCompile(`^https?://(?:soundcloud\.com|snd\.sc)/[A-Za-z0-9_\-]+/(?:sets/[A-Za-z0-9_\-]+|[A-Za-z0-9_\-]+)(?:\?.*)?$`),
 		},
-		linkType: domain.LinkSoundcloud,
+		handler: &music.SoundCloudProcessor{},
 	},
 
 	/* ---------------------- QQ 音乐 ---------------------- */
@@ -82,7 +82,7 @@ var linkTypeMatchers = []linkTypeMatcher{
 			// 支持 song / album / playlist + id 参数 或 URL 路径形式
 			regexp.MustCompile(`^https?://(?:y\.qq\.com|c\.y\.qq\.com|m\.y\.qq\.com)/(?:song|album|playlist)(?:/[A-Za-z0-9_\-]+)?(?:\?id=\d+|/[\dA-Za-z]+)(?:&.*)?$`),
 		},
-		linkType: domain.LinkQQMusic,
+		handler: &music.QQMusicProcessor{},
 	},
 
 	/* ---------------------- Spotify ---------------------- */
@@ -92,7 +92,15 @@ var linkTypeMatchers = []linkTypeMatcher{
 			// track / album / playlist + ID (通常 22 字符)
 			regexp.MustCompile(`^https?://(?:open\.spotify\.com|play\.spotify\.com)/(?:track|album|playlist)/[A-Za-z0-9]+(?:\?.*)?$`),
 		},
-		linkType: domain.LinkSpotify,
+		handler: &music.SpotifyProcessor{},
+	},
+	{
+		domains: []string{"www.douyin.com"},
+		patterns: []*regexp.Regexp{
+			// track / album / playlist + ID (通常 22 字符)
+			regexp.MustCompile(`https?://www\.douyin\.com/video/[\w-]+`),
+		},
+		handler: &video.DouyinProcessor{},
 	},
 	/* ---------------------- 待补充 ---------------------- */
 }

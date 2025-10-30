@@ -16,65 +16,68 @@ type SoundCloudProcessor struct {
 	songs   []*SongInfo
 }
 
-func NewSoundCloudProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
-	return &SoundCloudProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
+// Init  初始化
+func (p *SoundCloudProcessor) Init(cfg *config.Config) {
+	p.cfg = cfg
+	p.songs = make([]*SongInfo, 0)
+	p.tempDir = processor.BuildOutputDir(SoundcloudTempDir)
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (sc *SoundCloudProcessor) Handle(link string) (string, error) {
+func (p *SoundCloudProcessor) Handle(link string) (string, error) {
 	panic("implement me")
 }
 
-func (sc *SoundCloudProcessor) Category() domain.ProcessorCategory {
+func (p *SoundCloudProcessor) Category() domain.ProcessorCategory {
 	return domain.CategoryMusic
 }
 
-func (sc *SoundCloudProcessor) Name() domain.LinkType {
+func (p *SoundCloudProcessor) Name() domain.LinkType {
 	return domain.LinkSoundcloud
 }
 
-func (sc *SoundCloudProcessor) Songs() []*SongInfo {
-	return sc.songs
+func (p *SoundCloudProcessor) Songs() []*SongInfo {
+	return p.songs
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
 
-func (sc *SoundCloudProcessor) DownloadMusic(url string) error {
+func (p *SoundCloudProcessor) DownloadMusic(url string) error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sc *SoundCloudProcessor) DownloadCommand(url string) *exec.Cmd {
+func (p *SoundCloudProcessor) DownloadCommand(url string) *exec.Cmd {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sc *SoundCloudProcessor) BeforeTidy() error {
+func (p *SoundCloudProcessor) BeforeTidy() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sc *SoundCloudProcessor) NeedRemoveDRM() bool {
+func (p *SoundCloudProcessor) NeedRemoveDRM() bool {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sc *SoundCloudProcessor) DRMRemove() error {
+func (p *SoundCloudProcessor) DRMRemove() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sc *SoundCloudProcessor) TidyMusic() error {
+func (p *SoundCloudProcessor) TidyMusic() error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sc *SoundCloudProcessor) EncryptedExts() []string {
+func (p *SoundCloudProcessor) EncryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (sc *SoundCloudProcessor) DecryptedExts() []string {
+func (p *SoundCloudProcessor) DecryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }

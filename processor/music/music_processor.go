@@ -1,23 +1,23 @@
 package music
 
 import (
-    "context"
-    "fmt"
-    "os"
-    "os/exec"
-    "path/filepath"
-    "strconv"
-    "strings"
-    "time"
+	"context"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
 
-    "github.com/nichuanfang/gymdl/config"
-    "github.com/nichuanfang/gymdl/core/domain"
-    "github.com/nichuanfang/gymdl/processor"
-    "gopkg.in/vansante/go-ffprobe.v2"
+	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/core/domain"
+	"github.com/nichuanfang/gymdl/processor"
+	"gopkg.in/vansante/go-ffprobe.v2"
 )
 
 /* ---------------------- 音乐接口定义 ---------------------- */
-type MusicProcessor interface {
+type Processor interface {
 	processor.Processor
 	// 音乐处理器名称
 	Name() domain.LinkType
@@ -59,7 +59,7 @@ type SongInfo struct {
 
 /* ---------------------- 常量 ---------------------- */
 
-var BaseTempDir = filepath.Join("data", "temp","music")
+var BaseTempDir = filepath.Join("data", "temp", "music")
 
 // 苹果音乐临时文件夹
 var AppleMusicTempDir = filepath.Join(BaseTempDir, "AppleMusic")

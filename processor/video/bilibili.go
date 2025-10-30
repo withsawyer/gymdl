@@ -6,6 +6,7 @@ import (
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
+	"github.com/nichuanfang/gymdl/utils"
 )
 
 /* ---------------------- 结构体与构造方法 ---------------------- */
@@ -16,25 +17,32 @@ type BiliBiliProcessor struct {
 	videos  []*VideoInfo
 }
 
-func NewBiliBiliProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
-	return &BiliBiliProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
+// Init  初始化
+func (p *BiliBiliProcessor) Init(cfg *config.Config) {
+	p.cfg = cfg
+	p.videos = make([]*VideoInfo, 0)
+	p.tempDir = processor.BuildOutputDir(BilibiliTempDir)
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (am *BiliBiliProcessor) Handle(link string) (string, error) {
+func (p *BiliBiliProcessor) Handle(link string) (string, error) {
 	panic("implement me")
 }
 
-func (am *BiliBiliProcessor) Category() domain.ProcessorCategory {
+func (p *BiliBiliProcessor) Category() domain.ProcessorCategory {
 	return domain.CategoryVideo
 }
 
-func (am *BiliBiliProcessor) Name() domain.LinkType {
+func (p *BiliBiliProcessor) Name() domain.LinkType {
 	return domain.LinkBilibili
 }
+func (p *BiliBiliProcessor) Download(url string) error {
+	utils.Debugf("开始下载视频:%s", url)
+	return nil
+}
 
-func (am *BiliBiliProcessor) Videos() []*VideoInfo {
-	return am.videos
+func (p *BiliBiliProcessor) Videos() []*VideoInfo {
+	return p.videos
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */

@@ -4,6 +4,7 @@ import (
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
+	"github.com/nichuanfang/gymdl/utils"
 )
 
 // 小红书下载
@@ -16,25 +17,32 @@ type XiaohongshuProcessor struct {
 	videos  []*VideoInfo
 }
 
-func NewXiaohongshuProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
-	return &XiaohongshuProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
+// Init  初始化
+func (p *XiaohongshuProcessor) Init(cfg *config.Config) {
+	p.cfg = cfg
+	p.videos = make([]*VideoInfo, 0)
+	p.tempDir = processor.BuildOutputDir(XHSTempDir)
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (xhs *XiaohongshuProcessor) Handle(link string) (string, error) {
+func (p *XiaohongshuProcessor) Handle(link string) (string, error) {
 	panic("implement me")
 }
 
-func (xhs *XiaohongshuProcessor) Category() domain.ProcessorCategory {
+func (p *XiaohongshuProcessor) Category() domain.ProcessorCategory {
 	return domain.CategoryVideo
 }
 
-func (xhs *XiaohongshuProcessor) Name() domain.LinkType {
+func (p *XiaohongshuProcessor) Name() domain.LinkType {
 	return domain.LinkXiaohongshu
 }
+func (p *XiaohongshuProcessor) Download(url string) error {
+	utils.Debugf("开始下载视频:%s", url)
+	return nil
+}
 
-func (xhs *XiaohongshuProcessor) Videos() []*VideoInfo {
-	return xhs.videos
+func (p *XiaohongshuProcessor) Videos() []*VideoInfo {
+	return p.videos
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */

@@ -3,7 +3,8 @@ package video
 import (
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"
-    "github.com/nichuanfang/gymdl/processor"
+	"github.com/nichuanfang/gymdl/processor"
+	"github.com/nichuanfang/gymdl/utils"
 )
 
 // 抖音下载
@@ -12,29 +13,38 @@ import (
 
 type DouyinProcessor struct {
 	cfg     *config.Config
-    tempDir string
+	tempDir string
 	videos  []*VideoInfo
 }
 
-func NewDouyinProcessor(cfg *config.Config,baseTempDir string) processor.Processor {
-    return &DouyinProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
+// Init  初始化
+func (p *DouyinProcessor) Init(cfg *config.Config) {
+	p.cfg = cfg
+	p.videos = make([]*VideoInfo, 0)
+	p.tempDir = processor.BuildOutputDir(DouyinTempDir)
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (dy *DouyinProcessor) Handle(link string) (string, error) {
+
+func (p *DouyinProcessor) Handle(link string) (string, error) {
 	panic("implement me")
 }
 
-func (dy *DouyinProcessor) Category() domain.ProcessorCategory {
+func (p *DouyinProcessor) Category() domain.ProcessorCategory {
 	return domain.CategoryVideo
 }
 
-func (dy *DouyinProcessor) Name() domain.LinkType {
+func (p *DouyinProcessor) Name() domain.LinkType {
 	return domain.LinkDouyin
 }
 
-func (dy *DouyinProcessor) Videos() []*VideoInfo {
-	return dy.videos
+func (p *DouyinProcessor) Download(url string) error {
+	utils.InfoWithFormat("55.69 MiB / 55.69 MiB [==============] 1.77 MiB p/s 100.00% 32s：%s", url)
+	return nil
+}
+
+func (p *DouyinProcessor) Videos() []*VideoInfo {
+	return p.videos
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
