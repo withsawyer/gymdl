@@ -1,8 +1,8 @@
-package handler
+package music
 
 import (
-    "errors"
-    "os/exec"
+	"errors"
+	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core"
@@ -15,7 +15,7 @@ func (qm *QQHandler) Platform() string {
 	return "QQ音乐"
 }
 
-func (qm *QQHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo, error) {
+func (qm *QQHandler) Download(url string, cfg *config.Config) (*SongInfo, error) {
 	return &SongInfo{}, errors.New("🚧 开发中")
 }
 

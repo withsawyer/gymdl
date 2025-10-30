@@ -1,8 +1,8 @@
-package handler
+package music
 
 import (
-    "errors"
-    "os/exec"
+	"errors"
+	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core"
@@ -15,7 +15,7 @@ func (sc *SoundCloudHandler) Platform() string {
 	return "SoundCloud"
 }
 
-func (sc *SoundCloudHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo, error) {
+func (sc *SoundCloudHandler) Download(url string, cfg *config.Config) (*SongInfo, error) {
 	return &SongInfo{}, errors.New("🚧 开发中")
 }
 

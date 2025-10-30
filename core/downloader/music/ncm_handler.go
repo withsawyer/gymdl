@@ -1,4 +1,4 @@
-package handler
+package music
 
 import (
 	"encoding/json"
@@ -33,7 +33,7 @@ type NCMHandler struct{}
 
 func (ncm *NCMHandler) Platform() string { return "NetEaseCloudMusic" }
 
-func (ncm *NCMHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo, error) {
+func (ncm *NCMHandler) Download(url string, cfg *config.Config) (*SongInfo, error) {
 	start := time.Now()
 	utils.InfoWithFormat("[NCM] 🎵 开始下载: %s", url)
 
@@ -202,21 +202,21 @@ func (ncm *NCMHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV, songIn
 		return errors.New("未找到待整理的音乐文件")
 	}
 
-	switch cfg.MusicTidy.Mode {
+	switch cfg.ResourceTidy.Mode {
 	case 1:
 		return ncm.tidyToLocal(cfg, files)
 	case 2:
 		return ncm.tidyToWebDAV(cfg, files, webdav)
 	default:
-		return fmt.Errorf("未知整理模式: %d", cfg.MusicTidy.Mode)
+		return fmt.Errorf("未知整理模式: %d", cfg.ResourceTidy.Mode)
 	}
 }
 
 func (ncm *NCMHandler) tidyToLocal(cfg *config.Config, files []os.DirEntry) error {
-	if cfg.MusicTidy.DistDir == "" {
+	if cfg.ResourceTidy.DistDir == "" {
 		return errors.New("未配置输出目录")
 	}
-	if err := os.MkdirAll(cfg.MusicTidy.DistDir, 0755); err != nil {
+	if err := os.MkdirAll(cfg.ResourceTidy.DistDir, 0755); err != nil {
 		return fmt.Errorf("创建输出目录失败: %w", err)
 	}
 
@@ -225,7 +225,7 @@ func (ncm *NCMHandler) tidyToLocal(cfg *config.Config, files []os.DirEntry) erro
 			continue
 		}
 		src := filepath.Join(constants.NCMTempDir, file.Name())
-		dst := filepath.Join(cfg.MusicTidy.DistDir, utils.SanitizeFileName(file.Name()))
+		dst := filepath.Join(cfg.ResourceTidy.DistDir, utils.SanitizeFileName(file.Name()))
 		if err := utils.MoveFile(src, dst); err != nil {
 			utils.WarnWithFormat("[NCM] ⚠️ 移动失败 %s → %s: %v", src, dst, err)
 			continue

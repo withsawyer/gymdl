@@ -1,4 +1,4 @@
-package handler
+package music
 
 import (
 	"errors"
@@ -23,18 +23,18 @@ func (am *AppleMusicHandler) Platform() string { return "AppleMusic" }
 
 /* ---------------------- 下载逻辑 ---------------------- */
 
-func (am *AppleMusicHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo, error) {
-    if cfg.AdditionalConfig.EnableWrapper{
-            utils.Logger().Debug("使用增强版am下载器")
+func (am *AppleMusicHandler) Download(url string, cfg *config.Config) (*SongInfo, error) {
+	if cfg.AdditionalConfig.EnableWrapper {
+		utils.Logger().Debug("使用增强版am下载器")
 		return am.wrapDownload(url, cfg)
 	} else {
-        utils.Logger().Debug("使用默认am下载器")
+		utils.Logger().Debug("使用默认am下载器")
 		return am.defaultDownload(url, cfg)
 	}
 }
 
 // defaultDownload 默认下载器
-func (am *AppleMusicHandler)defaultDownload(url string, cfg *config.Config) (*SongInfo, error) {
+func (am *AppleMusicHandler) defaultDownload(url string, cfg *config.Config) (*SongInfo, error) {
 	start := time.Now()
 	tempDir := constants.AppleMusicTempDir
 
@@ -63,7 +63,7 @@ func (am *AppleMusicHandler)defaultDownload(url string, cfg *config.Config) (*So
 }
 
 // wrapDownload 增强版下载器
-func (am *AppleMusicHandler)wrapDownload(string, *config.Config) (*SongInfo, error) {
+func (am *AppleMusicHandler) wrapDownload(string, *config.Config) (*SongInfo, error) {
 	return &SongInfo{}, nil
 }
 
@@ -127,20 +127,20 @@ func (am *AppleMusicHandler) TidyMusic(cfg *config.Config, webdav *core.WebDAV, 
 		return errors.New("未找到待整理的音乐文件")
 	}
 
-	switch cfg.MusicTidy.Mode {
+	switch cfg.ResourceTidy.Mode {
 	case 1:
 		return am.tidyToLocal(cfg, files)
 	case 2:
 		return am.tidyToWebDAV(cfg, files, webdav)
 	default:
-		return fmt.Errorf("未知整理模式: %d", cfg.MusicTidy.Mode)
+		return fmt.Errorf("未知整理模式: %d", cfg.ResourceTidy.Mode)
 	}
 }
 
 /* ---------------------- 本地整理 ---------------------- */
 
 func (am *AppleMusicHandler) tidyToLocal(cfg *config.Config, files []os.DirEntry) error {
-	dstDir := cfg.MusicTidy.DistDir
+	dstDir := cfg.ResourceTidy.DistDir
 	if dstDir == "" {
 		return errors.New("未配置输出目录")
 	}

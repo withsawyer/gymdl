@@ -3,7 +3,7 @@ package config
 type Config struct {
 	WebConfig        *WebConfig         `yaml:"web_config"`        // web配置
 	CookieCloud      *CookieCloudConfig `yaml:"cookie_cloud"`      // cookiecloud配置
-	MusicTidy        *MusicTidyConfig   `yaml:"music_tidy"`        // 音乐整理配置
+	ResourceTidy     *ResourceTidy      `yaml:"resource_tidy"`     // 音乐整理配置
 	WebDAV           *WebDAVConfig      `yaml:"webdav"`            // webdav配置
 	Log              *LogConfig         `yaml:"log"`               // 日志配置
 	Telegram         *TelegramConfig    `yaml:"telegram"`          // telegram配置
@@ -29,8 +29,8 @@ type CookieCloudConfig struct {
 	ExpireTime      int    `yaml:"expire_time"`      // cookie文件过期时间(分钟) 根据自己需求控制
 }
 
-type MusicTidyConfig struct {
-	Mode    int    `yaml:"mode"`     // 音乐整理模式: 1整理到DistDir, 2整理到webdav目录WebDAVDir
+type ResourceTidy struct {
+	Mode    int    `yaml:"mode"`     // 资源整理模式: 1整理到DistDir, 2整理到webdav目录WebDAVDir
 	DistDir string `yaml:"dist_dir"` // 整理到的路径,仅在Mode为1时使用该目录
 }
 

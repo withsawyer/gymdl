@@ -1,4 +1,4 @@
-package handler
+package music
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ func (ytm *YoutubeMusicHandler) Platform() string {
 	return "YoutubeMusic"
 }
 
-func (ytm *YoutubeMusicHandler) DownloadMusic(url string, cfg *config.Config) (*SongInfo, error) {
+func (ytm *YoutubeMusicHandler) Download(url string, cfg *config.Config) (*SongInfo, error) {
 	return &SongInfo{}, errors.New("🚧 开发中")
 }
 
