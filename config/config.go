@@ -118,8 +118,8 @@ func (c *Config) setDefaults() {
 			ExpireTime:      180,
 		}
 	}
-	if c.MusicTidy == nil {
-		c.MusicTidy = &MusicTidyConfig{Mode: 1, DistDir: "data/dist"}
+	if c.Tidy == nil {
+		c.Tidy = &TidyConfig{Mode: 1, DistDir: "data/dist"}
 	}
 	if c.WebDAV == nil {
 		c.WebDAV = &WebDAVConfig{

@@ -43,7 +43,7 @@ func (s *Session) HandleMusic(p music.Processor) error {
 	}
 
 	utils.InfoWithFormat("[Telegram] 整理成功，开始入库...")
-	if s.Cfg.MusicTidy.Mode == 2 {
+	if s.Cfg.Tidy.Mode == 2 {
 		_, _ = bot.Edit(msg, fmt.Sprintf("✅ 已识别 **%s** 链接\n\n🎵 开始入库...", p.Name()), tb.ModeMarkdown)
 	}
 

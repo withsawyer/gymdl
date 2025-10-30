@@ -81,7 +81,7 @@ var SpotifyTempDir = filepath.Join(BaseTempDir, "Spotify")
 
 // 设定整理类型
 func determineTidyType(cfg *config.Config) string {
-	return map[int]string{1: "LOCAL", 2: "WEBDAV"}[cfg.MusicTidy.Mode]
+	return map[int]string{1: "LOCAL", 2: "WEBDAV"}[cfg.Tidy.Mode]
 }
 
 /* ---------------------- 音乐下载相关业务函数 ---------------------- */

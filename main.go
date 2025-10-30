@@ -211,7 +211,7 @@ func main() {
 		initAI(c.AI)
 	}
 
-	if c.MusicTidy.Mode == 2 {
+	if c.Tidy.Mode == 2 {
 		initWebDAV(c.WebDAV)
 	}
 
