@@ -42,7 +42,7 @@ func HandleText(c tb.Context) error {
 		return nil
 	}
 	utils.InfoWithFormat("[Telegram] 解析成功: %s", link)
-	proc:= factory.GetProcessor(linkType, app.cfg)
+	proc := factory.GetProcessor(linkType, app.cfg)
 	// 创建会话对象
 	session := &Session{
 		text:     text,

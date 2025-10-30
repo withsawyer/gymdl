@@ -20,65 +20,6 @@ type linkTypeMatcher struct {
 
 /* ---------------------- 变量区 ---------------------- */
 
-// 处理器规则集
-var linkTypeMatchers = []linkTypeMatcher{
-	{
-		/* ---------------------- 音乐平台 ---------------------- */
-		domains: []string{
-			"music.163.com",
-			"y.music.163.com",
-			"163cn.tv",
-			"163cn.link",
-		},
-		patterns: []*regexp.Regexp{
-			// 网页或移动端链接
-			regexp.MustCompile(`^https?://(music\.163\.com|y\.music\.163\.com)/(#)?/?(song|playlist|album|artist)\?id=\d+`),
-			// 网易云短链（App 内分享）
-			regexp.MustCompile(`^https?://163cn\.tv/\w+`),
-			// 其他平台
-			regexp.MustCompile(`^https?://163cn\.link/\w+`),
-		},
-		linkType: domain.LinkNetEase,
-	},
-	{
-		domains: []string{"youtube.com", "music.youtube.com", "youtu.be"},
-		patterns: []*regexp.Regexp{
-			regexp.MustCompile(`v=[\w-]+`), // 精简匹配
-			regexp.MustCompile(`^https?://youtu\.be/[\w-]+`),
-		},
-		linkType: domain.LinkYoutubeMusic,
-	},
-	{
-		domains: []string{"music.apple.com"},
-		patterns: []*regexp.Regexp{
-			regexp.MustCompile(`/(song|album|playlist)/[^/]+/(id)?\d+`),
-		},
-		linkType: domain.LinkAppleMusic,
-	},
-	{
-		domains: []string{"soundcloud.com", "snd.sc"},
-		patterns: []*regexp.Regexp{
-			regexp.MustCompile(`/[\w-]+(/sets)?/[\w-]+`),
-		},
-		linkType: domain.LinkSoundcloud,
-	},
-	{
-		domains: []string{"y.qq.com", "c.y.qq.com", "m.y.qq.com"},
-		patterns: []*regexp.Regexp{
-			regexp.MustCompile(`/(song|playlist|album)`),
-		},
-		linkType: domain.LinkQQMusic,
-	},
-	{
-		domains: []string{"open.spotify.com", "play.spotify.com"},
-		patterns: []*regexp.Regexp{
-			regexp.MustCompile(`/(track|album|playlist)/[\w-]+`),
-		},
-		linkType: domain.LinkSpotify,
-	},
-	/* ---------------------- 视频平台(待补充) ---------------------- */
-}
-
 // 快速域名 -> matcher 索引映射表（加速匹配）
 var matcherMap = make(map[string]*linkTypeMatcher)
 

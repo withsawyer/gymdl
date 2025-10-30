@@ -84,7 +84,7 @@ func determineTidyType(cfg *config.Config) string {
 	return map[int]string{1: "LOCAL", 2: "WEBDAV"}[cfg.MusicTidy.Mode]
 }
 
-/* ---------------------- 业务工具 ---------------------- */
+/* ---------------------- 音乐下载相关业务函数 ---------------------- */
 
 // ExtractSongInfo 通过ffprobe-go解析歌曲信息
 func ExtractSongInfo(song *SongInfo, path string) error {

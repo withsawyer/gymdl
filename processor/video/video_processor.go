@@ -38,4 +38,4 @@ var XHSTempDir = filepath.Join(BaseTempDir, "XHS")
 // Youtube临时文件夹
 var YoutubeTempDir = filepath.Join(BaseTempDir, "Youtube")
 
-/* ---------------------- 业务工具 ---------------------- */
+/* ---------------------- 视频下载相关业务函数 ---------------------- */

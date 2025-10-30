@@ -2,8 +2,8 @@ package music
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -16,12 +16,12 @@ import (
 /* ---------------------- 结构体与构造方法 ---------------------- */
 type AppleMusicProcessor struct {
 	cfg     *config.Config
-    tempDir string
+	tempDir string
 	songs   []*SongInfo
 }
 
-func NewAppleMusicProcessor(cfg *config.Config,baseTempDir string) processor.Processor {
-    return &AppleMusicProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
+func NewAppleMusicProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
+	return &AppleMusicProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
@@ -55,38 +55,55 @@ func (am *AppleMusicProcessor) DownloadMusic(url string) error {
 }
 
 func (am *AppleMusicProcessor) DownloadCommand(url string) *exec.Cmd {
-	// TODO implement me
-	panic("implement me")
+	cookiePath := filepath.Join(am.cfg.CookieCloud.CookieFilePath, am.cfg.CookieCloud.CookieFile)
+	// https://github.com/glomatico/gamdl/commit/fdab6481ea246c2cf3415565c39da62a3b9dbd52 部分options改动
+	rootDir := filepath.Dir(am.tempDir)
+	baseDir := filepath.Base(am.tempDir)
+	args := []string{
+		"--cookies-path", cookiePath,
+		"--download-mode", "nm3u8dlre",
+		"--output-path", rootDir,
+		"--temp-path", rootDir,
+		"--album-folder-template", baseDir,
+		"--compilation-folder-template", baseDir,
+		"--no-album-folder-template", baseDir,
+		"--single-disc-file-template", "{title}",
+		"--multi-disc-file-template", "{title}",
+		"--no-synced-lyrics",
+		url,
+	}
+	return exec.Command("gamdl", args...)
 }
 
 func (am *AppleMusicProcessor) BeforeTidy() error {
+    
 	// TODO implement me
-	panic("implement me")
+	return nil
 }
 
 func (am *AppleMusicProcessor) NeedRemoveDRM() bool {
 	// TODO implement me
-	panic("implement me")
+	return false
 }
 
 func (am *AppleMusicProcessor) DRMRemove() error {
 	// TODO implement me
-	panic("implement me")
+	return nil
 }
 
 func (am *AppleMusicProcessor) TidyMusic() error {
 	// TODO implement me
-	panic("implement me")
+	return nil
 }
 
 func (am *AppleMusicProcessor) EncryptedExts() []string {
 	// TODO implement me
-	panic("implement me")
+	return nil
 }
 
 func (am *AppleMusicProcessor) DecryptedExts() []string {
 	// TODO implement me
-	panic("implement me")
+	return nil
 }
 
 /* ------------------------ 拓展方法 ------------------------ */
@@ -94,17 +111,13 @@ func (am *AppleMusicProcessor) DecryptedExts() []string {
 // defaultDownload 默认下载器
 func (am *AppleMusicProcessor) defaultDownload(url string) error {
 	start := time.Now()
-	tempDir := AppleMusicTempDir
-
-	if err := os.MkdirAll(tempDir, 0755); err != nil {
-		utils.ErrorWithFormat("[AppleMusic] ❌ 创建输出目录失败: %v", err)
-		return fmt.Errorf("创建输出目录失败: %w", err)
-	}
-
 	cmd := am.DownloadCommand(url)
 	utils.InfoWithFormat("[AppleMusic] 🎵 开始下载: %s", url)
 	utils.DebugWithFormat("[AppleMusic] 执行命令: %s", strings.Join(cmd.Args, " "))
-
+	err := processor.CreateOutputDir(am.tempDir)
+	if err != nil {
+		return err
+	}
 	output, err := cmd.CombinedOutput()
 	logOut := strings.TrimSpace(string(output))
 	if err != nil {
