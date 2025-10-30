@@ -18,13 +18,13 @@ var linkTypeMatchers = []linkTypeMatcher{
 			"163cn.link",
 		},
 		patterns: []*regexp.Regexp{
-			// 网页 / 移动端链接（song / playlist / album / artist），id 为数字
-			regexp.MustCompile(`^https?://(?:music\.163\.com|y\.music\.163\.com)/(?:song|playlist|album|artist)\?id=\d+(?:&.*)?$`),
+			// 网页端 / 移动端链接
+			regexp.MustCompile(`^https?://(?:y\.)?music\.163\.com/(?:#/)?(?:m/)?(?:song|playlist|album|artist|djradio|program)\?id=\d+(?:&\S*)?$`),
 
-			// 网易云短链（App 内分享）
+			// 网易云 App 短链
 			regexp.MustCompile(`^https?://163cn\.tv/[A-Za-z0-9]+(?:\?.*)?$`),
 
-			// 其他短链（新格式）
+			// 新版短链
 			regexp.MustCompile(`^https?://163cn\.link/[A-Za-z0-9]+(?:\?.*)?$`),
 		},
 		handler: &music.NetEaseProcessor{},
