@@ -218,3 +218,23 @@ func TruncateString(s string, limit int) string {
 	}
 	return string(runes[:limit])
 }
+
+// ClearTempDirs 清理临时目录
+func ClearTempDirs(root string) error {
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			dirPath := filepath.Join(root, entry.Name())
+			err := os.RemoveAll(dirPath)
+			if err != nil {
+				return fmt.Errorf("failed to remove %s: %w", dirPath, err)
+			}
+		}
+	}
+
+	return nil
+}

@@ -1,17 +1,17 @@
 package core
 
 import (
-    "encoding/json"
-    "fmt"
-    "io"
-    "net/http"
-    "os"
-    "strings"
-    "time"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
+	"time"
 
-    "github.com/nichuanfang/gymdl/config"
-    "github.com/nichuanfang/gymdl/utils"
-    "go.uber.org/zap"
+	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/utils"
+	"go.uber.org/zap"
 )
 
 type CookieCloud struct {
@@ -144,18 +144,18 @@ func (cc *CookieCloud) fetchEncryptedData() (string, error) {
 
 // decryptData 使用配置的 key 解密数据
 func (cc *CookieCloud) decryptData(encrypted string) []byte {
-    keyPassword := Md5String(cc.Config.CookieCloudUUID, "-", cc.Config.CookieCloudKEY)
-    if len(keyPassword) < 16 {
-        return nil
-    }
-    keyPassword = keyPassword[:16]
-    dec, err := DecryptCryptoJsAesMsg(keyPassword, encrypted)
-    if err == nil && len(dec) > 0 {
-            return dec
-    }else{
-        logger.Debug(fmt.Sprintf("加密key【%s】解密失败", cc.Config.CookieCloudUUID))
-        return nil
-    }
+	keyPassword := Md5String(cc.Config.CookieCloudUUID, "-", cc.Config.CookieCloudKEY)
+	if len(keyPassword) < 16 {
+		return nil
+	}
+	keyPassword = keyPassword[:16]
+	dec, err := DecryptCryptoJsAesMsg(keyPassword, encrypted)
+	if err == nil && len(dec) > 0 {
+		return dec
+	} else {
+		logger.Debug(fmt.Sprintf("加密key【%s】解密失败", cc.Config.CookieCloudUUID))
+		return nil
+	}
 }
 
 // ConvertToNetscapeFormat 将解密后的 cookie 转换为 Netscape 格式
