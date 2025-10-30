@@ -19,55 +19,59 @@ func NewSpotifyProcessor(cfg *config.Config) *SpotifyProcessor {
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (am *SpotifyProcessor) Handle(link string) (string, error) {
+func (sp *SpotifyProcessor) Handle(link string) (string, error) {
 	panic("implement me")
 }
 
-func (am *SpotifyProcessor) Category() domain.ProcessorCategory {
+func (sp *SpotifyProcessor) Category() domain.ProcessorCategory {
 	return domain.CategoryMusic
 }
 
-func (am *SpotifyProcessor) Name() domain.LinkType {
+func (sp *SpotifyProcessor) Name() domain.LinkType {
 	return domain.LinkSpotify
+}
+
+func (sp *SpotifyProcessor) Songs() []*SongInfo {
+	return sp.SongInfos
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
 func (sp *SpotifyProcessor) DownloadMusic(url string) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (sp *SpotifyProcessor) DownloadCommand(url string) *exec.Cmd {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
-func (sp *SpotifyProcessor) BeforeTidy() ([]*SongInfo, error) {
-	//TODO implement me
+func (sp *SpotifyProcessor) BeforeTidy() error {
+	// TODO implement me
 	panic("implement me")
 }
 
 func (sp *SpotifyProcessor) NeedRemoveDRM() bool {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (sp *SpotifyProcessor) DRMRemove() error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (sp *SpotifyProcessor) TidyMusic() error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (sp *SpotifyProcessor) EncryptedExts() []string {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (sp *SpotifyProcessor) DecryptedExts() []string {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }

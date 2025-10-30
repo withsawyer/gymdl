@@ -5,12 +5,13 @@ import (
 	"github.com/nichuanfang/gymdl/core/domain"
 )
 
-//抖音下载
+// 抖音下载
 
 /* ---------------------- 结构体与构造方法 ---------------------- */
 
 type DouyinProcessor struct {
-	cfg *config.Config
+	cfg    *config.Config
+	videos []*VideoInfo
 }
 
 func NewDouyinProcessor(cfg *config.Config) *DouyinProcessor {
@@ -18,16 +19,20 @@ func NewDouyinProcessor(cfg *config.Config) *DouyinProcessor {
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (am *DouyinProcessor) Handle(link string) (string, error) {
+func (dy *DouyinProcessor) Handle(link string) (string, error) {
 	panic("implement me")
 }
 
-func (am *DouyinProcessor) Category() domain.ProcessorCategory {
+func (dy *DouyinProcessor) Category() domain.ProcessorCategory {
 	return domain.CategoryVideo
 }
 
-func (am *DouyinProcessor) Name() domain.LinkType {
+func (dy *DouyinProcessor) Name() domain.LinkType {
 	return domain.LinkDouyin
+}
+
+func (dy *DouyinProcessor) Videos() []*VideoInfo {
+	return dy.videos
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */

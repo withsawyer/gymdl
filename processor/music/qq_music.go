@@ -31,44 +31,48 @@ func (am *QQMusicProcessor) Name() domain.LinkType {
 	return domain.LinkQQMusic
 }
 
+func (am *QQMusicProcessor) Songs() []*SongInfo {
+	return am.SongInfos
+}
+
 /* ------------------------ 下载逻辑 ------------------------ */
 
 func (qm *QQMusicProcessor) DownloadMusic(url string) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (qm *QQMusicProcessor) DownloadCommand(url string) *exec.Cmd {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
-func (qm *QQMusicProcessor) BeforeTidy() ([]*SongInfo, error) {
-	//TODO implement me
+func (qm *QQMusicProcessor) BeforeTidy() error {
+	// TODO implement me
 	panic("implement me")
 }
 
 func (qm *QQMusicProcessor) NeedRemoveDRM() bool {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (qm *QQMusicProcessor) DRMRemove() error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (qm *QQMusicProcessor) TidyMusic() error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (qm *QQMusicProcessor) EncryptedExts() []string {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (qm *QQMusicProcessor) DecryptedExts() []string {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }

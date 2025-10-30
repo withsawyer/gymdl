@@ -5,12 +5,13 @@ import (
 	"github.com/nichuanfang/gymdl/core/domain"
 )
 
-//小红书下载
+// 小红书下载
 
 /* ---------------------- 结构体与构造方法 ---------------------- */
 
 type XiaohongshuProcessor struct {
-	cfg *config.Config
+	cfg    *config.Config
+	videos []*VideoInfo
 }
 
 func NewXiaohongshuProcessor(cfg *config.Config) *XiaohongshuProcessor {
@@ -18,16 +19,20 @@ func NewXiaohongshuProcessor(cfg *config.Config) *XiaohongshuProcessor {
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (b *XiaohongshuProcessor) Handle(link string) (string, error) {
+func (xhs *XiaohongshuProcessor) Handle(link string) (string, error) {
 	panic("implement me")
 }
 
-func (am *XiaohongshuProcessor) Category() domain.ProcessorCategory {
+func (xhs *XiaohongshuProcessor) Category() domain.ProcessorCategory {
 	return domain.CategoryVideo
 }
 
-func (am *XiaohongshuProcessor) Name() domain.LinkType {
+func (xhs *XiaohongshuProcessor) Name() domain.LinkType {
 	return domain.LinkXiaohongshu
+}
+
+func (xhs *XiaohongshuProcessor) Videos() []*VideoInfo {
+	return xhs.videos
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */

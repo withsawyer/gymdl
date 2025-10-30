@@ -13,7 +13,7 @@ type AppleMusicProcessor struct {
 	cfg       *config.Config
 	SongInfos []*SongInfo
 }
-
+  
 func NewAppleMusicProcessor(cfg *config.Config) processor.Processor {
 	return &AppleMusicProcessor{cfg: cfg}
 }
@@ -32,44 +32,48 @@ func (am *AppleMusicProcessor) Name() domain.LinkType {
 	return domain.LinkAppleMusic
 }
 
+func (am *AppleMusicProcessor) Songs() []*SongInfo {
+	return am.SongInfos
+}
+
 /* ------------------------ 下载逻辑 ------------------------ */
 
 func (am *AppleMusicProcessor) DownloadMusic(url string) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (am *AppleMusicProcessor) DownloadCommand(url string) *exec.Cmd {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
-func (am *AppleMusicProcessor) BeforeTidy() ([]*SongInfo, error) {
-	//TODO implement me
+func (am *AppleMusicProcessor) BeforeTidy() error {
+	// TODO implement me
 	panic("implement me")
 }
 
 func (am *AppleMusicProcessor) NeedRemoveDRM() bool {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (am *AppleMusicProcessor) DRMRemove() error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (am *AppleMusicProcessor) TidyMusic() error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (am *AppleMusicProcessor) EncryptedExts() []string {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (am *AppleMusicProcessor) DecryptedExts() []string {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }

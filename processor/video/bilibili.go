@@ -1,6 +1,6 @@
 package video
 
-//bilibili下载
+// bilibili下载
 
 import (
 	"github.com/nichuanfang/gymdl/config"
@@ -10,7 +10,8 @@ import (
 /* ---------------------- 结构体与构造方法 ---------------------- */
 
 type BiliBiliProcessor struct {
-	cfg *config.Config
+	cfg    *config.Config
+	videos []*VideoInfo
 }
 
 func NewBiliBiliProcessor(cfg *config.Config) *BiliBiliProcessor {
@@ -28,6 +29,10 @@ func (am *BiliBiliProcessor) Category() domain.ProcessorCategory {
 
 func (am *BiliBiliProcessor) Name() domain.LinkType {
 	return domain.LinkBilibili
+}
+
+func (am *BiliBiliProcessor) Videos() []*VideoInfo {
+	return am.videos
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */

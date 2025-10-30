@@ -32,44 +32,48 @@ func (am *NetEaseProcessor) Name() domain.LinkType {
 	return domain.LinkNetEase
 }
 
+func (am *NetEaseProcessor) Songs() []*SongInfo {
+	return am.SongInfos
+}
+
 /* ------------------------ 下载逻辑 ------------------------ */
 
 func (ncm *NetEaseProcessor) DownloadMusic(url string) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (ncm *NetEaseProcessor) DownloadCommand(url string) *exec.Cmd {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
-func (ncm *NetEaseProcessor) BeforeTidy() ([]*SongInfo, error) {
-	//TODO implement me
+func (ncm *NetEaseProcessor) BeforeTidy() error {
+	// TODO implement me
 	panic("implement me")
 }
 
 func (ncm *NetEaseProcessor) NeedRemoveDRM() bool {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (ncm *NetEaseProcessor) DRMRemove() error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (ncm *NetEaseProcessor) TidyMusic() error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (ncm *NetEaseProcessor) EncryptedExts() []string {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (ncm *NetEaseProcessor) DecryptedExts() []string {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }

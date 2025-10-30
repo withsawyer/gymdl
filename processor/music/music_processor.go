@@ -19,13 +19,16 @@ import (
 /* ---------------------- 音乐接口定义 ---------------------- */
 type MusicProcessor interface {
 	processor.Processor
+	// 音乐处理器名称
 	Name() domain.LinkType
+	// 歌曲元信息列表
+	Songs() []*SongInfo
 	// 下载音乐
 	DownloadMusic(url string) error
 	// 构建下载命令
 	DownloadCommand(url string) *exec.Cmd
 	// 音乐整理之前的处理(如读取,嵌入元数据,刮削等)
-	BeforeTidy() ([]*SongInfo, error)
+	BeforeTidy() error
 	// 是否需要移除DRM
 	NeedRemoveDRM() bool
 	// 移除DRM
@@ -49,8 +52,8 @@ type SongInfo struct {
 	Bitrate     string // 码率
 	Duration    int    // 时长
 	PicUrl      string // 封面图url
-	Lyric       string //歌词
-	Year        int    //年份
+	Lyric       string // 歌词
+	Year        int    // 年份
 	Tidy        string // 入库方式(默认/webdav)
 }
 
