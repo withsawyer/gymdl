@@ -5,23 +5,19 @@ package video
 import (
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"
-    "github.com/nichuanfang/gymdl/processor"
+	"github.com/nichuanfang/gymdl/processor"
 )
 
 /* ---------------------- 结构体与构造方法 ---------------------- */
 
 type BiliBiliProcessor struct {
 	cfg     *config.Config
-    tempDir string
+	tempDir string
 	videos  []*VideoInfo
 }
 
-func NewBiliBiliProcessor(cfg *config.Config,baseTempDir string) (*BiliBiliProcessor,error) {
-    dir,err := processor.BuildOutputDir(baseTempDir)
-    if err != nil {
-        return nil,err
-    }
-	return &BiliBiliProcessor{cfg: cfg, tempDir: dir},nil
+func NewBiliBiliProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
+	return &BiliBiliProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */

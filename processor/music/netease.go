@@ -16,12 +16,8 @@ type NetEaseProcessor struct {
 	songs   []*SongInfo
 }
 
-func NewNetEaseProcessor(cfg *config.Config, baseTempDir string) (processor.Processor, error) {
-	dir, err := processor.BuildOutputDir(baseTempDir)
-	if err != nil {
-		return nil, err
-	}
-	return &NetEaseProcessor{cfg: cfg, tempDir: dir}, nil
+func NewNetEaseProcessor(cfg *config.Config, baseTempDir string) processor.Processor{
+	return &NetEaseProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */

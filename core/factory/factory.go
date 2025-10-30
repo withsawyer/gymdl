@@ -1,17 +1,15 @@
 package factory
 
 import (
-	"errors"
-
-	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core/domain"
-	"github.com/nichuanfang/gymdl/processor"
-	"github.com/nichuanfang/gymdl/processor/music"
-	"github.com/nichuanfang/gymdl/processor/video"
+    "github.com/nichuanfang/gymdl/config"
+    "github.com/nichuanfang/gymdl/core/domain"
+    "github.com/nichuanfang/gymdl/processor"
+    "github.com/nichuanfang/gymdl/processor/music"
+    "github.com/nichuanfang/gymdl/processor/video"
 )
 
 // GetProcessor 处理器工厂
-func GetProcessor(linkType domain.LinkType, cfg *config.Config) (processor.Processor, error) {
+func GetProcessor(linkType domain.LinkType, cfg *config.Config) processor.Processor{
 	switch linkType {
 	case domain.LinkAppleMusic:
 		return music.NewAppleMusicProcessor(cfg, music.AppleMusicTempDir)
@@ -34,6 +32,6 @@ func GetProcessor(linkType domain.LinkType, cfg *config.Config) (processor.Proce
 	case domain.LinkYoutube:
 		return video.NewYoutubeProcessor(cfg, video.YoutubeTempDir)
 	default:
-		return nil, errors.New("未找到处理器")
+		return nil
 	}
 }

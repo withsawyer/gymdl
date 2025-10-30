@@ -21,14 +21,11 @@ type Processor interface {
 
 // BuildOutputDir 构建输出目录
 // 规则: baseTempDir + 时间戳（例如：temp/20251030153045）
-func BuildOutputDir(baseTempDir string) (string, error) {
+func BuildOutputDir(baseTempDir string) string {
 	// 1. 获取当前时间戳（格式：YYYYMMDDHHMMSS）
 	timestamp := time.Now().Format("20060102150405")
-
 	// 2. 构建输出目录路径
-	outputDir := filepath.Join(baseTempDir, timestamp)
-	// 4. 返回构建好的路径
-	return outputDir, nil
+	return filepath.Join(baseTempDir, timestamp)
 }
 
 // CreateOutputDir 创建临时目录

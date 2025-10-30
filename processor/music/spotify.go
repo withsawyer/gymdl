@@ -16,12 +16,8 @@ type SpotifyProcessor struct {
 	songs   []*SongInfo
 }
 
-func NewSpotifyProcessor(cfg *config.Config, baseTempDir string) (processor.Processor, error) {
-	dir, err := processor.BuildOutputDir(baseTempDir)
-	if err != nil {
-		return nil, err
-	}
-	return &SpotifyProcessor{cfg: cfg, tempDir: dir}, nil
+func NewSpotifyProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
+	return &SpotifyProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */

@@ -16,12 +16,8 @@ type SoundCloudProcessor struct {
 	songs   []*SongInfo
 }
 
-func NewSoundCloudProcessor(cfg *config.Config, baseTempDir string) (processor.Processor, error) {
-	dir, err := processor.BuildOutputDir(baseTempDir)
-	if err != nil {
-		return nil, err
-	}
-	return &SoundCloudProcessor{cfg: cfg, tempDir: dir}, nil
+func NewSoundCloudProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
+	return &SoundCloudProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */

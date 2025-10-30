@@ -20,12 +20,8 @@ type AppleMusicProcessor struct {
 	songs   []*SongInfo
 }
 
-func NewAppleMusicProcessor(cfg *config.Config,baseTempDir string) (processor.Processor,error) {
-    dir,err := processor.BuildOutputDir(baseTempDir)
-    if err != nil {
-        return nil,err
-    }
-    return &AppleMusicProcessor{cfg: cfg, tempDir: dir}, nil
+func NewAppleMusicProcessor(cfg *config.Config,baseTempDir string) processor.Processor {
+    return &AppleMusicProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */

@@ -16,12 +16,8 @@ type YoutubeMusicProcessor struct {
 	songs   []*SongInfo
 }
 
-func NewYoutubeMusicProcessor(cfg *config.Config, baseTempDir string) (processor.Processor, error) {
-	dir, err := processor.BuildOutputDir(baseTempDir)
-	if err != nil {
-		return nil, err
-	}
-	return &YoutubeMusicProcessor{cfg: cfg, tempDir: dir}, nil
+func NewYoutubeMusicProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
+	return &YoutubeMusicProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */

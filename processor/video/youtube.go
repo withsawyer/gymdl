@@ -16,12 +16,8 @@ type YoutubeProcessor struct {
 	videos  []*VideoInfo
 }
 
-func NewYoutubeProcessor(cfg *config.Config, baseTempDir string) (*YoutubeProcessor, error) {
-	dir, err := processor.BuildOutputDir(baseTempDir)
-	if err != nil {
-		return nil, err
-	}
-	return &YoutubeProcessor{cfg: cfg, tempDir: dir}, nil
+func NewYoutubeProcessor(cfg *config.Config, baseTempDir string) processor.Processor {
+	return &YoutubeProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */

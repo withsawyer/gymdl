@@ -16,12 +16,8 @@ type DouyinProcessor struct {
 	videos  []*VideoInfo
 }
 
-func NewDouyinProcessor(cfg *config.Config,baseTempDir string) (*DouyinProcessor,error) {
-    dir,err := processor.BuildOutputDir(baseTempDir)
-    if err != nil {
-        return nil,err
-    }
-    return &DouyinProcessor{cfg: cfg, tempDir: dir},nil
+func NewDouyinProcessor(cfg *config.Config,baseTempDir string) processor.Processor {
+    return &DouyinProcessor{cfg: cfg, tempDir: processor.BuildOutputDir(baseTempDir)}
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
