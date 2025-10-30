@@ -1,11 +1,12 @@
 package linkparser
 
 import (
-	"github.com/nichuanfang/gymdl/processor"
 	"net/url"
 	"regexp"
 	"strings"
 	"unicode"
+
+	"github.com/nichuanfang/gymdl/processor"
 
 	"github.com/nichuanfang/gymdl/core/domain"
 )
@@ -96,11 +97,11 @@ func cleanURLTrailingChars(s string) string {
 
 // quickMatch 先基于域名进行快速判断
 func quickMatch(host string, u *url.URL) (processor.Processor, bool) {
-	if l, ok := matcherMap[host]; ok {
+	if p, ok := matcherMap[host]; ok {
 		// 再进行一次轻量正则或路径判断
-		for _, re := range l.patterns {
+		for _, re := range p.patterns {
 			if re.MatchString(u.String()) {
-				return l.handler, true
+				return p.handler, true
 			}
 		}
 	}

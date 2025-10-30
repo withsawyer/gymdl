@@ -2,10 +2,11 @@ package processor
 
 import (
 	"fmt"
-	"github.com/nichuanfang/gymdl/config"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/nichuanfang/gymdl/config"
 
 	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/utils"

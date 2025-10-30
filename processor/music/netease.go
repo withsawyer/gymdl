@@ -1,8 +1,9 @@
 package music
 
 import (
-	"github.com/nichuanfang/gymdl/utils"
 	"os/exec"
+
+	"github.com/nichuanfang/gymdl/utils"
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"

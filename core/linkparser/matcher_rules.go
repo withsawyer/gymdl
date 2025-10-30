@@ -1,12 +1,12 @@
 package linkparser
 
 import (
+	"regexp"
+
 	"github.com/nichuanfang/gymdl/processor/music"
 	"github.com/nichuanfang/gymdl/processor/video"
-	"regexp"
 )
 
-// 处理器规则集
 // 处理器规则集
 var linkTypeMatchers = []linkTypeMatcher{
 	/* ---------------------- 网易云音乐 ---------------------- */

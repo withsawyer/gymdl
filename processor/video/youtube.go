@@ -38,15 +38,15 @@ func (p *YoutubeProcessor) Name() domain.LinkType {
 	return domain.LinkYoutube
 }
 
-func (p *YoutubeProcessor) Download(url string) error {
-	utils.Debugf("开始下载视频:%s", url)
-	return nil
-}
-
 func (p *YoutubeProcessor) Videos() []*VideoInfo {
 	return p.videos
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
+
+func (p *YoutubeProcessor) Download(url string) error {
+	utils.Debugf("开始下载视频:%s", url)
+	return nil
+}
 
 /* ------------------------ 拓展方法 ------------------------ */

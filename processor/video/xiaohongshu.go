@@ -36,15 +36,16 @@ func (p *XiaohongshuProcessor) Category() domain.ProcessorCategory {
 func (p *XiaohongshuProcessor) Name() domain.LinkType {
 	return domain.LinkXiaohongshu
 }
-func (p *XiaohongshuProcessor) Download(url string) error {
-	utils.Debugf("开始下载视频:%s", url)
-	return nil
-}
 
 func (p *XiaohongshuProcessor) Videos() []*VideoInfo {
 	return p.videos
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
+
+func (p *XiaohongshuProcessor) Download(url string) error {
+	utils.Debugf("开始下载视频:%s", url)
+	return nil
+}
 
 /* ------------------------ 拓展方法 ------------------------ */

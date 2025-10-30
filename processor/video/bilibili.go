@@ -36,15 +36,16 @@ func (p *BiliBiliProcessor) Category() domain.ProcessorCategory {
 func (p *BiliBiliProcessor) Name() domain.LinkType {
 	return domain.LinkBilibili
 }
-func (p *BiliBiliProcessor) Download(url string) error {
-	utils.Debugf("开始下载视频:%s", url)
-	return nil
-}
 
 func (p *BiliBiliProcessor) Videos() []*VideoInfo {
 	return p.videos
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
+
+func (p *BiliBiliProcessor) Download(url string) error {
+	utils.Debugf("开始下载视频:%s", url)
+	return nil
+}
 
 /* ------------------------ 拓展方法 ------------------------ */
