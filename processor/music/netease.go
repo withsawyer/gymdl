@@ -5,17 +5,23 @@ import (
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"
+	"github.com/nichuanfang/gymdl/processor"
 )
 
 /* ---------------------- 结构体与构造方法 ---------------------- */
 
 type NetEaseProcessor struct {
-	cfg       *config.Config
-	SongInfos []*SongInfo
+	cfg     *config.Config
+	tempDir string
+	songs   []*SongInfo
 }
 
-func NewNetEaseProcessor(cfg *config.Config) *NetEaseProcessor {
-	return &NetEaseProcessor{cfg: cfg}
+func NewNetEaseProcessor(cfg *config.Config, baseTempDir string) (processor.Processor, error) {
+	dir, err := processor.BuildOutputDir(baseTempDir)
+	if err != nil {
+		return nil, err
+	}
+	return &NetEaseProcessor{cfg: cfg, tempDir: dir}, nil
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
@@ -33,7 +39,7 @@ func (am *NetEaseProcessor) Name() domain.LinkType {
 }
 
 func (am *NetEaseProcessor) Songs() []*SongInfo {
-	return am.SongInfos
+	return am.songs
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
@@ -77,3 +83,5 @@ func (ncm *NetEaseProcessor) DecryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }
+
+/* ------------------------ 拓展方法 ------------------------ */

@@ -15,7 +15,7 @@ import (
 type linkTypeMatcher struct {
 	patterns []*regexp.Regexp
 	linkType domain.LinkType
-	domains  []string //快速判定域名
+	domains  []string // 快速判定域名
 }
 
 /* ---------------------- 变量区 ---------------------- */
@@ -105,7 +105,7 @@ func ParseLink(text string) (string, domain.LinkType) {
 	if raw == "" {
 		return "", domain.LinkUnknown
 	}
-	//链接清洗
+	// 链接清洗
 	raw = cleanURLTrailingChars(raw)
 	u, err := url.Parse(raw)
 	if err != nil {

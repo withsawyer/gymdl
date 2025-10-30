@@ -1,21 +1,31 @@
 package music
 
 import (
+	"fmt"
+	"os"
 	"os/exec"
+	"strings"
+	"time"
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
+	"github.com/nichuanfang/gymdl/utils"
 )
 
 /* ---------------------- 结构体与构造方法 ---------------------- */
 type AppleMusicProcessor struct {
-	cfg       *config.Config
-	SongInfos []*SongInfo
+	cfg     *config.Config
+    tempDir string
+	songs   []*SongInfo
 }
-  
-func NewAppleMusicProcessor(cfg *config.Config) processor.Processor {
-	return &AppleMusicProcessor{cfg: cfg}
+
+func NewAppleMusicProcessor(cfg *config.Config,baseTempDir string) (processor.Processor,error) {
+    dir,err := processor.BuildOutputDir(baseTempDir)
+    if err != nil {
+        return nil,err
+    }
+    return &AppleMusicProcessor{cfg: cfg, tempDir: dir}, nil
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
@@ -33,14 +43,19 @@ func (am *AppleMusicProcessor) Name() domain.LinkType {
 }
 
 func (am *AppleMusicProcessor) Songs() []*SongInfo {
-	return am.SongInfos
+	return am.songs
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
 
 func (am *AppleMusicProcessor) DownloadMusic(url string) error {
-	// TODO implement me
-	panic("implement me")
+	if am.cfg.AdditionalConfig.EnableWrapper {
+		utils.Logger().Debug("使用增强版am下载器")
+		return am.wrapDownload(url)
+	} else {
+		utils.Logger().Debug("使用默认am下载器")
+		return am.defaultDownload(url)
+	}
 }
 
 func (am *AppleMusicProcessor) DownloadCommand(url string) *exec.Cmd {
@@ -75,5 +90,41 @@ func (am *AppleMusicProcessor) EncryptedExts() []string {
 
 func (am *AppleMusicProcessor) DecryptedExts() []string {
 	// TODO implement me
+	panic("implement me")
+}
+
+/* ------------------------ 拓展方法 ------------------------ */
+
+// defaultDownload 默认下载器
+func (am *AppleMusicProcessor) defaultDownload(url string) error {
+	start := time.Now()
+	tempDir := AppleMusicTempDir
+
+	if err := os.MkdirAll(tempDir, 0755); err != nil {
+		utils.ErrorWithFormat("[AppleMusic] ❌ 创建输出目录失败: %v", err)
+		return fmt.Errorf("创建输出目录失败: %w", err)
+	}
+
+	cmd := am.DownloadCommand(url)
+	utils.InfoWithFormat("[AppleMusic] 🎵 开始下载: %s", url)
+	utils.DebugWithFormat("[AppleMusic] 执行命令: %s", strings.Join(cmd.Args, " "))
+
+	output, err := cmd.CombinedOutput()
+	logOut := strings.TrimSpace(string(output))
+	if err != nil {
+		utils.ErrorWithFormat("[AppleMusic] ❌ gamdl 下载失败: %v\n输出:\n%s", err, logOut)
+		return fmt.Errorf("gamdl 下载失败: %w", err)
+	}
+
+	if logOut != "" {
+		utils.DebugWithFormat("[AppleMusic] 下载输出:\n%s", logOut)
+	}
+	utils.InfoWithFormat("[AppleMusic] ✅ 下载完成（耗时 %v）", time.Since(start).Truncate(time.Millisecond))
+
+	return nil
+}
+
+// wrapDownload todo 增强版下载器
+func (am *AppleMusicProcessor) wrapDownload(string) error {
 	panic("implement me")
 }

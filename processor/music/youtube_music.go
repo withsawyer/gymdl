@@ -5,22 +5,23 @@ import (
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"
+	"github.com/nichuanfang/gymdl/processor"
 )
 
 /* ---------------------- 结构体与构造方法 ---------------------- */
 
 type YoutubeMusicProcessor struct {
-	cfg       *config.Config
-	SongInfos []*SongInfo
+	cfg     *config.Config
+	tempDir string
+	songs   []*SongInfo
 }
 
-func (y *YoutubeMusicProcessor) IsPlaylist() bool {
-	// TODO implement me
-	panic("implement me")
-}
-
-func NewYoutubeMusicProcessor(cfg *config.Config) *YoutubeMusicProcessor {
-	return &YoutubeMusicProcessor{cfg: cfg}
+func NewYoutubeMusicProcessor(cfg *config.Config, baseTempDir string) (processor.Processor, error) {
+	dir, err := processor.BuildOutputDir(baseTempDir)
+	if err != nil {
+		return nil, err
+	}
+	return &YoutubeMusicProcessor{cfg: cfg, tempDir: dir}, nil
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
@@ -37,7 +38,7 @@ func (am *YoutubeMusicProcessor) Name() domain.LinkType {
 }
 
 func (sp *YoutubeMusicProcessor) Songs() []*SongInfo {
-	return sp.SongInfos
+	return sp.songs
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
@@ -80,3 +81,5 @@ func (ytm *YoutubeMusicProcessor) DecryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }
+
+/* ------------------------ 拓展方法 ------------------------ */

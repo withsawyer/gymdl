@@ -15,14 +15,14 @@ import (
 
 // tg会话
 type Session struct {
-	text     string          //用户发送的消息
-	context  tb.Context      //tg上下文
-	user     *tb.User        //用户
-	bot      tb.API          //机器人
-	msg      *tb.Message     //初始化消息对象
-	link     string          //有效链接
-	linkType domain.LinkType //链接类型
-	start    time.Time       //开始处理时间
+	text     string          // 用户发送的消息
+	context  tb.Context      // tg上下文
+	user     *tb.User        // 用户
+	bot      tb.API          // 机器人
+	msg      *tb.Message     // 初始化消息对象
+	link     string          // 有效链接
+	linkType domain.LinkType // 链接类型
+	start    time.Time       // 开始处理时间
 }
 
 // HandleText 精简版交互逻辑
@@ -31,10 +31,10 @@ func HandleText(c tb.Context) error {
 	user := c.Sender()
 	b := c.Bot()
 
-	//初始提示
+	// 初始提示
 	msg, _ := b.Send(user, "🔍 正在识别链接...")
 
-	//解析链接link:有效链接 linkType:链接类型
+	// 解析链接link:有效链接 linkType:链接类型
 	link, linkType := linkparser.ParseLink(text)
 
 	if link == "" {
@@ -42,12 +42,11 @@ func HandleText(c tb.Context) error {
 		return nil
 	}
 	utils.InfoWithFormat("[Telegram] 解析成功: %s", link)
-	proc := factory.GetProcessor(linkType, app.cfg)
-
-	if proc == nil {
-		return c.Send("未找到处理器")
+	proc, err := factory.GetProcessor(linkType, app.cfg)
+	if err != nil {
+		return err
 	}
-	//创建会话对象
+	// 创建会话对象
 	session := &Session{
 		text:     text,
 		context:  c,
@@ -92,12 +91,12 @@ func HandleText(c tb.Context) error {
 func handleMusic(session *Session, p music.MusicProcessor) error {
 	bot := session.bot
 	msg := session.msg
-	//user := session.user
-	//start := session.start
+	// user := session.user
+	// start := session.start
 
 	_, _ = bot.Edit(msg, fmt.Sprintf("✅ 已识别 **%s** 链接\n\n🎵 下载中,请稍候...", p.Name()), tb.ModeMarkdown)
 
-	//下载阶段
+	// 下载阶段
 	utils.InfoWithFormat("[Telegram] 下载中...")
 	err := p.DownloadMusic(session.link)
 	if err != nil {
@@ -108,7 +107,7 @@ func handleMusic(session *Session, p music.MusicProcessor) error {
 
 	// 4️⃣ 文件整理 & 处理
 	utils.InfoWithFormat("[Telegram] 下载成功，整理中...")
-	if _, err := p.BeforeTidy(); err != nil {
+	if err := p.BeforeTidy(); err != nil {
 		utils.ErrorWithFormat("[Telegram] 文件处理失败: %v", err)
 		bot.Edit(msg, fmt.Sprintf("⚠️ 文件处理阶段出错：\n```\n%s\n```", utils.TruncateString(err.Error(), 400)), tb.ModeMarkdown)
 		return nil
@@ -126,9 +125,9 @@ func handleMusic(session *Session, p music.MusicProcessor) error {
 	}
 
 	// 5️⃣ 成功反馈
-	//duration := time.Since(start)
-	//minutes := int(duration.Minutes())
-	//seconds := int(duration.Seconds()) % 60
+	// duration := time.Since(start)
+	// minutes := int(duration.Minutes())
+	// seconds := int(duration.Seconds()) % 60
 
 	// ✅ 构造详细入库成功提示
 	/*fileSizeMB := float64(music.MusicSize) / 1024.0 / 1024.0
@@ -153,7 +152,7 @@ func handleMusic(session *Session, p music.MusicProcessor) error {
 
 	  	_, _ = bot.Edit(msg, successMsg, tb.ModeMarkdown)*/
 
-	//utils.InfoWithFormat("[Telegram] ✅ 用户 %s(%d) 下载成功 (%d分%d秒) -> %s", user.Username, user.ID, minutes, seconds, music.SongName)
+	// utils.InfoWithFormat("[Telegram] ✅ 用户 %s(%d) 下载成功 (%d分%d秒) -> %s", user.Username, user.ID, minutes, seconds, music.SongName)
 	return nil
 }
 

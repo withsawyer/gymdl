@@ -5,17 +5,23 @@ import (
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"
+	"github.com/nichuanfang/gymdl/processor"
 )
 
 /* ---------------------- 结构体与构造方法 ---------------------- */
 
 type SpotifyProcessor struct {
-	cfg       *config.Config
-	SongInfos []*SongInfo
+	cfg     *config.Config
+	tempDir string
+	songs   []*SongInfo
 }
 
-func NewSpotifyProcessor(cfg *config.Config) *SpotifyProcessor {
-	return &SpotifyProcessor{cfg: cfg}
+func NewSpotifyProcessor(cfg *config.Config, baseTempDir string) (processor.Processor, error) {
+	dir, err := processor.BuildOutputDir(baseTempDir)
+	if err != nil {
+		return nil, err
+	}
+	return &SpotifyProcessor{cfg: cfg, tempDir: dir}, nil
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
@@ -32,7 +38,7 @@ func (sp *SpotifyProcessor) Name() domain.LinkType {
 }
 
 func (sp *SpotifyProcessor) Songs() []*SongInfo {
-	return sp.SongInfos
+	return sp.songs
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
@@ -75,3 +81,5 @@ func (sp *SpotifyProcessor) DecryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }
+
+/* ------------------------ 拓展方法 ------------------------ */

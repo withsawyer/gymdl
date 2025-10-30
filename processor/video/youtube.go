@@ -3,6 +3,7 @@ package video
 import (
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"
+	"github.com/nichuanfang/gymdl/processor"
 )
 
 // youtube下载
@@ -10,12 +11,17 @@ import (
 /* ---------------------- 结构体与构造方法 ---------------------- */
 
 type YoutubeProcessor struct {
-	cfg    *config.Config
-	videos []*VideoInfo
+	cfg     *config.Config
+	tempDir string
+	videos  []*VideoInfo
 }
 
-func NewYoutubeProcessor(cfg *config.Config) *YoutubeProcessor {
-	return &YoutubeProcessor{cfg: cfg}
+func NewYoutubeProcessor(cfg *config.Config, baseTempDir string) (*YoutubeProcessor, error) {
+	dir, err := processor.BuildOutputDir(baseTempDir)
+	if err != nil {
+		return nil, err
+	}
+	return &YoutubeProcessor{cfg: cfg, tempDir: dir}, nil
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
@@ -37,3 +43,5 @@ func (yt *YoutubeProcessor) Videos() []*VideoInfo {
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
+
+/* ------------------------ 拓展方法 ------------------------ */

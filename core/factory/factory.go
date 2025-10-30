@@ -1,6 +1,8 @@
 package factory
 
 import (
+	"errors"
+
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
@@ -9,29 +11,29 @@ import (
 )
 
 // GetProcessor 处理器工厂
-func GetProcessor(linkType domain.LinkType, cfg *config.Config) processor.Processor {
+func GetProcessor(linkType domain.LinkType, cfg *config.Config) (processor.Processor, error) {
 	switch linkType {
 	case domain.LinkAppleMusic:
-		return music.NewAppleMusicProcessor(cfg)
+		return music.NewAppleMusicProcessor(cfg, music.AppleMusicTempDir)
 	case domain.LinkNetEase:
-		return music.NewNetEaseProcessor(cfg)
+		return music.NewNetEaseProcessor(cfg, music.NCMTempDir)
 	case domain.LinkQQMusic:
-		return music.NewQQMusicProcessor(cfg)
+		return music.NewQQMusicProcessor(cfg, music.QQTempDir)
 	case domain.LinkSoundcloud:
-		return music.NewSoundCloudProcessor(cfg)
+		return music.NewSoundCloudProcessor(cfg, music.SoundcloudTempDir)
 	case domain.LinkSpotify:
-		return music.NewSpotifyProcessor(cfg)
+		return music.NewSpotifyProcessor(cfg, music.SpotifyTempDir)
 	case domain.LinkYoutubeMusic:
-		return music.NewYoutubeMusicProcessor(cfg)
+		return music.NewYoutubeMusicProcessor(cfg, music.YoutubeTempDir)
 	case domain.LinkBilibili:
-		return video.NewBiliBiliProcessor(cfg)
+		return video.NewBiliBiliProcessor(cfg, video.BilibiliTempDir)
 	case domain.LinkDouyin:
-		return video.NewDouyinProcessor(cfg)
+		return video.NewDouyinProcessor(cfg, video.DouyinTempDir)
 	case domain.LinkXiaohongshu:
-		return video.NewXiaohongshuProcessor(cfg)
+		return video.NewXiaohongshuProcessor(cfg, video.XHSTempDir)
 	case domain.LinkYoutube:
-		return video.NewYoutubeProcessor(cfg)
+		return video.NewYoutubeProcessor(cfg, video.YoutubeTempDir)
 	default:
-		return nil
+		return nil, errors.New("未找到处理器")
 	}
 }

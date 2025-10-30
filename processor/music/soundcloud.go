@@ -5,17 +5,23 @@ import (
 
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core/domain"
+	"github.com/nichuanfang/gymdl/processor"
 )
 
 /* ---------------------- 结构体与构造方法 ---------------------- */
 
 type SoundCloudProcessor struct {
-	cfg       *config.Config
-	SongInfos []*SongInfo
+	cfg     *config.Config
+	tempDir string
+	songs   []*SongInfo
 }
 
-func NewSoundCloudProcessor(cfg *config.Config) *SoundCloudProcessor {
-	return &SoundCloudProcessor{cfg: cfg}
+func NewSoundCloudProcessor(cfg *config.Config, baseTempDir string) (processor.Processor, error) {
+	dir, err := processor.BuildOutputDir(baseTempDir)
+	if err != nil {
+		return nil, err
+	}
+	return &SoundCloudProcessor{cfg: cfg, tempDir: dir}, nil
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
@@ -32,7 +38,7 @@ func (sc *SoundCloudProcessor) Name() domain.LinkType {
 }
 
 func (sc *SoundCloudProcessor) Songs() []*SongInfo {
-	return sc.SongInfos
+	return sc.songs
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
@@ -76,3 +82,5 @@ func (sc *SoundCloudProcessor) DecryptedExts() []string {
 	// TODO implement me
 	panic("implement me")
 }
+
+/* ------------------------ 拓展方法 ------------------------ */
