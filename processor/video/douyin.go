@@ -2,7 +2,6 @@ package video
 
 import (
 	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
 	"github.com/nichuanfang/gymdl/utils"
 )
@@ -26,16 +25,8 @@ func (p *DouyinProcessor) Init(cfg *config.Config) {
 
 /* ---------------------- 基础接口实现 ---------------------- */
 
-func (p *DouyinProcessor) Handle(link string) (string, error) {
-	panic("implement me")
-}
-
-func (p *DouyinProcessor) Category() domain.ProcessorCategory {
-	return domain.CategoryVideo
-}
-
-func (p *DouyinProcessor) Name() domain.LinkType {
-	return domain.LinkDouyin
+func (p *DouyinProcessor) Name() processor.LinkType {
+	return processor.LinkDouyin
 }
 
 func (p *DouyinProcessor) Videos() []*VideoInfo {

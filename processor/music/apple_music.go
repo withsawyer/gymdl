@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
 	"github.com/nichuanfang/gymdl/utils"
 )
@@ -30,16 +29,8 @@ func (am *AppleMusicProcessor) Init(cfg *config.Config) {
 
 /* ---------------------- 基础接口实现 ---------------------- */
 
-func (am *AppleMusicProcessor) Handle(link string) (string, error) {
-	panic("implement me")
-}
-
-func (am *AppleMusicProcessor) Category() domain.ProcessorCategory {
-	return domain.CategoryMusic
-}
-
-func (am *AppleMusicProcessor) Name() domain.LinkType {
-	return domain.LinkAppleMusic
+func (am *AppleMusicProcessor) Name() processor.LinkType {
+	return processor.LinkAppleMusic
 }
 
 func (am *AppleMusicProcessor) Songs() []*SongInfo {

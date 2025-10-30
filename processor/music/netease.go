@@ -6,7 +6,6 @@ import (
 	"github.com/nichuanfang/gymdl/utils"
 
 	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
 )
 
@@ -27,16 +26,8 @@ func (p *NetEaseProcessor) Init(cfg *config.Config) {
 
 /* ---------------------- 基础接口实现 ---------------------- */
 
-func (p *NetEaseProcessor) Handle(link string) (string, error) {
-	panic("implement me")
-}
-
-func (p *NetEaseProcessor) Category() domain.ProcessorCategory {
-	return domain.CategoryMusic
-}
-
-func (p *NetEaseProcessor) Name() domain.LinkType {
-	return domain.LinkNetEase
+func (p *NetEaseProcessor) Name() processor.LinkType {
+	return processor.LinkNetEase
 }
 
 func (p *NetEaseProcessor) Songs() []*SongInfo {

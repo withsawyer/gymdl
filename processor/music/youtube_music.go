@@ -4,7 +4,6 @@ import (
 	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
 )
 
@@ -24,16 +23,9 @@ func (p *YoutubeMusicProcessor) Init(cfg *config.Config) {
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (p *YoutubeMusicProcessor) Handle(link string) (string, error) {
-	panic("implement me")
-}
 
-func (p *YoutubeMusicProcessor) Category() domain.ProcessorCategory {
-	return domain.CategoryMusic
-}
-
-func (p *YoutubeMusicProcessor) Name() domain.LinkType {
-	return domain.LinkYoutubeMusic
+func (p *YoutubeMusicProcessor) Name() processor.LinkType {
+	return processor.LinkYoutubeMusic
 }
 
 func (p *YoutubeMusicProcessor) Songs() []*SongInfo {

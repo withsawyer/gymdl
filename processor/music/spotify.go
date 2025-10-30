@@ -4,7 +4,6 @@ import (
 	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
 )
 
@@ -24,16 +23,9 @@ func (p *SpotifyProcessor) Init(cfg *config.Config) {
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (p *SpotifyProcessor) Handle(link string) (string, error) {
-	panic("implement me")
-}
 
-func (p *SpotifyProcessor) Category() domain.ProcessorCategory {
-	return domain.CategoryMusic
-}
-
-func (p *SpotifyProcessor) Name() domain.LinkType {
-	return domain.LinkSpotify
+func (p *SpotifyProcessor) Name() processor.LinkType {
+	return processor.LinkSpotify
 }
 
 func (p *SpotifyProcessor) Songs() []*SongInfo {

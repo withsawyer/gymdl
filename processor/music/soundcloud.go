@@ -4,7 +4,6 @@ import (
 	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
 )
 
@@ -24,16 +23,9 @@ func (p *SoundCloudProcessor) Init(cfg *config.Config) {
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (p *SoundCloudProcessor) Handle(link string) (string, error) {
-	panic("implement me")
-}
 
-func (p *SoundCloudProcessor) Category() domain.ProcessorCategory {
-	return domain.CategoryMusic
-}
-
-func (p *SoundCloudProcessor) Name() domain.LinkType {
-	return domain.LinkSoundcloud
+func (p *SoundCloudProcessor) Name() processor.LinkType {
+	return processor.LinkSoundcloud
 }
 
 func (p *SoundCloudProcessor) Songs() []*SongInfo {

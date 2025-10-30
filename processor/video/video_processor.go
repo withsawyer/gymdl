@@ -3,15 +3,12 @@ package video
 import (
 	"path/filepath"
 
-	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
 )
 
 /* ---------------------- 视频处理接口定义 ---------------------- */
 type Processor interface {
 	processor.Processor
-	// 视频处理器名称
-	Name() domain.LinkType
 	// 视频元信息列表
 	Videos() []*VideoInfo
 	// 下载视频

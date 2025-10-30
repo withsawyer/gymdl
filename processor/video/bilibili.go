@@ -4,7 +4,6 @@ package video
 
 import (
 	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
 	"github.com/nichuanfang/gymdl/utils"
 )
@@ -25,16 +24,9 @@ func (p *BiliBiliProcessor) Init(cfg *config.Config) {
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (p *BiliBiliProcessor) Handle(link string) (string, error) {
-	panic("implement me")
-}
 
-func (p *BiliBiliProcessor) Category() domain.ProcessorCategory {
-	return domain.CategoryVideo
-}
-
-func (p *BiliBiliProcessor) Name() domain.LinkType {
-	return domain.LinkBilibili
+func (p *BiliBiliProcessor) Name() processor.LinkType {
+	return processor.LinkBilibili
 }
 
 func (p *BiliBiliProcessor) Videos() []*VideoInfo {

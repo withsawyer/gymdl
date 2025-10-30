@@ -7,8 +7,6 @@ import (
 	"unicode"
 
 	"github.com/nichuanfang/gymdl/processor"
-
-	"github.com/nichuanfang/gymdl/core/domain"
 )
 
 // 链接解析器
@@ -17,7 +15,6 @@ import (
 type linkTypeMatcher struct {
 	domains  []string // 快速判定域名
 	patterns []*regexp.Regexp
-	linkType domain.LinkType
 	handler  processor.Processor
 }
 

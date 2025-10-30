@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
 	"gopkg.in/vansante/go-ffprobe.v2"
 )
@@ -19,8 +18,6 @@ import (
 /* ---------------------- 音乐接口定义 ---------------------- */
 type Processor interface {
 	processor.Processor
-	// 音乐处理器名称
-	Name() domain.LinkType
 	// 歌曲元信息列表
 	Songs() []*SongInfo
 	// 下载音乐

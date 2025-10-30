@@ -30,18 +30,12 @@ var linkTypeMatchers = []linkTypeMatcher{
 		handler: &music.NetEaseProcessor{},
 	},
 
-	/* ---------------------- YouTube / YouTube Music ---------------------- */
+	/* ---------------------- YouTube Music ---------------------- */
 	{
 		domains: []string{"youtube.com", "music.youtube.com", "youtu.be"},
 		patterns: []*regexp.Regexp{
-			// 普通 YouTube 视频
-			regexp.MustCompile(`^https?://(?:www\.)?youtube\.com/watch\?v=[\w-]+(?:&.*)?$`),
-
 			// YouTube Music 视频
 			regexp.MustCompile(`^https?://music\.youtube\.com/watch\?v=[\w-]+(?:&.*)?$`),
-
-			// 短链格式
-			regexp.MustCompile(`^https?://youtu\.be/[\w-]+(?:\?.*)?$`),
 		},
 		handler: &music.YoutubeMusicProcessor{},
 	},
@@ -94,11 +88,26 @@ var linkTypeMatchers = []linkTypeMatcher{
 		},
 		handler: &music.SpotifyProcessor{},
 	},
+	/* ---------------------- YouTube ---------------------- */
 	{
-		domains: []string{"www.douyin.com"},
+		domains: []string{"youtube.com", "music.youtube.com", "youtu.be"},
 		patterns: []*regexp.Regexp{
-			// track / album / playlist + ID (通常 22 字符)
+			// 普通 YouTube 视频
+			regexp.MustCompile(`^https?://(?:www\.)?youtube\.com/watch\?v=[\w-]+(?:&.*)?$`),
+
+			// 短链格式
+			regexp.MustCompile(`^https?://youtu\.be/[\w-]+(?:\?.*)?$`),
+		},
+		handler: &video.YoutubeProcessor{},
+	},
+	/* ---------------------- 抖音 ---------------------- */
+	{
+		domains: []string{"www.douyin.com", "v.douyin.com"},
+		patterns: []*regexp.Regexp{
+			// 正常视频链接
 			regexp.MustCompile(`https?://www\.douyin\.com/video/[\w-]+`),
+			// 短链接形式
+			regexp.MustCompile(`https?://v\.douyin\.com/[\w-]+/?`),
 		},
 		handler: &video.DouyinProcessor{},
 	},

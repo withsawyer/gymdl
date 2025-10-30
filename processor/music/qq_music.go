@@ -4,7 +4,6 @@ import (
 	"os/exec"
 
 	"github.com/nichuanfang/gymdl/config"
-	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/processor"
 )
 
@@ -24,16 +23,9 @@ func (p *QQMusicProcessor) Init(cfg *config.Config) {
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
-func (p *QQMusicProcessor) Handle(link string) (string, error) {
-	panic("implement me")
-}
 
-func (p *QQMusicProcessor) Category() domain.ProcessorCategory {
-	return domain.CategoryMusic
-}
-
-func (p *QQMusicProcessor) Name() domain.LinkType {
-	return domain.LinkQQMusic
+func (p *QQMusicProcessor) Name() processor.LinkType {
+	return processor.LinkQQMusic
 }
 
 func (p *QQMusicProcessor) Songs() []*SongInfo {

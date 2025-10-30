@@ -8,17 +8,40 @@ import (
 
 	"github.com/nichuanfang/gymdl/config"
 
-	"github.com/nichuanfang/gymdl/core/domain"
 	"github.com/nichuanfang/gymdl/utils"
 )
 
 // 顶级接口定义
 
 type Processor interface {
+	//构造方法
 	Init(cfg *config.Config)
-	Handle(link string) (string, error) // 处理链接并返回结果
-	Category() domain.ProcessorCategory // 所属分类
+	//处理器名称
+	Name() LinkType
 }
+
+/* ---------------------- 常量 ---------------------- */
+
+// LinkType 是所有解析出来的类型枚举
+type LinkType string
+
+const (
+	/* ------------------------ 音乐平台枚举 ---------------------- */
+	LinkUnknown      LinkType = ""
+	LinkAppleMusic   LinkType = "AppleMusic"
+	LinkNetEase      LinkType = "网易云"
+	LinkQQMusic      LinkType = "QQ音乐"
+	LinkSoundcloud   LinkType = "Soundcloud"
+	LinkSpotify      LinkType = "Spotify"
+	LinkYoutubeMusic LinkType = "YoutubeMusic"
+
+	/* -------------------------视频平台枚举 ---------------------- */
+
+	LinkBilibili    LinkType = "B站"
+	LinkDouyin      LinkType = "抖音"
+	LinkXiaohongshu LinkType = "小红书"
+	LinkYoutube     LinkType = "Youtube"
+)
 
 /* ---------------------- 通用业务工具 ---------------------- */
 
