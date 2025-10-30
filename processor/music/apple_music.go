@@ -76,8 +76,11 @@ func (am *AppleMusicProcessor) DownloadCommand(url string) *exec.Cmd {
 }
 
 func (am *AppleMusicProcessor) BeforeTidy() error {
-    
-	// TODO implement me
+	// 读取临时文件夹
+	// 读取元信息保存到am.songs
+	// 元信息嵌入(已有跳过)
+	// 解密(无需解密跳过)
+
 	return nil
 }
 
