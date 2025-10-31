@@ -17,9 +17,13 @@ type Processor interface {
 
 /* ---------------------- 视频结构体定义 ---------------------- */
 type VideoInfo struct {
-	Title    string
-	Author   string
-	Duration int
+	Title       string
+	Author      string
+	Ratio       string
+	Time        string
+	CoverUrl    string
+	DownloadUrl string
+	Desc        string
 }
 
 /* ---------------------- 常量 ---------------------- */
