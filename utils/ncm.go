@@ -169,8 +169,8 @@ func VerifyMD5(filePath string, md5str string) (bool, error) {
 	return true, nil
 }
 
-// 解析 MusicID
-func ParseMusicID(text string) int {
+// 解析 MusicID 返回值1:单曲(1)or列表(2) 返回值2:MusicID
+func ParseMusicID(text string) (int, int) {
 	if strings.Contains(text, "163cn.tv") || strings.Contains(text, "163cn.link") {
 		text = GetRedirectUrl(text)
 	}
@@ -178,16 +178,23 @@ func ParseMusicID(text string) int {
 	messageText := replacer.Replace(text)
 	musicUrl := regUrl.FindStringSubmatch(messageText)
 	if len(musicUrl) != 0 {
+		var linkType int
 		if strings.Contains(musicUrl[0], "song") {
-			ur, _ := url.Parse(musicUrl[0])
-			id := ur.Query().Get("id")
-			if musicid, _ := strconv.Atoi(id); musicid != 0 {
-				return musicid
-			}
+			//单曲
+			linkType = 1
+		} else if strings.Contains(musicUrl[0], "playlist") {
+			//列表
+			linkType = 2
+		}
+		ur, _ := url.Parse(musicUrl[0])
+		id := ur.Query().Get("id")
+		if musicid, _ := strconv.Atoi(id); musicid != 0 {
+			return linkType, musicid
 		}
 	}
+	//降级
 	musicid, _ := strconv.Atoi(linkTestMusic(messageText))
-	return musicid
+	return 1, musicid
 }
 
 // 解析 ProgramID

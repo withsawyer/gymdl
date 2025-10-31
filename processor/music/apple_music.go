@@ -44,21 +44,32 @@ func (am *AppleMusicProcessor) Songs() []*SongInfo {
 
 func (am *AppleMusicProcessor) DownloadMusic(url string) error {
 	start := time.Now()
-	cmd := am.DownloadCommand(url)
+
 	utils.InfoWithFormat("[AppleMusic] 🎵 开始下载: %s", url)
+
+	cmd := am.DownloadCommand(url)
 	utils.DebugWithFormat("[AppleMusic] 执行命令: %s", strings.Join(cmd.Args, " "))
-	err := processor.CreateOutputDir(am.tempDir)
+
+	// 创建临时目录
+	if err := processor.CreateOutputDir(am.tempDir); err != nil {
+		utils.ErrorWithFormat("[AppleMusic] ❌ 创建临时目录失败: %v", err)
+		return err
+	}
+
+	// 执行下载
 	output, err := cmd.CombinedOutput()
 	logOut := strings.TrimSpace(string(output))
 	if err != nil {
 		_ = processor.RemoveTempDir(am.tempDir)
-		utils.ErrorWithFormat("[AppleMusic] ❌ gamdl 下载失败: %v\n输出:\n%s", err, logOut)
+		utils.ErrorWithFormat("[AppleMusic] ❌ 下载失败: %v\n输出:\n%s", err, logOut)
 		return fmt.Errorf("gamdl 下载失败: %w", err)
 	}
 
+	// 输出调试信息，仅当有日志内容时
 	if logOut != "" {
 		utils.DebugWithFormat("[AppleMusic] 下载输出:\n%s", logOut)
 	}
+
 	utils.InfoWithFormat("[AppleMusic] ✅ 下载完成（耗时 %v）", time.Since(start).Truncate(time.Millisecond))
 
 	return nil

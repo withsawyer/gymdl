@@ -56,8 +56,17 @@ func BuildOutputDir(baseTempDir string) string {
 
 // CreateOutputDir 创建临时目录
 func CreateOutputDir(outputDir string) error {
+	// 判断目录是否存在
+	if _, err := os.Stat(outputDir); err == nil {
+		return nil
+	} else if !os.IsNotExist(err) {
+		// 其他错误
+		return fmt.Errorf("检查目录失败: %v", err)
+	}
+
+	// 目录不存在，创建
 	if err := os.MkdirAll(outputDir, os.ModePerm); err != nil {
-		return fmt.Errorf("创建目录失败: %v\n", err)
+		return fmt.Errorf("创建目录失败: %v", err)
 	}
 	utils.DebugWithFormat("🧹 已创建临时目录: %s\n", outputDir)
 	return nil
@@ -71,7 +80,9 @@ func RemoveTempDir(dir string) error {
 
 	// 判断目录是否存在
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		return nil // 不存在则不需要删除
+		return nil
+	} else if err != nil {
+		return fmt.Errorf("检查目录失败: %v", err)
 	}
 
 	// 删除整个目录树
