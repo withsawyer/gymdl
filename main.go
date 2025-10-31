@@ -64,16 +64,6 @@ func initWebDAV(c *config.WebDAVConfig) {
 	}
 }
 
-// 初始化 Wrapper 服务
-func initWrapper(c *config.Config) {
-	// 检测wrapper服务是否可用
-	if utils.CheckWrapperConnection("wrapper") {
-		utils.ServiceIsOn("Wrapper 服务已加载")
-	} else {
-		utils.Warning("Wrapper 服务不可用，请检查配置或网络连接")
-	}
-}
-
 // 初始化 CookieCloud 服务
 func initCookieCloud(cfg *config.CookieCloudConfig) {
 	core.InitCookieCloud(cfg)
@@ -213,10 +203,6 @@ func main() {
 
 	if c.Tidy.Mode == 2 {
 		initWebDAV(c.WebDAV)
-	}
-
-	if c.AdditionalConfig.EnableWrapper {
-		initWrapper(c)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

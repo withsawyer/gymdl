@@ -43,13 +43,29 @@ func (am *AppleMusicProcessor) Songs() []*SongInfo {
 /* ------------------------ 下载逻辑 ------------------------ */
 
 func (am *AppleMusicProcessor) DownloadMusic(url string) error {
-	if am.cfg.AdditionalConfig.EnableWrapper {
-		utils.Logger().Debug("使用增强版am下载器")
-		return am.wrapDownload(url)
-	} else {
-		utils.Logger().Debug("使用默认am下载器")
-		return am.defaultDownload(url)
+	start := time.Now()
+	cmd := am.DownloadCommand(url)
+	utils.InfoWithFormat("[AppleMusic] 🎵 开始下载: %s", url)
+	utils.DebugWithFormat("[AppleMusic] 执行命令: %s", strings.Join(cmd.Args, " "))
+	err := processor.CreateOutputDir(am.tempDir)
+	if err != nil {
+		_ = processor.RemoveTempDir(am.tempDir)
+		return err
 	}
+	output, err := cmd.CombinedOutput()
+	logOut := strings.TrimSpace(string(output))
+	if err != nil {
+		_ = processor.RemoveTempDir(am.tempDir)
+		utils.ErrorWithFormat("[AppleMusic] ❌ gamdl 下载失败: %v\n输出:\n%s", err, logOut)
+		return fmt.Errorf("gamdl 下载失败: %w", err)
+	}
+
+	if logOut != "" {
+		utils.DebugWithFormat("[AppleMusic] 下载输出:\n%s", logOut)
+	}
+	utils.InfoWithFormat("[AppleMusic] ✅ 下载完成（耗时 %v）", time.Since(start).Truncate(time.Millisecond))
+
+	return nil
 }
 
 func (am *AppleMusicProcessor) DownloadCommand(url string) *exec.Cmd {
@@ -78,7 +94,7 @@ func (am *AppleMusicProcessor) BeforeTidy() error {
 	if err != nil {
 		return err
 	}
-	//更新元信息列表
+	// 更新元信息列表
 	am.songs = songs
 	return nil
 }
@@ -121,38 +137,6 @@ func (am *AppleMusicProcessor) DecryptedExts() []string {
 
 /* ------------------------ 拓展方法 ------------------------ */
 
-// defaultDownload 默认下载器
-func (am *AppleMusicProcessor) defaultDownload(url string) error {
-	start := time.Now()
-	cmd := am.DownloadCommand(url)
-	utils.InfoWithFormat("[AppleMusic] 🎵 开始下载: %s", url)
-	utils.DebugWithFormat("[AppleMusic] 执行命令: %s", strings.Join(cmd.Args, " "))
-	err := processor.CreateOutputDir(am.tempDir)
-	if err != nil {
-		_ = processor.RemoveTempDir(am.tempDir)
-		return err
-	}
-	output, err := cmd.CombinedOutput()
-	logOut := strings.TrimSpace(string(output))
-	if err != nil {
-		_ = processor.RemoveTempDir(am.tempDir)
-		utils.ErrorWithFormat("[AppleMusic] ❌ gamdl 下载失败: %v\n输出:\n%s", err, logOut)
-		return fmt.Errorf("gamdl 下载失败: %w", err)
-	}
-
-	if logOut != "" {
-		utils.DebugWithFormat("[AppleMusic] 下载输出:\n%s", logOut)
-	}
-	utils.InfoWithFormat("[AppleMusic] ✅ 下载完成（耗时 %v）", time.Since(start).Truncate(time.Millisecond))
-
-	return nil
-}
-
-// wrapDownload todo 增强版下载器
-func (am *AppleMusicProcessor) wrapDownload(string) error {
-	panic("implement me")
-}
-
 // 整理到本地
 func (am *AppleMusicProcessor) tidyToLocal(files []os.DirEntry) error {
 	dstDir := am.cfg.Tidy.DistDir
@@ -178,7 +162,7 @@ func (am *AppleMusicProcessor) tidyToLocal(files []os.DirEntry) error {
 		}
 		utils.InfoWithFormat("[AppleMusic] 📦 已整理: %s", dst)
 	}
-	//清除临时目录
+	// 清除临时目录
 	err := processor.RemoveTempDir(am.tempDir)
 	if err != nil {
 		utils.WarnWithFormat("[AppleMusic] ⚠️ 删除临时目录失败: %s (%v)", am.tempDir, err)
@@ -208,7 +192,7 @@ func (am *AppleMusicProcessor) tidyToWebDAV(files []os.DirEntry, webdav *core.We
 		}
 		utils.InfoWithFormat("[AppleMusic] ☁️ 已上传: %s", f.Name())
 	}
-	//清除临时目录
+	// 清除临时目录
 	err := processor.RemoveTempDir(am.tempDir)
 	if err != nil {
 		utils.WarnWithFormat("[AppleMusic] ⚠️ 删除临时目录失败: %s (%v)", am.tempDir, err)
