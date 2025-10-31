@@ -48,10 +48,6 @@ func (am *AppleMusicProcessor) DownloadMusic(url string) error {
 	utils.InfoWithFormat("[AppleMusic] 🎵 开始下载: %s", url)
 	utils.DebugWithFormat("[AppleMusic] 执行命令: %s", strings.Join(cmd.Args, " "))
 	err := processor.CreateOutputDir(am.tempDir)
-	if err != nil {
-		_ = processor.RemoveTempDir(am.tempDir)
-		return err
-	}
 	output, err := cmd.CombinedOutput()
 	logOut := strings.TrimSpace(string(output))
 	if err != nil {
@@ -165,10 +161,8 @@ func (am *AppleMusicProcessor) tidyToLocal(files []os.DirEntry) error {
 	// 清除临时目录
 	err := processor.RemoveTempDir(am.tempDir)
 	if err != nil {
-		utils.WarnWithFormat("[AppleMusic] ⚠️ 删除临时目录失败: %s (%v)", am.tempDir, err)
 		return err
 	}
-	utils.DebugWithFormat("[AppleMusic] 🧹 已删除临时目录: %s", am.tempDir)
 	return nil
 }
 
@@ -195,9 +189,7 @@ func (am *AppleMusicProcessor) tidyToWebDAV(files []os.DirEntry, webdav *core.We
 	// 清除临时目录
 	err := processor.RemoveTempDir(am.tempDir)
 	if err != nil {
-		utils.WarnWithFormat("[AppleMusic] ⚠️ 删除临时目录失败: %s (%v)", am.tempDir, err)
 		return err
 	}
-	utils.DebugWithFormat("[AppleMusic] 🧹 已删除临时目录: %s", am.tempDir)
 	return nil
 }
