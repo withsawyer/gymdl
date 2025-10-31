@@ -109,7 +109,7 @@ var linkTypeMatchers = []linkTypeMatcher{
 			// 短链接形式
 			regexp.MustCompile(`https?://v\.douyin\.com/[\w-]+/?`),
 		},
-		handler: &video.DouyinProcessor{},
+		handler: &video.DouYinProcessor{},
 	},
 	/* ---------------------- 待补充 ---------------------- */
 }

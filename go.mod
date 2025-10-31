@@ -7,18 +7,14 @@ toolchain go1.24.3
 require (
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/XiaoMengXinX/Music163Api-Go v0.1.29
-	github.com/XiaoMengXinX/SimpleDownloader v0.0.0-20221110191044-7a2606dfcf7c
 	github.com/fsnotify/fsnotify v1.9.0
-	github.com/gcottom/audiometa/v3 v3.0.4
-	github.com/gcottom/flacmeta v0.0.6
-	github.com/gcottom/mp3meta v0.0.4
-	github.com/gcottom/mp4meta v0.0.5
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-co-op/gocron/v2 v2.17.0
 	github.com/go-ping/ping v1.2.0
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/google/uuid v1.6.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+	github.com/playwright-community/playwright-go v0.5200.1
 	github.com/sashabaranov/go-openai v1.41.2
 	github.com/sirupsen/logrus v1.9.0
 	github.com/studio-b12/gowebdav v0.11.0
@@ -30,20 +26,19 @@ require (
 )
 
 require (
-	github.com/abema/go-mp4 v1.3.0 // indirect
-	github.com/aler9/writerseeker v1.1.0 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
-	github.com/bogem/id3v2/v2 v2.1.4 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic v1.14.1 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
+	github.com/deckarep/golang-set/v2 v2.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
-	github.com/gcottom/oggmeta v0.0.8 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.4 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.28.0 // indirect
+	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/jonboulle/clockwork v0.5.0 // indirect
@@ -57,7 +52,6 @@ require (
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.55.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
-	github.com/sunfish-shogi/bufseekio v0.1.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	go.uber.org/mock v0.6.0 // indirect
