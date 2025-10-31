@@ -3,9 +3,14 @@ package video
 // bilibili下载
 
 import (
+	"errors"
+	"fmt"
 	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/core"
 	"github.com/nichuanfang/gymdl/processor"
 	"github.com/nichuanfang/gymdl/utils"
+	"os"
+	"path/filepath"
 )
 
 /* ---------------------- 结构体与构造方法 ---------------------- */
@@ -41,3 +46,79 @@ func (p *BiliBiliProcessor) Download(url string) error {
 }
 
 /* ------------------------ 拓展方法 ------------------------ */
+
+func (p *BiliBiliProcessor) Tidy() error {
+	files, err := os.ReadDir(p.tempDir)
+	if err != nil {
+		return fmt.Errorf("读取临时目录失败: %w", err)
+	}
+	if len(files) == 0 {
+		utils.WarnWithFormat("[DouYinVideo] ⚠️ 未找到待整理的资源文件")
+		return errors.New("未找到待整理的资源文件")
+	}
+
+	switch p.cfg.Tidy.Mode {
+	case 1:
+		return p.tidyToLocal(files)
+	case 2:
+		return p.tidyToWebDAV(files, core.GlobalWebDAV)
+	default:
+		return fmt.Errorf("未知整理模式: %d", p.cfg.Tidy.Mode)
+	}
+}
+
+// 整理到本地
+func (p *BiliBiliProcessor) tidyToLocal(files []os.DirEntry) error {
+	dstDir := p.cfg.Tidy.DistDir
+	if dstDir == "" {
+		_ = processor.RemoveTempDir(p.tempDir)
+		return errors.New("未配置输出目录")
+	}
+	if err := os.MkdirAll(dstDir, 0755); err != nil {
+		_ = processor.RemoveTempDir(p.tempDir)
+		return fmt.Errorf("创建输出目录失败: %w", err)
+	}
+
+	for _, f := range files {
+		src := filepath.Join(p.tempDir, f.Name())
+		dst := filepath.Join(dstDir, utils.SanitizeFileName(f.Name()))
+		if err := os.Rename(src, dst); err != nil {
+			utils.WarnWithFormat("[DouYinVideo] ⚠️ 移动失败 %s → %s: %v", src, dst, err)
+			continue
+		}
+		utils.InfoWithFormat("[DouYinVideo] 📦 已整理: %s", dst)
+	}
+	//清除临时目录
+	err := processor.RemoveTempDir(p.tempDir)
+	if err != nil {
+		utils.WarnWithFormat("[DouYinVideo] ⚠️ 删除临时目录失败: %s (%v)", p.tempDir, err)
+		return err
+	}
+	utils.DebugWithFormat("[DouYinVideo] 🧹 已删除临时目录: %s", p.tempDir)
+	return nil
+}
+
+// 整理到webdav
+func (p *BiliBiliProcessor) tidyToWebDAV(files []os.DirEntry, webdav *core.WebDAV) error {
+	if webdav == nil {
+		_ = processor.RemoveTempDir(p.tempDir)
+		return errors.New("WebDAV 未初始化")
+	}
+
+	for _, f := range files {
+		filePath := filepath.Join(p.tempDir, f.Name())
+		if err := webdav.Upload(filePath); err != nil {
+			utils.WarnWithFormat("[DouYinVideo] ☁️ 上传失败 %s: %v", f.Name(), err)
+			continue
+		}
+		utils.InfoWithFormat("[DouYinVideo] ☁️ 已上传: %s", f.Name())
+	}
+	//清除临时目录
+	err := processor.RemoveTempDir(p.tempDir)
+	if err != nil {
+		utils.WarnWithFormat("[DouYinVideo] ⚠️ 删除临时目录失败: %s (%v)", p.tempDir, err)
+		return err
+	}
+	utils.DebugWithFormat("[DouYinVideo] 🧹 已删除临时目录: %s", p.tempDir)
+	return nil
+}

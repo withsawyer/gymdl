@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/core"
 	"github.com/nichuanfang/gymdl/processor"
 	"github.com/nichuanfang/gymdl/utils"
 	"github.com/playwright-community/playwright-go"
@@ -13,6 +14,8 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -171,9 +174,6 @@ func (p *DouYinProcessor) getRandomUserAgent() string {
 	userAgents := []string{
 		"Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
 		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 QuarkPC/4.6.0.558",
-		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-		"Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36",
 	}
 	// 随机选择一条 userAgent
 	rand.New(rand.NewSource(time.Now().Unix()))
@@ -208,28 +208,40 @@ func (p *DouYinProcessor) _extractVideoID(page playwright.Page, link string) (st
 		}
 	})
 
-	// 访问 URL - 修改为等待网络空闲状态
+	// 访问 URL - 等待网络空闲状态以确保页面完全加载
 	if _, err := page.Goto(link, playwright.PageGotoOptions{
-		WaitUntil: playwright.WaitUntilStateNetworkidle, // 改为等待网络空闲
-		Timeout:   playwright.Float(30000),
+		WaitUntil: playwright.WaitUntilStateNetworkidle, // 等待网络空闲
+		Timeout:   playwright.Float(60000),
 	}); err != nil {
 		return "", fmt.Errorf("访问页面失败: %v", err)
 	}
 
-	// 确保页面完全加载 - 增加额外等待和滚动操作
+	// 确保页面完全加载 - 等待所有资源加载完成
 	if err := page.WaitForLoadState(playwright.PageWaitForLoadStateOptions{
-		State: playwright.LoadStateNetworkidle,
+		State: playwright.LoadStateNetworkidle, // 再次确认网络空闲
 	}); err != nil {
-		utils.InfoWithFormat("等待页面加载完成失败: %v", err)
+		utils.InfoWithFormat("等待页面网络空闲失败: %v", err)
 	}
+
+	// 等待特定元素出现，确保关键内容已加载
+	waitForElements(page)
 
 	// 尝试滚动页面，确保动态加载的内容也被加载
 	if _, err := page.Evaluate(`window.scrollTo(0, document.body.scrollHeight);`); err != nil {
 		utils.InfoWithFormat("页面滚动失败: %v", err)
 	}
 
-	// 再等待一段时间确保内容完全加载
-	//time.Sleep(2 * time.Second)
+	// 滚动后再次等待网络空闲
+	if err := page.WaitForLoadState(playwright.PageWaitForLoadStateOptions{
+		State: playwright.LoadStateNetworkidle,
+	}); err != nil {
+		utils.InfoWithFormat("滚动后等待网络空闲失败: %v", err)
+	}
+
+	// 使用智能等待替代硬编码延时
+	if err := p.waitForVideoContent(page); err != nil {
+		utils.InfoWithFormat("等待视频内容超时: %v", err)
+	}
 
 	// 从当前URL提取视频ID
 	currentURL := page.URL()
@@ -390,6 +402,34 @@ type htmlJsonData struct {
 	Ratio    string
 }
 
+// waitForVideoContent 智能等待视频内容加载完成
+func (p *DouYinProcessor) waitForVideoContent(page playwright.Page) error {
+	// 使用轮询检查页面是否包含视频关键数据
+	deadline := time.Now().Add(30 * time.Second) // 最多等待30秒
+	for time.Now().Before(deadline) {
+		html, err := page.Content()
+		if err == nil && (strings.Contains(html, "aweme_id") || strings.Contains(html, "video")) {
+			utils.DebugWithFormat("检测到视频内容已加载")
+			return nil
+		}
+		time.Sleep(500 * time.Millisecond) // 每500ms检查一次
+	}
+	return errors.New("等待视频内容超时")
+}
+
+// waitForElements 等待关键元素出现
+func waitForElements(page playwright.Page) {
+	// 尝试等待几个关键元素出现，但不阻塞主流程
+	go func() {
+		// 等待视频容器元素
+		if _, err := page.WaitForSelector("title", playwright.PageWaitForSelectorOptions{
+			Timeout: playwright.Float(10000),
+		}); err != nil {
+			utils.DebugWithFormat("等待视频元素超时: %v", err)
+		}
+	}()
+}
+
 // findDataInJson 在数据结构中查找视频URL
 func (p *DouYinProcessor) findDataInJson(data map[string]interface{}) *htmlJsonData {
 	var hjd = &htmlJsonData{}
@@ -474,27 +514,27 @@ func (p *DouYinProcessor) extractURLFromField(data map[string]interface{}, field
 
 	// 遍历所有URL，跳过无效地址
 	for _, item := range urlList {
-		if url, ok := item.(string); ok && strings.HasPrefix(url, "http") {
-			utils.DebugWithFormat("[extract] 从%s.url_list找到: %s", fieldName, url)
+		if rowUrl, ok := item.(string); ok && strings.HasPrefix(rowUrl, "http") {
+			utils.DebugWithFormat("[extract] 从%s.url_list找到: %s", fieldName, rowUrl)
 
 			// 检查URL是否能正常访问
-			if !p.isURLAccessible(url) {
-				utils.DebugWithFormat("[extract] URL不可访问，跳过: %s", url)
+			if !p.isURLAccessible(rowUrl) {
+				utils.DebugWithFormat("[extract] URL不可访问，跳过: %s", rowUrl)
 				continue
 			}
 
 			// 如果是有水印的视频，尝试去除水印
-			if isVideoWatermarked && strings.Contains(url, "playwm") {
+			if isVideoWatermarked && strings.Contains(rowUrl, "playwm") {
 				// 替换playwm为play，转换为无水印视频
-				url = strings.Replace(url, "playwm", "play", 1)
+				rowUrl = strings.Replace(rowUrl, "playwm", "play", 1)
 				// 检查转换后的URL是否可访问
-				if !p.isURLAccessible(url) {
-					utils.DebugWithFormat("[extract] 转换后的URL不可访问，使用原URL: %s", url)
+				if !p.isURLAccessible(rowUrl) {
+					utils.DebugWithFormat("[extract] 转换后的URL不可访问，使用原URL: %s", rowUrl)
 					// 恢复原URL
-					url = strings.Replace(url, "play", "playwm", 1)
+					rowUrl = strings.Replace(rowUrl, "play", "playwm", 1)
 				}
 			}
-			return url
+			return rowUrl
 		}
 		utils.DebugWithFormat("[extract] 跳过无效URL: %v", item)
 	}
@@ -547,13 +587,61 @@ func getMapKeys(m map[string]interface{}) []string {
 	return keys
 }
 
-// downloadVideo 下载视频到指定路径
+// downloadResource 下载资源到指定路径
 func (p *DouYinProcessor) downloadVideo() error {
 	// 下载视频逻辑
 	for _, videoInfo := range p.videos {
+		// 首先下载视频文件
+		fp := filepath.Join(p.tempDir, videoInfo.Author)
+		fn := videoInfo.Title + ".mp4"
+		downloadSize, err := p._downloadResource(videoInfo.DownloadUrl, fp, fn)
+		if err != nil {
+			return err
+		}
+		videoInfo.Size = downloadSize
+		utils.InfoWithFormat("[download] 下载完成: %s", filepath.Join(fp, fn))
 
+		if videoInfo.CoverUrl != "" {
+			// 下载封面图片
+			fn = videoInfo.Title + ".png"
+			_, err = p._downloadResource(videoInfo.DownloadUrl, fp, fn)
+			if err != nil {
+				return err
+			}
+			utils.InfoWithFormat("[download] 下载完成: %s", filepath.Join(fp, fn))
+		}
 	}
 	return nil
+}
+
+func (p *DouYinProcessor) _downloadResource(url, filepath, filename string) (string, error) {
+	downloader, err := utils.DownloadFile(url, &utils.DownloadOptions{
+		SavePath:  filepath,
+		FileName:  filename,
+		Timeout:   1200, //  下载超时时间，单位秒
+		IgnoreSSL: true,
+		ProgressFunc: func(progress *utils.DownloadProgress) {
+			utils.DebugWithFormat("[download] 下载进度: %d/%d - %.2f%%", progress.Downloaded, progress.TotalBytes, progress.FormattedSpeed)
+		},
+		MaxRetries: 2,
+		ChunkSize:  10,
+	})
+	// 启动下载
+	if err = downloader.Start(); err != nil {
+		utils.ErrorWithFormat("[downloader] 下载失败: %v", err)
+		return "", err
+	}
+	for {
+		progress := downloader.GetProgress()
+		if progress.Status == utils.StatusCompleted || progress.Status == utils.StatusFailed {
+			if downloader.GetProgress().Status == utils.StatusCompleted {
+				return "", nil
+			} else {
+				return "", errors.New(fmt.Sprintf("[downloader] 下载失败: %s", url))
+			}
+		}
+		time.Sleep(2 * time.Second)
+	}
 }
 
 // _extractURLParams 从 URL 中提取查询参数，并返回一个键值对映射。
@@ -574,4 +662,80 @@ func (p *DouYinProcessor) _extractURLParams(rawURL string) (map[string]string, e
 		}
 	}
 	return params, nil
+}
+
+func (p *DouYinProcessor) Tidy() error {
+	files, err := os.ReadDir(p.tempDir)
+	if err != nil {
+		return fmt.Errorf("读取临时目录失败: %w", err)
+	}
+	if len(files) == 0 {
+		utils.WarnWithFormat("[DouYinVideo] ⚠️ 未找到待整理的资源文件")
+		return errors.New("未找到待整理的资源文件")
+	}
+
+	switch p.cfg.Tidy.Mode {
+	case 1:
+		return p.tidyToLocal(files)
+	case 2:
+		return p.tidyToWebDAV(files, core.GlobalWebDAV)
+	default:
+		return fmt.Errorf("未知整理模式: %d", p.cfg.Tidy.Mode)
+	}
+}
+
+// 整理到本地
+func (p *DouYinProcessor) tidyToLocal(files []os.DirEntry) error {
+	dstDir := p.cfg.Tidy.DistDir
+	if dstDir == "" {
+		_ = processor.RemoveTempDir(p.tempDir)
+		return errors.New("未配置输出目录")
+	}
+	if err := os.MkdirAll(dstDir, 0755); err != nil {
+		_ = processor.RemoveTempDir(p.tempDir)
+		return fmt.Errorf("创建输出目录失败: %w", err)
+	}
+
+	for _, f := range files {
+		src := filepath.Join(p.tempDir, f.Name())
+		dst := filepath.Join(dstDir, utils.SanitizeFileName(f.Name()))
+		if err := os.Rename(src, dst); err != nil {
+			utils.WarnWithFormat("[DouYinVideo] ⚠️ 移动失败 %s → %s: %v", src, dst, err)
+			continue
+		}
+		utils.InfoWithFormat("[DouYinVideo] 📦 已整理: %s", dst)
+	}
+	//清除临时目录
+	err := processor.RemoveTempDir(p.tempDir)
+	if err != nil {
+		utils.WarnWithFormat("[DouYinVideo] ⚠️ 删除临时目录失败: %s (%v)", p.tempDir, err)
+		return err
+	}
+	utils.DebugWithFormat("[DouYinVideo] 🧹 已删除临时目录: %s", p.tempDir)
+	return nil
+}
+
+// 整理到webdav
+func (p *DouYinProcessor) tidyToWebDAV(files []os.DirEntry, webdav *core.WebDAV) error {
+	if webdav == nil {
+		_ = processor.RemoveTempDir(p.tempDir)
+		return errors.New("WebDAV 未初始化")
+	}
+
+	for _, f := range files {
+		filePath := filepath.Join(p.tempDir, f.Name())
+		if err := webdav.Upload(filePath); err != nil {
+			utils.WarnWithFormat("[DouYinVideo] ☁️ 上传失败 %s: %v", f.Name(), err)
+			continue
+		}
+		utils.InfoWithFormat("[DouYinVideo] ☁️ 已上传: %s", f.Name())
+	}
+	//清除临时目录
+	err := processor.RemoveTempDir(p.tempDir)
+	if err != nil {
+		utils.WarnWithFormat("[DouYinVideo] ⚠️ 删除临时目录失败: %s (%v)", p.tempDir, err)
+		return err
+	}
+	utils.DebugWithFormat("[DouYinVideo] 🧹 已删除临时目录: %s", p.tempDir)
+	return nil
 }

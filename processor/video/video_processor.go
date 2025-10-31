@@ -13,6 +13,8 @@ type Processor interface {
 	Videos() []*VideoInfo
 	// 下载视频
 	Download(url string) error
+	// 整理视频
+	Tidy() error
 }
 
 /* ---------------------- 视频结构体定义 ---------------------- */
@@ -24,6 +26,8 @@ type VideoInfo struct {
 	CoverUrl    string
 	DownloadUrl string
 	Desc        string
+	Size        string
+	Tidy        string // 入库方式(默认/webdav)
 }
 
 /* ---------------------- 常量 ---------------------- */
