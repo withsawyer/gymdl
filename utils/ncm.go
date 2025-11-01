@@ -279,13 +279,19 @@ func GetRedirectUrl(text string) string {
 	return text
 }
 
-// ParseNCMLyric 解析歌词
+// 判断歌词是否真正有内容
+func hasMeaningfulContent(lyric string) bool {
+	// 去掉时间戳 [00:00.000]
+	re := regexp.MustCompile(`\[\d{2}:\d{2}\.\d{3}\]`)
+	clean := re.ReplaceAllString(lyric, "")
+	// 去掉空白字符后看看是否还有内容
+	return strings.TrimSpace(clean) != ""
+}
+
 func ParseNCMLyric(lyricsData *types.SongLyricData) string {
-	//优先用翻译歌词
-	if lyricsData.Tlyric.Lyric != "" {
+	if hasMeaningfulContent(lyricsData.Tlyric.Lyric) {
 		return lyricsData.Tlyric.Lyric
 	}
-	//原始字幕
 	return lyricsData.Lrc.Lyric
 }
 
