@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/utils"
 	"github.com/studio-b12/gowebdav"
 )
 
@@ -26,6 +27,9 @@ var (
 
 // InitWebDAV 初始化全局 WebDAV，只会执行一次
 func InitWebDAV(cfg *config.WebDAVConfig) {
+	if logger == nil {
+		logger = utils.Logger()
+	}
 	if cfg == nil || cfg.WebDAVUrl == "" || cfg.WebDAVUser == "" || cfg.WebDAVPass == "" {
 		panic("⚠️ WebDAV config is invalid")
 	}

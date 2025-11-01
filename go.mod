@@ -33,6 +33,7 @@ require (
 	github.com/abema/go-mp4 v1.3.0 // indirect
 	github.com/aler9/writerseeker v1.1.0 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
+	github.com/bogem/id3v2 v1.2.0 // indirect
 	github.com/bogem/id3v2/v2 v2.1.4 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic v1.14.1 // indirect
