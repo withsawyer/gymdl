@@ -34,7 +34,7 @@ func (p *QQMusicProcessor) Songs() []*SongInfo {
 
 /* ------------------------ 下载逻辑 ------------------------ */
 
-func (p *QQMusicProcessor) DownloadMusic(url string) error {
+func (p *QQMusicProcessor) DownloadMusic(url string, callback func(string)) error {
 	// TODO implement me
 	panic("implement me")
 }

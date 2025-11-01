@@ -56,17 +56,17 @@ func (ncm *NetEaseProcessor) Songs() []*SongInfo {
 
 /* ------------------------ 下载逻辑 ------------------------ */
 
-func (ncm *NetEaseProcessor) DownloadMusic(url string) error {
+func (ncm *NetEaseProcessor) DownloadMusic(url string, callback func(string)) error {
 	start := time.Now()
 	utils.InfoWithFormat("[NCM] 🎵 开始下载: %s", url)
 	ncmType, musicID := utils.ParseMusicID(url)
 	switch ncmType {
 	case 1:
 		//单曲下载
-		return ncm.downloadSingle(musicID, start)
+		return ncm.downloadSingle(musicID, start, callback)
 	case 2:
 		//列表下载
-		return ncm.downloadPlaylist(musicID, start)
+		return ncm.downloadPlaylist(musicID, start, callback)
 	}
 	return errors.New("不支持的下载类型")
 }
@@ -229,7 +229,7 @@ func (ncm *NetEaseProcessor) DecryptedExts() []string {
 /* ------------------------ 拓展方法 ------------------------ */
 
 // downloadSingle 单曲下载
-func (ncm *NetEaseProcessor) downloadSingle(musicID int, start time.Time) error {
+func (ncm *NetEaseProcessor) downloadSingle(musicID int, start time.Time, callback func(string)) error {
 	var err error
 
 	utils.DebugWithFormat("[NCM] 获取单曲数据: ID=%d", musicID)
@@ -266,12 +266,12 @@ func (ncm *NetEaseProcessor) downloadSingle(musicID int, start time.Time) error 
 	// 更新元信息列表
 	ncm.songs = append(ncm.songs, songInfo)
 	utils.InfoWithFormat("[NCM] ✅ 下载完成: %s （耗时 %v）", fileName, time.Since(start).Truncate(time.Millisecond))
-
+	callback(fmt.Sprintf("下载完成: %s （耗时 %v）", fileName, time.Since(start).Truncate(time.Millisecond)))
 	return nil
 }
 
 // downloadPlaylist 列表下载
-func (ncm *NetEaseProcessor) downloadPlaylist(musicID int, start time.Time) error {
+func (ncm *NetEaseProcessor) downloadPlaylist(musicID int, start time.Time, callback func(string)) error {
 	utils.DebugWithFormat("[NCM] 获取歌单数据: ID=%d", musicID)
 	detail, err := ncm.FetchPlaylistData(musicID, ncm.cfg)
 	if err != nil {
@@ -286,16 +286,18 @@ func (ncm *NetEaseProcessor) downloadPlaylist(musicID int, start time.Time) erro
 	}
 
 	utils.InfoWithFormat("[NCM] 开始下载歌单: %s (%d首)", detail.Playlist.Name, detail.Playlist.TrackCount)
+	callback(fmt.Sprintf("开始下载歌单: %s (%d首)", detail.Playlist.Name, detail.Playlist.TrackCount))
 
 	for index, track := range detail.Playlist.TrackIds {
+		callback(fmt.Sprintf("开始下载第%d首...", index+1))
 		utils.InfoWithFormat("[NCM] 正在下载第%d首: ID=%d", index+1, track.Id)
-		if err := ncm.downloadSingle(track.Id, start); err != nil {
+		if err := ncm.downloadSingle(track.Id, start, callback); err != nil {
 			utils.ErrorWithFormat("[NCM] ❌ 歌单下载中断，第%d首下载失败: %v", index+1, err)
 			return err
 		}
 	}
-
 	utils.InfoWithFormat("[NCM] ✅ 歌单下载完成: %s （耗时 %v）", detail.Playlist.Name, time.Since(start).Truncate(time.Millisecond))
+	callback(fmt.Sprintf("歌单下载完成: %s （耗时 %v）", detail.Playlist.Name, time.Since(start).Truncate(time.Millisecond)))
 	return nil
 }
 

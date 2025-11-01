@@ -21,7 +21,7 @@ type Processor interface {
 	// 歌曲元信息列表
 	Songs() []*SongInfo
 	// 下载音乐
-	DownloadMusic(url string) error
+	DownloadMusic(url string, callback func(string)) error
 	// 构建下载命令
 	DownloadCommand(url string) *exec.Cmd
 	// 音乐整理之前的处理(如读取,嵌入元数据,刮削等)

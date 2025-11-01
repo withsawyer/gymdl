@@ -33,7 +33,7 @@ func (p *YoutubeMusicProcessor) Songs() []*SongInfo {
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
-func (p *YoutubeMusicProcessor) DownloadMusic(url string) error {
+func (p *YoutubeMusicProcessor) DownloadMusic(url string, callback func(string)) error {
 	// TODO implement me
 	panic("implement me")
 }
