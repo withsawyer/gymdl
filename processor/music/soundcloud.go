@@ -34,7 +34,7 @@ func (p *SoundCloudProcessor) Songs() []*SongInfo {
 
 /* ------------------------ 下载逻辑 ------------------------ */
 
-func (p *SoundCloudProcessor) DownloadMusic(url string) error {
+func (p *SoundCloudProcessor) DownloadMusic(url string, callback func(string)) error {
 	// TODO implement me
 	panic("implement me")
 }

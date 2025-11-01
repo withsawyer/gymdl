@@ -23,7 +23,9 @@ func (s *Session) HandleMusic(p music.Processor) error {
 
 	// 下载阶段
 	utils.InfoWithFormat("[Telegram] 下载中...")
-	err := p.DownloadMusic(s.Link)
+	err := p.DownloadMusic(s.Link, func(progress string) {
+		bot.Edit(msg, fmt.Sprintf("✅ 已识别【**%s**】链接\n\n🎵 %s", p.Name(), progress), tb.ModeMarkdown)
+	})
 	if err != nil {
 		utils.ErrorWithFormat("[Telegram] 下载失败: %v", err)
 		_, _ = bot.Edit(msg, fmt.Sprintf("❌ 下载失败：\n```\n%s\n```", utils.TruncateString(err.Error(), 400)), tb.ModeMarkdown)
@@ -109,7 +111,7 @@ func (s *Session) sendMusicFeedback(p music.Processor) {
 		))
 
 		// 如果不是最后一首，添加长横线分隔
-		if i < count-1 { 
+		if i < count-1 {
 			listBuilder.WriteString("\n──────────────────\n")
 		} else {
 			listBuilder.WriteString("\n")

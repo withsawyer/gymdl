@@ -42,7 +42,7 @@ func (am *AppleMusicProcessor) Songs() []*SongInfo {
 
 /* ------------------------ 下载逻辑 ------------------------ */
 
-func (am *AppleMusicProcessor) DownloadMusic(url string) error {
+func (am *AppleMusicProcessor) DownloadMusic(url string, callback func(string)) error {
 	start := time.Now()
 
 	utils.InfoWithFormat("[AppleMusic] 🎵 开始下载: %s", url)
@@ -71,7 +71,7 @@ func (am *AppleMusicProcessor) DownloadMusic(url string) error {
 	}
 
 	utils.InfoWithFormat("[AppleMusic] ✅ 下载完成（耗时 %v）", time.Since(start).Truncate(time.Millisecond))
-
+	callback(fmt.Sprintf("下载完成（耗时 %v）", time.Since(start).Truncate(time.Millisecond)))
 	return nil
 }
 
