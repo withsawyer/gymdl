@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/utils"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -22,10 +23,12 @@ var (
 
 // InitAI 初始化全局 AI，只会执行一次，并支持自定义 BaseURL
 func InitAI(cfg *config.AIConfig) {
+	if logger == nil {
+		logger = utils.Logger()
+	}
 	if cfg == nil || cfg.ApiKey == "" || cfg.Model == "" {
 		panic("AI config is invalid")
 	}
-
 	clientCfg := openai.DefaultConfig(cfg.ApiKey)
 
 	// 如果配置里有自定义 BaseURL，则设置
