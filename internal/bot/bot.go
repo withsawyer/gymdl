@@ -74,7 +74,10 @@ func NewBotApp(cfg *config.Config) (*BotApp, error) {
 		bot: bot,
 		cfg: cfg,
 	}
+	//注册处理器
 	app.registerHandlers()
+	//初始化notifier
+	InitBotNotifier(bot, cfg.Telegram.ChatID)
 	return app, nil
 }
 
