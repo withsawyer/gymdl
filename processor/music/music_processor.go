@@ -3,6 +3,7 @@ package music
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -48,6 +49,7 @@ type SongInfo struct {
 	MusicSize   int    // 音乐大小
 	Bitrate     string // 码率
 	Duration    int    // 时长
+	Url         string //下载地址
 	PicUrl      string // 封面图url
 	Lyric       string // 歌词
 	Year        int    // 年份
@@ -148,4 +150,131 @@ func ReadMusicDir(tempDir string, tidyType string, p Processor) ([]*SongInfo, er
 		}
 	}
 	return songs, nil
+}
+
+// EmbedMetadata 嵌入音频元数据
+func EmbedMetadata(song *SongInfo, filePath string) error {
+	ext := strings.ToLower(strings.TrimPrefix(filepath.Ext(filePath), ""))
+
+	// 处理封面
+	var coverPath string
+	if song.PicUrl != "" {
+		if strings.HasPrefix(song.PicUrl, "http://") || strings.HasPrefix(song.PicUrl, "https://") {
+			tmpFile, err := os.CreateTemp("", "cover_*"+filepath.Ext(song.PicUrl))
+			if err != nil {
+				return fmt.Errorf("create temp file for cover failed: %v", err)
+			}
+			coverPath = tmpFile.Name()
+			tmpFile.Close()
+
+			if err := utils.DownloadFile(song.PicUrl, coverPath); err != nil {
+				os.Remove(coverPath)
+				return fmt.Errorf("download cover image failed: %v", err)
+			}
+			defer os.Remove(coverPath)
+		} else {
+			coverPath = song.PicUrl
+		}
+	}
+
+	// 临时输出文件，保留原始扩展名，避免 FFmpeg 报错
+	tempFile := filePath + ".tmp" + filepath.Ext(filePath)
+	args := []string{"-y", "-i", filePath}
+
+	// 封面输入
+	if coverPath != "" {
+		args = append(args, "-i", coverPath)
+	}
+
+	// 音频编码处理
+	switch ext {
+	case "mp3":
+		args = append(args, "-c", "copy", "-id3v2_version", "3")
+	case "flac", "m4a", "mp4", "aac", "ogg":
+		args = append(args, "-c", "copy")
+	default:
+		args = append(args, "-c", "copy")
+	}
+
+	// 映射封面流并设置元数据
+	if coverPath != "" {
+		args = append(args,
+			"-map", "0:a?", "-map", "1:v?",
+			"-metadata:s:v", "title=Cover",
+			"-metadata:s:v", "comment=Cover (front)",
+			"-disposition:v", "attached_pic",
+		)
+	}
+
+	// 内嵌元数据
+	metadata := map[string]string{
+		"title":  song.SongName,
+		"artist": song.SongArtists,
+		"album":  song.SongAlbum,
+		"comment": func() string {
+			if song.Lyric != "" {
+				return song.Lyric
+			}
+			return ""
+		}(),
+	}
+
+	if song.Year > 0 {
+		metadata["date"] = fmt.Sprintf("%d", song.Year)
+	}
+
+	for k, v := range metadata {
+		if v != "" {
+			args = append(args, "-metadata", fmt.Sprintf("%s=%s", k, v))
+		}
+	}
+
+	args = append(args, tempFile)
+
+	// 调试输出
+	utils.DebugWithFormat("Running ffmpeg with args: %v\n", args)
+
+	// 执行 FFmpeg
+	cmd := exec.Command("ffmpeg", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("ffmpeg failed: %v", err)
+	}
+
+	// 安全覆盖原文件
+	if err := replaceFile(tempFile, filePath); err != nil {
+		return fmt.Errorf("replace file failed: %v", err)
+	}
+
+	return nil
+}
+
+// replaceFile 安全覆盖文件，支持跨分区
+func replaceFile(src, dst string) error {
+	if err := os.Rename(src, dst); err == nil {
+		return nil
+	}
+
+	// 跨分区，拷贝 + 删除
+	input, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer input.Close()
+
+	output, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	if err != nil {
+		return err
+	}
+	defer output.Close()
+
+	if _, err := io.Copy(output, input); err != nil {
+		return err
+	}
+	if err := output.Sync(); err != nil {
+		return err
+	}
+
+	return os.Remove(src)
 }

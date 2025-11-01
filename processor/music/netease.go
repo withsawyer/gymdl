@@ -11,17 +11,12 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/XiaoMengXinX/Music163Api-Go/api"
 	"github.com/XiaoMengXinX/Music163Api-Go/types"
 	ncmutils "github.com/XiaoMengXinX/Music163Api-Go/utils"
 	downloader "github.com/XiaoMengXinX/SimpleDownloader"
-	"github.com/gcottom/audiometa/v3"
-	"github.com/gcottom/flacmeta"
-	"github.com/gcottom/mp3meta"
-	"github.com/gcottom/mp4meta"
 	"github.com/nichuanfang/gymdl/core"
 	"github.com/nichuanfang/gymdl/utils"
 
@@ -32,9 +27,10 @@ import (
 /* ---------------------- 结构体与构造方法 ---------------------- */
 
 type NetEaseProcessor struct {
-	cfg     *config.Config
-	songs   []*SongInfo
-	tempDir string
+	cfg     *config.Config //配置文件
+	songs   []*SongInfo    //歌曲元信息列表
+	tempDir string         //临时目录
+	musicU  string         //会员cookie
 }
 
 // Init  初始化
@@ -42,6 +38,8 @@ func (ncm *NetEaseProcessor) Init(cfg *config.Config) {
 	ncm.cfg = cfg
 	ncm.songs = make([]*SongInfo, 0)
 	ncm.tempDir = processor.BuildOutputDir(NCMTempDir)
+	cookiePath := filepath.Join(cfg.CookieCloud.CookieFilePath, cfg.CookieCloud.CookieFile)
+	ncm.musicU = utils.GetCookieValue(cookiePath, ".music.163.com", "MUSIC_U")
 }
 
 /* ---------------------- 基础接口实现 ---------------------- */
@@ -76,117 +74,12 @@ func (ncm *NetEaseProcessor) DownloadCommand(url string) *exec.Cmd {
 }
 
 func (ncm *NetEaseProcessor) BeforeTidy() error {
-	songs := ncm.Songs()
-	if len(songs) == 0 {
-		return nil
-	}
-
-	// 并发控制（默认 4，可根据系统资源调整）
-	const maxConcurrent = 4
-	sem := make(chan struct{}, maxConcurrent)
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-	var errs []error
-
-	processSong := func(song *SongInfo) {
-		defer wg.Done()
-		sem <- struct{}{}
-		defer func() { <-sem }()
-
-		rawPath := filepath.Join(ncm.tempDir, ncm.safeFileName(song))
-		tempPath := filepath.Join(ncm.tempDir, ncm.safeTempFileName(song))
-
-		// 打开原文件
-		f, err := os.Open(rawPath)
+	for _, song := range ncm.songs {
+		err := EmbedMetadata(song, filepath.Join(ncm.tempDir, ncm.safeFileName(song)))
 		if err != nil {
-			mu.Lock()
-			errs = append(errs, fmt.Errorf("打开文件失败 [%s]: %w", rawPath, err))
-			mu.Unlock()
-			return
+			return err
 		}
-		defer f.Close()
-
-		// 读取音频标签
-		tag, err := audiometa.OpenTag(f)
-		if err != nil {
-			mu.Lock()
-			errs = append(errs, fmt.Errorf("读取音频标签失败 [%s]: %w", rawPath, err))
-			mu.Unlock()
-			return
-		}
-
-		// 设置元数据
-		tag.SetArtist(song.SongArtists)
-		tag.SetTitle(song.SongName)
-		tag.SetAlbum(song.SongAlbum)
-		tag.SetAlbumArtist(song.SongArtists)
-
-		// 设置封面（无缓存）
-		if img, err := utils.FetchImage(song.PicUrl); err == nil {
-			tag.SetCoverArt(img)
-		}
-
-		// 年份处理
-		if song.Year > 0 {
-			switch t := tag.(type) {
-			case *flacmeta.FLACTag:
-				t.SetDate(strconv.Itoa(song.Year))
-			case *mp3meta.MP3Tag:
-				t.SetYear(song.Year)
-			case *mp4meta.MP4Tag:
-				t.SetYear(song.Year)
-			}
-		}
-
-		// 设置歌词（仅 MP3 支持）
-		if t, ok := tag.(*mp3meta.MP3Tag); ok {
-			t.SetLyricist(song.Lyric)
-		}
-
-		// 创建临时文件
-		f2, err := os.Create(tempPath)
-		if err != nil {
-			mu.Lock()
-			errs = append(errs, fmt.Errorf("创建临时文件失败 [%s]: %w", tempPath, err))
-			mu.Unlock()
-			return
-		}
-
-		// 保存带标签的新文件
-		if err = tag.Save(f2); err != nil {
-			_ = f2.Close()
-			_ = os.Remove(tempPath)
-			mu.Lock()
-			errs = append(errs, fmt.Errorf("保存元数据失败 [%s]: %w", rawPath, err))
-			mu.Unlock()
-			return
-		}
-
-		_ = f2.Close()
-		_ = f.Close()
-
-		// 用临时文件替换原文件
-		if err = os.Rename(tempPath, rawPath); err != nil {
-			mu.Lock()
-			errs = append(errs, fmt.Errorf("替换文件失败 [%s]: %w", rawPath, err))
-			mu.Unlock()
-			return
-		}
-
-		utils.InfoWithFormat("[NCM] 🧩 已嵌入元数据: %s - %s", song.SongArtists, song.SongName)
 	}
-
-	for _, song := range songs {
-		wg.Add(1)
-		go processSong(song)
-	}
-
-	wg.Wait()
-
-	if len(errs) > 0 {
-		return fmt.Errorf("BeforeTidy 处理部分失败，共 %d 项: %v", len(errs), errs)
-	}
-
 	return nil
 }
 
@@ -285,17 +178,44 @@ func (ncm *NetEaseProcessor) downloadPlaylist(musicID int, start time.Time, call
 		return errors.New(errMsg)
 	}
 
+	// 批量获取歌曲信息（包含歌词）
+	trackIDs := make([]int, len(detail.Playlist.TrackIds))
+	for i, track := range detail.Playlist.TrackIds {
+		trackIDs[i] = track.Id
+	}
+
+	songMap, err := ncm.FetchPlaylistSongData(trackIDs, ncm.cfg)
+	if err != nil {
+		return err
+	}
+
 	utils.InfoWithFormat("[NCM] 开始下载歌单: %s (%d首)", detail.Playlist.Name, detail.Playlist.TrackCount)
 	callback(fmt.Sprintf("开始下载歌单: %s (%d首)", detail.Playlist.Name, detail.Playlist.TrackCount))
 
+	//创建下载目录
+	if err := processor.CreateOutputDir(ncm.tempDir); err != nil {
+		return err
+	}
 	for index, track := range detail.Playlist.TrackIds {
+		songInfo, ok := songMap[track.Id]
+		if !ok {
+			utils.WarnWithFormat("[NCM] ⚠️ 歌曲信息缺失，跳过: ID=%d", track.Id)
+			continue
+		}
+
 		callback(fmt.Sprintf("开始下载第%d首...", index+1))
-		utils.InfoWithFormat("[NCM] 正在下载第%d首: ID=%d", index+1, track.Id)
-		if err := ncm.downloadSingle(track.Id, start, callback); err != nil {
+		utils.InfoWithFormat("[NCM] 正在下载第%d首: %s", index+1, songInfo.SongName)
+		fileName := ncm.safeFileName(songInfo)
+		if err := ncm.downloadFile(songInfo.Url, fileName, ncm.tempDir); err != nil {
 			utils.ErrorWithFormat("[NCM] ❌ 歌单下载中断，第%d首下载失败: %v", index+1, err)
 			return err
 		}
+
+		ncm.songs = append(ncm.songs, songInfo)
+		utils.InfoWithFormat("[NCM] ✅ 下载完成: %s （耗时 %v）", fileName, time.Since(start).Truncate(time.Millisecond))
+		callback(fmt.Sprintf("下载完成: %s （耗时 %v）", fileName, time.Since(start).Truncate(time.Millisecond)))
 	}
+
 	utils.InfoWithFormat("[NCM] ✅ 歌单下载完成: %s （耗时 %v）", detail.Playlist.Name, time.Since(start).Truncate(time.Millisecond))
 	callback(fmt.Sprintf("歌单下载完成: %s （耗时 %v）", detail.Playlist.Name, time.Since(start).Truncate(time.Millisecond)))
 	return nil
@@ -311,12 +231,9 @@ func (ncm *NetEaseProcessor) FetchSongData(musicID int, cfg *config.Config) (*ty
 		api.BatchAPI{Key: api.SongLyricAPI, Json: api.CreateSongLyricReqJson(musicID)},
 	)
 
-	cookiePath := filepath.Join(cfg.CookieCloud.CookieFilePath, cfg.CookieCloud.CookieFile)
-	musicU := utils.GetCookieValue(cookiePath, ".music.163.com", "MUSIC_U")
-
 	req := ncmutils.RequestData{}
-	if musicU != "" {
-		req.Cookies = []*http.Cookie{{Name: "MUSIC_U", Value: musicU}}
+	if ncm.musicU != "" {
+		req.Cookies = []*http.Cookie{{Name: "MUSIC_U", Value: ncm.musicU}}
 	}
 
 	result := batch.Do(req)
@@ -351,15 +268,10 @@ func (ncm *NetEaseProcessor) FetchPlaylistData(musicID int, cfg *config.Config) 
 	batch := api.NewBatch(
 		api.BatchAPI{Key: api.PlaylistDetailAPI, Json: api.CreatePlaylistDetailReqJson(musicID)},
 	)
-
-	cookiePath := filepath.Join(cfg.CookieCloud.CookieFilePath, cfg.CookieCloud.CookieFile)
-	musicU := utils.GetCookieValue(cookiePath, ".music.163.com", "MUSIC_U")
-
 	req := ncmutils.RequestData{}
-	if musicU != "" {
-		req.Cookies = []*http.Cookie{{Name: "MUSIC_U", Value: musicU}}
+	if ncm.musicU != "" {
+		req.Cookies = []*http.Cookie{{Name: "MUSIC_U", Value: ncm.musicU}}
 	}
-
 	result := batch.Do(req)
 	if result.Error != nil {
 		return nil, fmt.Errorf("网易云API请求失败: %w", result.Error)
@@ -374,6 +286,39 @@ func (ncm *NetEaseProcessor) FetchPlaylistData(musicID int, cfg *config.Config) 
 	}
 	utils.DebugWithFormat("[NCM] 歌单信息获取成功: %s", detail.Playlist.Name)
 	return &detail, nil
+}
+
+// FetchSongLyric 获取歌词
+func (ncm *NetEaseProcessor) FetchSongLyric(musicID int, cfg *config.Config) string {
+	utils.DebugWithFormat("[NCM] 请求歌词信息中... ID=%d", musicID)
+
+	batch := api.NewBatch(
+		api.BatchAPI{Key: api.SongLyricAPI, Json: api.CreateSongLyricReqJson(musicID)},
+	)
+
+	cookiePath := filepath.Join(cfg.CookieCloud.CookieFilePath, cfg.CookieCloud.CookieFile)
+	musicU := utils.GetCookieValue(cookiePath, ".music.163.com", "MUSIC_U")
+
+	req := ncmutils.RequestData{}
+	if musicU != "" {
+		req.Cookies = []*http.Cookie{{Name: "MUSIC_U", Value: musicU}}
+	}
+
+	result := batch.Do(req)
+	if result.Error != nil {
+		return ""
+	}
+
+	_, parsed := batch.Parse()
+
+	var lyrics types.SongLyricData
+
+	if err := json.Unmarshal([]byte(parsed[api.SongLyricAPI]), &lyrics); err != nil {
+		return ""
+	}
+
+	utils.DebugWithFormat("[NCM] 歌词信息获取成功: %s", musicID)
+	return utils.ParseNCMLyric(&lyrics)
 }
 
 // downloadFile 下载文件
@@ -392,6 +337,73 @@ func (ncm *NetEaseProcessor) downloadFile(url, fileName, saveDir string) error {
 		ForceMultiThread()
 
 	return task.SetFileName(fileName).Download()
+}
+
+// FetchPlaylistSongData 批量获取歌单歌曲信息
+func (ncm *NetEaseProcessor) FetchPlaylistSongData(musicIDs []int, cfg *config.Config) (map[int]*SongInfo, error) {
+	utils.DebugWithFormat("[NCM] 批量请求歌曲信息: IDs=%v", musicIDs)
+
+	// 1. 批量请求detail和url
+	batch := api.NewBatch(
+		api.BatchAPI{Key: api.SongDetailAPI, Json: api.CreateSongDetailReqJson(musicIDs)},
+		api.BatchAPI{Key: api.SongUrlAPI, Json: api.CreateSongURLJson(api.SongURLConfig{Ids: musicIDs})},
+	)
+	req := ncmutils.RequestData{}
+	if ncm.musicU != "" {
+		req.Cookies = []*http.Cookie{{Name: "MUSIC_U", Value: ncm.musicU}}
+	}
+
+	result := batch.Do(req)
+	if result.Error != nil {
+		return nil, fmt.Errorf("网易云API请求失败: %w", result.Error)
+	}
+
+	_, parsed := batch.Parse()
+
+	var details types.SongsDetailData
+	var urls types.SongsURLData
+
+	if err := json.Unmarshal([]byte(parsed[api.SongDetailAPI]), &details); err != nil {
+		return nil, fmt.Errorf("解析歌曲详情失败: %w", err)
+	}
+	if err := json.Unmarshal([]byte(parsed[api.SongUrlAPI]), &urls); err != nil {
+		return nil, fmt.Errorf("解析歌曲URL失败: %w", err)
+	}
+
+	// 2. 歌词
+	songLyricMap := make(map[int]string)
+	for _, id := range musicIDs {
+		lyric := ncm.FetchSongLyric(id, cfg)
+		songLyricMap[id] = lyric
+	}
+
+	// 3. 构建 SongInfo map
+	songMap := make(map[int]*SongInfo)
+	for i, s := range details.Songs {
+		u := urls.Data[i]
+		lyric := songLyricMap[s.Id]
+		if lyric == "" {
+			lyric = "[00:00:00]此歌曲为没有填词的纯音乐，请您欣赏"
+		}
+		year := utils.ParseNCMYear(&details)
+		tidy := processor.DetermineTidyType(cfg)
+		songMap[s.Id] = &SongInfo{
+			SongName:    s.Name,
+			SongArtists: utils.ParseArtist(s),
+			SongAlbum:   s.Al.Name,
+			FileExt:     ncm.detectExt(u.Url),
+			MusicSize:   u.Size,
+			Bitrate:     strconv.Itoa((8 * u.Size / (s.Dt / 1000)) / 1000),
+			Duration:    s.Dt / 1000,
+			Url:         u.Url,
+			PicUrl:      s.Al.PicUrl,
+			Tidy:        tidy,
+			Lyric:       lyric,
+			Year:        year,
+		}
+	}
+
+	return songMap, nil
 }
 
 // fixHost 主机名修正
@@ -421,6 +433,7 @@ func (ncm *NetEaseProcessor) buildSongInfo(cfg *config.Config, detail *types.Son
 		MusicSize:   u.Size,
 		Bitrate:     strconv.Itoa((8 * u.Size / (s.Dt / 1000)) / 1000),
 		Duration:    s.Dt / 1000,
+		Url:         u.Url,
 		PicUrl:      s.Al.PicUrl,
 		Tidy:        tidy,
 		Lyric:       ncmLyric,
