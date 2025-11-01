@@ -96,11 +96,11 @@ func initCron(ctx context.Context, c *config.Config) {
 
 // 启动目录监控
 func initMonitor(ctx context.Context, c *config.Config) {
-	wm := monitor.NewWatchManager()
+	wm := monitor.NewWatchManager(c)
 
 	for _, dir := range c.AdditionalConfig.MonitorDirs {
 		// 监控主目录
-		if err := wm.AddDir(dir); err != nil {
+		if err := wm.AddDirRecursive(dir); err != nil {
 			utils.WarnWithFormat("[Monitor] 注册目录失败: %s (%v)", dir, err)
 			continue
 		}
