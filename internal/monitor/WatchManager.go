@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/internal/bot"
+	"github.com/nichuanfang/gymdl/processor/music"
 	"github.com/nichuanfang/gymdl/utils"
 )
 
@@ -152,11 +154,35 @@ func isFileStable(path string, interval time.Duration, checks int) bool {
 	return true
 }
 
-// SendTelegram 发送telegram消息
-func SendTelegram(msg string) {
+// SendTelegram 发送入库通知
+func SendTelegram(songInfo *music.SongInfo) {
 	notifier := bot.GetNotifier()
 	if notifier != nil {
-		notifier.Send(msg)
+		// 计算文件大小 MB
+		fileSizeMB := float64(songInfo.MusicSize) / 1024.0 / 1024.0
+
+		// 构建消息文本
+		messageText := fmt.Sprintf(
+			`🎉 *入库成功！*
+
+🎵 *歌曲:* %s  
+🎤 *艺术家:* %s  
+💿 *专辑:* %s  
+🎧 *格式:* %s  
+📊 *码率:* %s kbps  
+📦 *大小:* %.2f MB  
+☁️ *入库方式:* %s`,
+			utils.TruncateString(songInfo.SongName, 80),
+			utils.TruncateString(songInfo.SongArtists, 80),
+			utils.TruncateString(songInfo.SongAlbum, 80),
+			strings.ToUpper(songInfo.FileExt),
+			songInfo.Bitrate,
+			fileSizeMB,
+			strings.ToUpper(songInfo.Tidy),
+		)
+
+		// 发送消息
+		notifier.Send(messageText)
 	} else {
 		utils.WarnWithFormat("telegram未初始化,消息发送失败")
 	}
@@ -176,11 +202,11 @@ func (wm *WatchManager) StartWorkerPool(workerCount int) {
 				if event.Op&(fsnotify.Create|fsnotify.Write) != 0 && !info.IsDir() {
 					if isFileStable(event.Name, 1*time.Second, 2) {
 						utils.DebugWithFormat("[Monitor] Worker %d: Music file ready: %s", id, event.Name)
-						err := HandleEvent(event.Name, wm.cfg)
-						if err != nil {
+						songInfo, eventErr := HandleEvent(event.Name, wm.cfg)
+						if eventErr != nil {
 							continue
 						}
-						SendTelegram(fmt.Sprintf("🎉入库成功: 【%s】 ", filepath.Base(event.Name)))
+						SendTelegram(songInfo)
 					} else {
 						utils.DebugWithFormat("[Monitor] Worker %d: File not stable yet: %s", id, event.Name)
 					}

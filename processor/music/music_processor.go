@@ -94,6 +94,8 @@ func ReadMusicDir(tempDir string, tidyType string, p Processor) ([]*SongInfo, er
 		if utils.Contains(p.DecryptedExts(), ext) {
 			fullPath := filepath.Join(tempDir, f.Name())
 			song, err := ReadTags(fullPath)
+			//嵌入默认标签
+			FillDefaultTags(fullPath, song)
 			if err != nil {
 				return nil, fmt.Errorf("处理文件 %s 失败: %w", f.Name(), err)
 			}
@@ -110,37 +112,68 @@ func ReadTags(path string) (*SongInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	fileInfo, err := os.Stat(path)
-	if err != nil {
-		return nil, err
-	}
-	// 获取比特率和时长
+
 	props, err := taglib.ReadProperties(path)
 	if err != nil {
 		return nil, err
 	}
-	songInfo := &SongInfo{}
-	songInfo.SongName = tags[taglib.Title][0]
-	songInfo.SongArtists = tags[taglib.Artist][0]
-	songInfo.SongAlbum = tags[taglib.Album][0]
-	songInfo.Year, _ = strconv.Atoi(tags[taglib.Date][0])
-	if tags[taglib.Lyrics] != nil {
-		songInfo.Lyric = tags[taglib.Lyrics][0]
+
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+
+	songInfo := &SongInfo{
+		FileExt:   strings.TrimPrefix(filepath.Ext(path), "."),
+		MusicSize: fileInfo.Size(),
+		Bitrate:   strconv.Itoa(int(props.Bitrate)),
+		Duration:  int(props.Length),
+	}
+
+	if t, ok := tags[taglib.Title]; ok && len(t) > 0 {
+		songInfo.SongName = t[0]
 	} else {
-		//歌词不存在 嵌入默认歌词
-		songInfo.Lyric = "[00:00:00]此歌曲为没有填词的纯音乐，请您欣赏"
-		err = taglib.WriteTags(path, map[string][]string{
-			taglib.Lyrics: {songInfo.Lyric},
-		}, 0)
-		if err != nil {
-			utils.WarnWithFormat("write lyric failed: %w", err)
+		songInfo.SongName = filepath.Base(path)
+	}
+
+	if a, ok := tags[taglib.Artist]; ok && len(a) > 0 {
+		songInfo.SongArtists = a[0]
+	}
+
+	if al, ok := tags[taglib.Album]; ok && len(al) > 0 {
+		songInfo.SongAlbum = al[0]
+	}
+
+	if d, ok := tags[taglib.Date]; ok && len(d) > 0 {
+		songInfo.Year, _ = strconv.Atoi(d[0])
+	}
+
+	if l, ok := tags[taglib.Lyrics]; ok && len(l) > 0 {
+		songInfo.Lyric = l[0]
+	}
+
+	return songInfo, nil
+}
+
+// FillDefaultTags 标签写入默认值
+func FillDefaultTags(path string, info *SongInfo) {
+	updates := make(map[string][]string)
+
+	if info.Year == 0 {
+		info.Year = 2020
+		updates[taglib.Date] = []string{strconv.Itoa(info.Year)}
+	}
+
+	if info.Lyric == "" {
+		info.Lyric = "[00:00:00]此歌曲为没有填词的纯音乐，请您欣赏"
+		updates[taglib.Lyrics] = []string{info.Lyric}
+	}
+
+	if len(updates) > 0 {
+		if err := taglib.WriteTags(path, updates, 0); err != nil {
+			utils.WarnWithFormat("write default tags failed: %w", err)
 		}
 	}
-	songInfo.FileExt = filepath.Ext(path)[1:]           //音乐文件扩展名 如 m4a flac
-	songInfo.MusicSize = fileInfo.Size()                // 音乐文件大小
-	songInfo.Bitrate = strconv.Itoa(int(props.Bitrate)) //音乐文件比特率
-	songInfo.Duration = int(props.Length)               //音乐文件时长
-	return songInfo, nil
 }
 
 // WriteTags 写入标签

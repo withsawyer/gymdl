@@ -23,7 +23,7 @@ type botNotifier struct {
 // Send 异步发送消息
 func (b *botNotifier) Send(msg string) {
 	go func() {
-		_, err := b.Bot.Send(&tb.Chat{ID: b.ChatID}, msg)
+		_, err := b.Bot.Send(&tb.Chat{ID: b.ChatID}, msg, tb.ModeMarkdown)
 		if err != nil {
 			fmt.Errorf("[Telegram] 发送消息失败: %v\n", err)
 		}
