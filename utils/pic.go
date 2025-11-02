@@ -7,6 +7,7 @@ import (
 	"image/jpeg"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/disintegration/imaging"
@@ -57,4 +58,28 @@ func FetchImage(url string) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+// DownloadAndSaveImage 从指定 URL 下载图片，并保存为 JPEG 文件到 path
+func DownloadAndSaveImage(url, path string) error {
+	// 调用之前的 FetchImage 获取图片字节
+	data, err := FetchImage(url)
+	if err != nil {
+		return err
+	}
+
+	// 创建文件
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// 写入数据到文件
+	_, err = file.Write(data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

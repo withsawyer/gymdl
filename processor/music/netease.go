@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/XiaoMengXinX/Music163Api-Go/api"
@@ -74,8 +75,12 @@ func (ncm *NetEaseProcessor) DownloadCommand(url string) *exec.Cmd {
 }
 
 func (ncm *NetEaseProcessor) BeforeTidy() error {
+	var fileName string
+	var coverFileName string
 	for _, song := range ncm.songs {
-		err := WriteTags(song, filepath.Join(ncm.tempDir, ncm.safeFileName(song)))
+		fileName = filepath.Join(ncm.tempDir, ncm.safeFileName(song))
+		coverFileName = filepath.Join(ncm.tempDir, ncm.safeCoverFileName(song))
+		err := WriteTagsWithCoverFile(song, fileName, coverFileName)
 		if err != nil {
 			return err
 		}
@@ -141,6 +146,7 @@ func (ncm *NetEaseProcessor) downloadSingle(musicID int, start time.Time, callba
 	// 构建歌曲元信息
 	songInfo := ncm.buildSongInfo(ncm.cfg, detail, songURL, songLyric)
 	fileName := ncm.safeFileName(songInfo)
+	coverFileName := ncm.safeCoverFileName(songInfo)
 
 	// 创建临时目录
 	if err := processor.CreateOutputDir(ncm.tempDir); err != nil {
@@ -150,12 +156,11 @@ func (ncm *NetEaseProcessor) downloadSingle(musicID int, start time.Time, callba
 
 	// 下载文件
 	utils.InfoWithFormat("[NCM] ⬇️ 开始下载: %s", fileName)
-	if err := ncm.downloadFile(songURL.Data[0].Url, fileName, ncm.tempDir); err != nil {
+	if err := ncm.downloadFile(songURL.Data[0].Url, fileName, songInfo.PicUrl, coverFileName, ncm.tempDir); err != nil {
 		_ = processor.RemoveTempDir(ncm.tempDir)
 		utils.ErrorWithFormat("[NCM] ❌ 下载失败: %v", err)
 		return fmt.Errorf("下载失败: %w", err)
 	}
-
 	// 更新元信息列表
 	ncm.songs = append(ncm.songs, songInfo)
 	utils.InfoWithFormat("[NCM] ✅ 下载完成: %s （耗时 %v）", fileName, time.Since(start).Truncate(time.Millisecond))
@@ -193,20 +198,22 @@ func (ncm *NetEaseProcessor) downloadPlaylist(musicID int, start time.Time, call
 	callback(fmt.Sprintf("开始下载歌单: %s (%d首)", detail.Playlist.Name, detail.Playlist.TrackCount))
 
 	//创建下载目录
-	if err := processor.CreateOutputDir(ncm.tempDir); err != nil {
+	if err = processor.CreateOutputDir(ncm.tempDir); err != nil {
 		return err
 	}
+	var fileName string
+	var coverFileName string
 	for index, track := range detail.Playlist.TrackIds {
 		songInfo, ok := songMap[track.Id]
 		if !ok {
 			utils.WarnWithFormat("[NCM] ⚠️ 歌曲信息缺失，跳过: ID=%d", track.Id)
 			continue
 		}
-
 		callback(fmt.Sprintf("开始下载第%d首...", index+1))
 		utils.InfoWithFormat("[NCM] 正在下载第%d首: %s", index+1, songInfo.SongName)
-		fileName := ncm.safeFileName(songInfo)
-		if err := ncm.downloadFile(songInfo.Url, fileName, ncm.tempDir); err != nil {
+		fileName = ncm.safeFileName(songInfo)
+		coverFileName = ncm.safeCoverFileName(songInfo)
+		if err = ncm.downloadFile(songInfo.Url, fileName, songInfo.PicUrl, coverFileName, ncm.tempDir); err != nil {
 			utils.ErrorWithFormat("[NCM] ❌ 歌单下载中断，第%d首下载失败: %v", index+1, err)
 			return err
 		}
@@ -321,22 +328,57 @@ func (ncm *NetEaseProcessor) FetchSongLyric(musicID int, cfg *config.Config) str
 	return utils.ParseNCMLyric(&lyrics)
 }
 
-// downloadFile 下载文件
-func (ncm *NetEaseProcessor) downloadFile(url, fileName, saveDir string) error {
-	utils.DebugWithFormat("[NCM] 开始下载文件: %s", fileName)
+// downloadFile 下载文件和封面
+func (ncm *NetEaseProcessor) downloadFile(url string, fileName string, coverUrl string, coverFileName string, saveDir string) error {
+	if coverUrl != "" {
+		utils.DebugWithFormat("[NCM] 开始下载文件: %s 和封面: %s", fileName, coverFileName)
+	} else {
+		utils.DebugWithFormat("[NCM] 开始下载文件: %s", fileName)
+	}
 
 	d := downloader.NewDownloader().
 		SetSavePath(saveDir).
 		SetBreakPoint(true).
 		SetTimeOut(300 * time.Second)
 
-	task, _ := d.NewDownloadTask(url)
-	task.CleanTempFiles()
-	task.ReplaceHostName(ncm.fixHost(task.GetHostName())).
-		ForceHttps().
-		ForceMultiThread()
+	var wg sync.WaitGroup
+	errCh := make(chan error, 2)
 
-	return task.SetFileName(fileName).Download()
+	download := func(url, fileName string) {
+		defer wg.Done()
+		task, err := d.NewDownloadTask(url)
+		if err != nil {
+			errCh <- err
+			return
+		}
+
+		task.CleanTempFiles()
+		task.ReplaceHostName(ncm.fixHost(task.GetHostName())).
+			ForceHttps().
+			ForceMultiThread()
+
+		if err := task.SetFileName(fileName).Download(); err != nil {
+			errCh <- err
+		}
+	}
+
+	// 下载主文件
+	wg.Add(1)
+	go download(url, fileName)
+
+	// 下载封面（如果 URL 非空）
+	if coverUrl != "" {
+		wg.Add(1)
+		go download(coverUrl, coverFileName)
+	}
+
+	wg.Wait()
+	close(errCh)
+
+	if len(errCh) > 0 {
+		return <-errCh
+	}
+	return nil
 }
 
 // FetchPlaylistSongData 批量获取歌单歌曲信息
@@ -463,6 +505,15 @@ func (ncm *NetEaseProcessor) safeFileName(info *SongInfo) string {
 		strings.ReplaceAll(info.SongArtists, "/", ","),
 		info.SongName,
 		info.FileExt))
+}
+
+// safeCoverFileName 合法的封面文件名
+func (ncm *NetEaseProcessor) safeCoverFileName(info *SongInfo) string {
+	replacer := strings.NewReplacer("/", " ", "?", " ", "*", " ", ":", " ",
+		"|", " ", "\\", " ", "<", " ", ">", " ", "\"", " ")
+	return replacer.Replace(fmt.Sprintf("%s - %s.%s",
+		strings.ReplaceAll(info.SongArtists, "/", ","),
+		info.SongName+"_cover", "jpg"))
 }
 
 // safeTempFileName 合法临时文件路径

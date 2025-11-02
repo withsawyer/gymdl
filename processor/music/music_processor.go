@@ -205,8 +205,51 @@ func FillDefaultTags(path string, info *SongInfo) {
 	}
 }
 
-// WriteTags 写入标签（线程安全版本）
+// WriteTags 嵌入标签
 func WriteTags(song *SongInfo, filePath string) error {
+	// 写入文本标签
+	tags := map[string][]string{
+		taglib.Title:       {song.SongName},
+		taglib.Artist:      {song.SongArtists},
+		taglib.Album:       {song.SongAlbum},
+		taglib.AlbumArtist: {song.SongArtists},
+		taglib.Date:        {strconv.Itoa(song.Year)},
+		taglib.Lyrics:      {song.Lyric},
+	}
+	// 写入文本标签（opts传taglib.Clear则清除原标签，传0则不清除）
+	if err := taglib.WriteTags(filePath, tags, 0); err != nil {
+		return fmt.Errorf("write metadata failed for %s: %w", filePath, err)
+	}
+	return nil
+}
+
+// WriteTagsWithCoverFile 嵌入标签(封面通过文件嵌入)
+func WriteTagsWithCoverFile(song *SongInfo, filePath string, coverFilePath string) error {
+	// 写入文本标签
+	tags := map[string][]string{
+		taglib.Title:       {song.SongName},
+		taglib.Artist:      {song.SongArtists},
+		taglib.Album:       {song.SongAlbum},
+		taglib.AlbumArtist: {song.SongArtists},
+		taglib.Date:        {strconv.Itoa(song.Year)},
+		taglib.Lyrics:      {song.Lyric},
+	}
+	var err error
+	// 写入文本标签（opts传taglib.Clear则清除原标签，传0则不清除）
+	if err = taglib.WriteTags(filePath, tags, 0); err != nil {
+		return fmt.Errorf("write metadata failed for %s: %w", filePath, err)
+	}
+	data, err := os.ReadFile(coverFilePath)
+	if err == nil && len(data) > 0 {
+		if err = taglib.WriteImage(filePath, data); err != nil {
+			return fmt.Errorf("write image failed for %s: %w", filePath, err)
+		}
+	}
+	return nil
+}
+
+// WriteTagsWithCoverURL 嵌入标签(封面通过url嵌入)
+func WriteTagsWithCoverURL(song *SongInfo, filePath string) error {
 	imageCh := make(chan imageResult, 1)
 
 	if song.PicUrl != "" {
