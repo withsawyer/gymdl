@@ -183,8 +183,6 @@ func SendTelegram(songInfo *music.SongInfo) {
 
 		// 发送消息
 		notifier.Send(messageText)
-	} else {
-		utils.WarnWithFormat("telegram未初始化,消息发送失败")
 	}
 }
 

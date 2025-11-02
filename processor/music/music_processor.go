@@ -39,19 +39,21 @@ type Processor interface {
 /* ---------------------- 音乐结构体定义 ---------------------- */
 // SongInfo 音乐信息
 type SongInfo struct {
-	SongName    string // 音乐名称
-	SongArtists string // 艺术家
-	SongAlbum   string // 专辑
-	FileExt     string // 格式
-	MusicSize   int64  // 音乐大小
-	Bitrate     string // 码率
-	Duration    int    // 时长
-	Url         string //下载地址
-	MusicPath   string //音乐文件路径
-	PicUrl      string // 封面图url
-	Lyric       string // 歌词
-	Year        int    // 年份
-	Tidy        string // 入库方式(默认/webdav)
+	SongName        string // 音乐名称
+	SongArtists     string // 艺术家
+	SongAlbum       string // 专辑
+	SongAlbumArtist string //专辑艺术家
+	FileExt         string // 格式
+	MusicSize       int64  // 音乐大小
+	Bitrate         string // 码率
+	Duration        int    // 时长
+	Url             string //下载地址
+	MusicPath       string //音乐文件路径
+	PicUrl          string // 封面图url
+	Lyric           string // 歌词
+	Year            int    // 年份
+	Genre           string //流派
+	Tidy            string // 入库方式(默认/webdav)
 }
 
 /* ---------------------- 常量 ---------------------- */
@@ -144,12 +146,20 @@ func ReadTags(path string) (*SongInfo, error) {
 		songInfo.SongAlbum = al[0]
 	}
 
+	if aa, ok := tags[taglib.AlbumArtist]; ok && len(aa) > 0 {
+		songInfo.SongAlbumArtist = aa[0]
+	}
+
 	if d, ok := tags[taglib.Date]; ok && len(d) > 0 {
 		songInfo.Year, _ = strconv.Atoi(d[0])
 	}
 
 	if l, ok := tags[taglib.Lyrics]; ok && len(l) > 0 {
 		songInfo.Lyric = l[0]
+	}
+
+	if ge, ok := tags[taglib.Genre]; ok && len(ge) > 0 {
+		songInfo.Genre = ge[0]
 	}
 
 	return songInfo, nil
@@ -159,15 +169,29 @@ func ReadTags(path string) (*SongInfo, error) {
 func FillDefaultTags(path string, info *SongInfo) {
 	updates := make(map[string][]string)
 
+	//默认专辑艺术家
+	if info.SongAlbumArtist == "" {
+		info.SongAlbumArtist = info.SongArtists
+		updates[taglib.AlbumArtist] = []string{info.SongAlbumArtist}
+	}
+
+	//默认年份
 	if info.Year == 0 {
 		info.Year = 2020
 		updates[taglib.Date] = []string{strconv.Itoa(info.Year)}
 	}
 
+	//默认歌词
 	if info.Lyric == "" {
 		info.Lyric = "[00:00:00]此歌曲为没有填词的纯音乐，请您欣赏"
 		updates[taglib.Lyrics] = []string{info.Lyric}
 	}
+
+	//默认流派
+	/*if info.Genre == "" {
+	    info.Genre = "缺省"
+	    updates[taglib.Genre] = []string{info.Genre}
+	}*/
 
 	if len(updates) > 0 {
 		if err := taglib.WriteTags(path, updates, 0); err != nil {
