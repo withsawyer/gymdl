@@ -8,16 +8,15 @@ require (
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/XiaoMengXinX/Music163Api-Go v0.1.29
 	github.com/XiaoMengXinX/SimpleDownloader v0.0.0-20221110191044-7a2606dfcf7c
-	github.com/bogem/id3v2/v2 v2.1.4
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-co-op/gocron/v2 v2.17.0
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/google/uuid v1.6.0
-	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/sashabaranov/go-openai v1.41.2
 	github.com/sirupsen/logrus v1.9.0
 	github.com/studio-b12/gowebdav v0.11.0
+	go.senan.xyz/taglib v0.10.4
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.46.0
 	gopkg.in/telebot.v4 v4.0.0-beta.5
@@ -52,7 +51,6 @@ require (
 	github.com/tetratelabs/wazero v1.9.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
-	go.senan.xyz/taglib v0.10.4 // indirect
 	go.uber.org/mock v0.6.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/arch v0.22.0 // indirect

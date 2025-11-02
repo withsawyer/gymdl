@@ -1,19 +1,16 @@
 package music
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/nichuanfang/gymdl/processor"
 	"github.com/nichuanfang/gymdl/utils"
 	"go.senan.xyz/taglib"
-	"gopkg.in/vansante/go-ffprobe.v2"
 )
 
 /* ---------------------- 音乐接口定义 ---------------------- */
@@ -46,7 +43,7 @@ type SongInfo struct {
 	SongArtists string // 艺术家
 	SongAlbum   string // 专辑
 	FileExt     string // 格式
-	MusicSize   int    // 音乐大小
+	MusicSize   int64  // 音乐大小
 	Bitrate     string // 码率
 	Duration    int    // 时长
 	Url         string //下载地址
@@ -81,54 +78,6 @@ var SpotifyTempDir = filepath.Join(BaseTempDir, "Spotify")
 
 /* ---------------------- 音乐下载相关业务函数 ---------------------- */
 
-// ExtractSongInfo 通过ffprobe-go解析歌曲信息
-func ExtractSongInfo(path string) (*SongInfo, error) {
-	song := &SongInfo{}
-	song.MusicPath = path
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("打开文件失败: %w", err)
-	}
-	defer f.Close()
-
-	// 文件信息（大小和扩展名）
-	info, err := f.Stat()
-	if err != nil {
-		return nil, fmt.Errorf("获取文件信息失败: %w", err)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// 用 ffprobe 获取所有元信息
-	data, err := ffprobe.ProbeURL(ctx, path)
-	if err != nil {
-		return nil, fmt.Errorf("获取音频信息失败: %w", err)
-	}
-	song.MusicSize = int(info.Size())
-	song.FileExt = strings.TrimPrefix(strings.ToLower(filepath.Ext(path)), ".")
-
-	// 获取基础信息
-	if data.Format != nil {
-		if dur := data.Format.Duration(); dur > 0 {
-			song.Duration = int(dur.Seconds())
-		}
-		if br, err := strconv.Atoi(data.Format.BitRate); err == nil {
-			song.Bitrate = strconv.Itoa(br / 1000)
-		}
-
-		// 标签信息
-		if tags := data.Format.TagList; tags != nil {
-			song.SongName, _ = tags.GetString("title")
-			song.SongArtists, _ = tags.GetString("artist")
-			song.SongAlbum, _ = tags.GetString("album")
-			song.Lyric, _ = tags.GetString("lyrics")
-		}
-	}
-
-	return song, nil
-}
-
 // 读取音乐目录 返回元信息列表
 func ReadMusicDir(tempDir string, tidyType string, p Processor) ([]*SongInfo, error) {
 	files, err := os.ReadDir(tempDir)
@@ -144,7 +93,7 @@ func ReadMusicDir(tempDir string, tidyType string, p Processor) ([]*SongInfo, er
 		ext := strings.ToLower(filepath.Ext(f.Name()))
 		if utils.Contains(p.DecryptedExts(), ext) {
 			fullPath := filepath.Join(tempDir, f.Name())
-			song, err := ExtractSongInfo(fullPath)
+			song, err := ReadTags(fullPath)
 			if err != nil {
 				return nil, fmt.Errorf("处理文件 %s 失败: %w", f.Name(), err)
 			}
@@ -153,6 +102,45 @@ func ReadMusicDir(tempDir string, tidyType string, p Processor) ([]*SongInfo, er
 		}
 	}
 	return songs, nil
+}
+
+// ReadTags 读取音乐元数据
+func ReadTags(path string) (*SongInfo, error) {
+	tags, err := taglib.ReadTags(path)
+	if err != nil {
+		return nil, err
+	}
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+	// 获取比特率和时长
+	props, err := taglib.ReadProperties(path)
+	if err != nil {
+		return nil, err
+	}
+	songInfo := &SongInfo{}
+	songInfo.SongName = tags[taglib.Title][0]
+	songInfo.SongArtists = tags[taglib.Artist][0]
+	songInfo.SongAlbum = tags[taglib.Album][0]
+	songInfo.Year, _ = strconv.Atoi(tags[taglib.Date][0])
+	if tags[taglib.Lyrics] != nil {
+		songInfo.Lyric = tags[taglib.Lyrics][0]
+	} else {
+		//歌词不存在 嵌入默认歌词
+		songInfo.Lyric = "[00:00:00]此歌曲为没有填词的纯音乐，请您欣赏"
+		err = taglib.WriteTags(path, map[string][]string{
+			taglib.Lyrics: {songInfo.Lyric},
+		}, 0)
+		if err != nil {
+			utils.WarnWithFormat("write lyric failed: %w", err)
+		}
+	}
+	songInfo.FileExt = filepath.Ext(path)[1:]           //音乐文件扩展名 如 m4a flac
+	songInfo.MusicSize = fileInfo.Size()                // 音乐文件大小
+	songInfo.Bitrate = strconv.Itoa(int(props.Bitrate)) //音乐文件比特率
+	songInfo.Duration = int(props.Length)               //音乐文件时长
+	return songInfo, nil
 }
 
 // WriteTags 写入标签
