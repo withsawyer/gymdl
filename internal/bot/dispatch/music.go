@@ -39,15 +39,13 @@ func (s *Session) HandleMusic(p music.Processor) error {
 		return nil
 	}
 
-	if err := p.TidyMusic(); err != nil {
-		utils.ErrorWithFormat("[Telegram] 文件整理失败: %v", err)
-		_, _ = bot.Edit(msg, fmt.Sprintf("⚠️ 文件整理失败：\n```\n%s\n```", utils.TruncateString(err.Error(), 400)), tb.ModeMarkdown)
-		return nil
-	}
-
+	// 入库
 	utils.InfoWithFormat("[Telegram] 整理成功，开始入库...")
-	if s.Cfg.Tidy.Mode == 2 {
-		_, _ = bot.Edit(msg, fmt.Sprintf("✅ 已识别 **%s** 链接\n\n🎵 开始入库...", p.Name()), tb.ModeMarkdown)
+	_, _ = bot.Edit(msg, fmt.Sprintf("✅ 已识别 **%s** 链接\n\n🎵 开始入库...", p.Name()), tb.ModeMarkdown)
+	if err := p.TidyMusic(); err != nil {
+		utils.ErrorWithFormat("[Telegram] 文件入库失败: %v", err)
+		_, _ = bot.Edit(msg, fmt.Sprintf("⚠️ 文件入库失败：\n```\n%s\n```", utils.TruncateString(err.Error(), 400)), tb.ModeMarkdown)
+		return nil
 	}
 
 	// 成功反馈
