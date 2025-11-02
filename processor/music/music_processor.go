@@ -202,37 +202,44 @@ func FillDefaultTags(path string, info *SongInfo) {
 
 // WriteTags 写入标签
 func WriteTags(song *SongInfo, filePath string) error {
-	//写入标签
-	err := taglib.WriteTags(filePath, map[string][]string{
+	var imageData []byte
+	var imageErr error
+	done := make(chan struct{})
+
+	// 并行下载封面图片
+	if song.PicUrl != "" {
+		go func() {
+			defer close(done)
+			imageData, imageErr = utils.FetchImage(song.PicUrl)
+		}()
+	} else {
+		close(done) // 没有图片时直接关闭通道
+	}
+
+	// 写入文本标签
+	tags := map[string][]string{
 		taglib.Title:       {song.SongName},
 		taglib.Artist:      {song.SongArtists},
 		taglib.Album:       {song.SongAlbum},
-		taglib.AlbumArtist: {song.SongAlbum},
-		//年份
-		taglib.Date: {strconv.Itoa(song.Year)},
-		//歌词
-		taglib.Lyrics: {song.Lyric},
-		//流派
-		//taglib.Genre:   {song.SongName},
-	}, 0)
-	if err != nil {
-		utils.WarnWithFormat("write metadate failed: %w", err)
-		return nil
+		taglib.AlbumArtist: {song.SongArtists},
+		taglib.Date:        {strconv.Itoa(song.Year)},
+		taglib.Lyrics:      {song.Lyric},
 	}
-	// 写入封面图片
-	if song.PicUrl != "" {
-		// 下载图片
-		imageData, errImage := utils.FetchImage(song.PicUrl)
-		if errImage != nil {
-			utils.WarnWithFormat("fetch image failed: %w", err)
-			return nil
-		}
-		// 写入图片到音频文件
-		err = taglib.WriteImage(filePath, imageData)
-		if err != nil {
-			utils.WarnWithFormat("write image failed: %w", err)
-			return nil
+
+	if err := taglib.WriteTags(filePath, tags, 0); err != nil {
+		return fmt.Errorf("write metadata failed: %w", err)
+	}
+
+	// 等待图片下载完成并写入
+	<-done
+	if imageErr != nil {
+		return fmt.Errorf("fetch image failed: %w", imageErr)
+	}
+	if len(imageData) > 0 {
+		if err := taglib.WriteImage(filePath, imageData); err != nil {
+			return fmt.Errorf("write image failed: %w", err)
 		}
 	}
+
 	return nil
 }
