@@ -229,6 +229,7 @@ func WriteTags(song *SongInfo, filePath string) error {
 		taglib.Lyrics:      {song.Lyric},
 	}
 
+	//opts传taglib.Clear则会清除原标签 传0则不清除
 	if err := taglib.WriteTags(filePath, tags, 0); err != nil {
 		return fmt.Errorf("write metadata failed for %s: %w", filePath, err)
 	}
