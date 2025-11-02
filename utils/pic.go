@@ -14,7 +14,7 @@ import (
 )
 
 // FetchImage 下载图片并返回字节数组
-func FetchAndResizeImage(url string) ([]byte, error) {
+func FetchImage(url string) ([]byte, error) {
 	if url == "" {
 		return nil, fmt.Errorf("empty URL")
 	}
