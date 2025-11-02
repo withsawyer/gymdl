@@ -494,9 +494,9 @@ func (ncm *NetEaseProcessor) tidyToLocal(files []os.DirEntry) error {
 		}
 		src := filepath.Join(ncm.tempDir, f.Name())
 		dst := filepath.Join(dstDir, utils.SanitizeFileName(f.Name()))
-		if err := os.Rename(src, dst); err != nil {
-			utils.WarnWithFormat("[AppleMusic] ⚠️ 移动失败 %s → %s: %v", src, dst, err)
-			continue
+		err := processor.ToLocal(src, dst)
+		if err != nil {
+			return err
 		}
 		utils.InfoWithFormat("[AppleMusic] 📦 已整理: %s", dst)
 	}

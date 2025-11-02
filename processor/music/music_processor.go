@@ -56,6 +56,11 @@ type SongInfo struct {
 	Tidy            string // 入库方式(默认/webdav)
 }
 
+type imageResult struct {
+	data []byte
+	err  error
+}
+
 /* ---------------------- 常量 ---------------------- */
 
 var BaseTempDir = filepath.Join("data", "temp", "music")
@@ -200,20 +205,18 @@ func FillDefaultTags(path string, info *SongInfo) {
 	}
 }
 
-// WriteTags 写入标签
+// WriteTags 写入标签（线程安全版本）
 func WriteTags(song *SongInfo, filePath string) error {
-	var imageData []byte
-	var imageErr error
-	done := make(chan struct{})
+	imageCh := make(chan imageResult, 1)
 
-	// 并行下载封面图片
 	if song.PicUrl != "" {
 		go func() {
-			defer close(done)
-			imageData, imageErr = utils.FetchImage(song.PicUrl)
+			data, err := utils.FetchImage(song.PicUrl)
+			imageCh <- imageResult{data, err}
 		}()
 	} else {
-		close(done) // 没有图片时直接关闭通道
+		// 没有图片时直接发送空结果
+		imageCh <- imageResult{}
 	}
 
 	// 写入文本标签
@@ -227,17 +230,19 @@ func WriteTags(song *SongInfo, filePath string) error {
 	}
 
 	if err := taglib.WriteTags(filePath, tags, 0); err != nil {
-		return fmt.Errorf("write metadata failed: %w", err)
+		return fmt.Errorf("write metadata failed for %s: %w", filePath, err)
 	}
 
-	// 等待图片下载完成并写入
-	<-done
-	if imageErr != nil {
-		return fmt.Errorf("fetch image failed: %w", imageErr)
+	// 等待图片下载完成
+	res := <-imageCh
+	if res.err != nil {
+		return fmt.Errorf("fetch image failed for %s: %w", filePath, res.err)
 	}
-	if len(imageData) > 0 {
-		if err := taglib.WriteImage(filePath, imageData); err != nil {
-			return fmt.Errorf("write image failed: %w", err)
+
+	// 写入封面图片
+	if len(res.data) > 0 {
+		if err := taglib.WriteImage(filePath, res.data); err != nil {
+			return fmt.Errorf("write image failed for %s: %w", filePath, err)
 		}
 	}
 

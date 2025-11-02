@@ -20,7 +20,6 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.46.0
 	gopkg.in/telebot.v4 v4.0.0-beta.5
-	gopkg.in/vansante/go-ffprobe.v2 v2.2.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
