@@ -101,15 +101,6 @@ func (am *AppleMusicProcessor) BeforeTidy() error {
 	if err != nil {
 		return err
 	}
-	//如果歌词为空需要嵌入默认
-	for _, song := range songs {
-		if song.Lyric != "" {
-			//需要配合mtw同步歌词时间轴
-			continue
-		} else {
-			_ = EmbedLyricsOnly(song.MusicPath, "[00:00:00]此歌曲为没有填词的纯音乐，请您欣赏")
-		}
-	}
 	// 更新元信息列表
 	am.songs = songs
 	return nil

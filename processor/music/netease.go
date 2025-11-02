@@ -75,7 +75,7 @@ func (ncm *NetEaseProcessor) DownloadCommand(url string) *exec.Cmd {
 
 func (ncm *NetEaseProcessor) BeforeTidy() error {
 	for _, song := range ncm.songs {
-		err := EmbedMetadata(song, filepath.Join(ncm.tempDir, ncm.safeFileName(song)))
+		err := WriteTags(song, filepath.Join(ncm.tempDir, ncm.safeFileName(song)))
 		if err != nil {
 			return err
 		}
@@ -392,7 +392,7 @@ func (ncm *NetEaseProcessor) FetchPlaylistSongData(musicIDs []int, cfg *config.C
 			SongArtists: utils.ParseArtist(s),
 			SongAlbum:   s.Al.Name,
 			FileExt:     ncm.detectExt(u.Url),
-			MusicSize:   u.Size,
+			MusicSize:   int64(u.Size),
 			Bitrate:     strconv.Itoa((8 * u.Size / (s.Dt / 1000)) / 1000),
 			Duration:    s.Dt / 1000,
 			Url:         u.Url,
@@ -430,7 +430,7 @@ func (ncm *NetEaseProcessor) buildSongInfo(cfg *config.Config, detail *types.Son
 		SongArtists: utils.ParseArtist(s),
 		SongAlbum:   s.Al.Name,
 		FileExt:     ncm.detectExt(u.Url),
-		MusicSize:   u.Size,
+		MusicSize:   int64(u.Size),
 		Bitrate:     strconv.Itoa((8 * u.Size / (s.Dt / 1000)) / 1000),
 		Duration:    s.Dt / 1000,
 		Url:         u.Url,

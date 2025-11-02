@@ -10,49 +10,53 @@ import (
 	"github.com/nichuanfang/gymdl/config"
 	"github.com/nichuanfang/gymdl/core"
 	"github.com/nichuanfang/gymdl/processor"
+	"github.com/nichuanfang/gymdl/processor/music"
 	"github.com/nichuanfang/gymdl/utils"
 )
 
 var umTempDir = filepath.Join("data", "temp", "um")
 
 // HandleEvent 处理文件新增
-func HandleEvent(path string, cfg *config.Config) error {
+func HandleEvent(path string, cfg *config.Config) (*music.SongInfo, error) {
 	utils.InfoWithFormat("[Um] 开始处理文件: %s", filepath.Base(path))
 	//临时输出目录
 	tempDir := processor.BuildOutputDir(umTempDir)
 	defer os.RemoveAll(tempDir)
+	var songInfo *music.SongInfo
+	var output []byte
+	var err error
 	//判断文件后缀 如果是非解密文件 跳过
 	if utils.Contains(EncryptedExts(), filepath.Ext(path)) {
 		//调用um工具解密
 		cmd := BuildUmCmd(path, tempDir)
-		output, err := cmd.CombinedOutput()
+		output, err = cmd.CombinedOutput()
 		utils.InfoWithFormat(string(output))
 		if err != nil {
 			utils.ErrorWithFormat("[Um] 音乐解密失败: %v", err)
-			return err
+			return nil, err
 		}
 		err = os.Remove(path)
 		if err != nil {
 			utils.ErrorWithFormat("[Um] 源文件删除失败: %v", err)
-			return err
+			return nil, err
 		}
 		//整理
-		err = tidy(findTrack(tempDir), cfg)
+		songInfo, err = tidy(findTrack(tempDir), cfg)
 		_ = processor.RemoveTempDir(tempDir)
 		if err != nil {
 			utils.ErrorWithFormat(err.Error())
-			return err
+			return nil, err
 		}
 	} else {
 		//直接整理
-		err := tidy(path, cfg)
+		songInfo, err = tidy(path, cfg)
 		if err != nil {
 			utils.ErrorWithFormat(err.Error())
-			return err
+			return nil, err
 		}
 	}
 	utils.InfoWithFormat("[Um] 文件: %s 处理成功", filepath.Base(path))
-	return nil
+	return songInfo, nil
 }
 
 // BuildUmCmd 构建一个执行 um 命令的 *exec.Cmd
@@ -97,23 +101,31 @@ func findTrack(dir string) string {
 }
 
 // tidy 整理
-func tidy(path string, cfg *config.Config) error {
+func tidy(path string, cfg *config.Config) (*music.SongInfo, error) {
 	if path == "" {
-		return errors.New("文件路径为空")
+		return nil, errors.New("文件路径为空")
+	}
+	//读取元数据
+	songInfo, err := music.ReadTags(path)
+	//嵌入默认标签
+	music.FillDefaultTags(path, songInfo)
+	if err != nil {
+		return nil, err
 	}
 	utils.InfoWithFormat("[Um] 开始整理文件: %s", path)
-	var err error
 	switch cfg.Tidy.Mode {
 	case 1:
+		songInfo.Tidy = "LOCAL"
 		err = tidyToLocal(path, cfg)
 	case 2:
+		songInfo.Tidy = "WEBDAV"
 		err = tidyToWebDAV(path, core.GlobalWebDAV, cfg)
 	default:
 		utils.WarnWithFormat("[Um] 未知的整理模式: %s", path)
-		return errors.New("未知的整理模式")
+		return nil, errors.New("未知的整理模式")
 	}
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return songInfo, nil
 }

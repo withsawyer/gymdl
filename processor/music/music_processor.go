@@ -1,19 +1,16 @@
 package music
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/bogem/id3v2/v2"
 	"github.com/nichuanfang/gymdl/processor"
 	"github.com/nichuanfang/gymdl/utils"
-	"gopkg.in/vansante/go-ffprobe.v2"
+	"go.senan.xyz/taglib"
 )
 
 /* ---------------------- 音乐接口定义 ---------------------- */
@@ -46,7 +43,7 @@ type SongInfo struct {
 	SongArtists string // 艺术家
 	SongAlbum   string // 专辑
 	FileExt     string // 格式
-	MusicSize   int    // 音乐大小
+	MusicSize   int64  // 音乐大小
 	Bitrate     string // 码率
 	Duration    int    // 时长
 	Url         string //下载地址
@@ -81,54 +78,6 @@ var SpotifyTempDir = filepath.Join(BaseTempDir, "Spotify")
 
 /* ---------------------- 音乐下载相关业务函数 ---------------------- */
 
-// ExtractSongInfo 通过ffprobe-go解析歌曲信息
-func ExtractSongInfo(path string) (*SongInfo, error) {
-	song := &SongInfo{}
-	song.MusicPath = path
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("打开文件失败: %w", err)
-	}
-	defer f.Close()
-
-	// 文件信息（大小和扩展名）
-	info, err := f.Stat()
-	if err != nil {
-		return nil, fmt.Errorf("获取文件信息失败: %w", err)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// 用 ffprobe 获取所有元信息
-	data, err := ffprobe.ProbeURL(ctx, path)
-	if err != nil {
-		return nil, fmt.Errorf("获取音频信息失败: %w", err)
-	}
-	song.MusicSize = int(info.Size())
-	song.FileExt = strings.TrimPrefix(strings.ToLower(filepath.Ext(path)), ".")
-
-	// 获取基础信息
-	if data.Format != nil {
-		if dur := data.Format.Duration(); dur > 0 {
-			song.Duration = int(dur.Seconds())
-		}
-		if br, err := strconv.Atoi(data.Format.BitRate); err == nil {
-			song.Bitrate = strconv.Itoa(br / 1000)
-		}
-
-		// 标签信息
-		if tags := data.Format.TagList; tags != nil {
-			song.SongName, _ = tags.GetString("title")
-			song.SongArtists, _ = tags.GetString("artist")
-			song.SongAlbum, _ = tags.GetString("album")
-			song.Lyric, _ = tags.GetString("lyrics")
-		}
-	}
-
-	return song, nil
-}
-
 // 读取音乐目录 返回元信息列表
 func ReadMusicDir(tempDir string, tidyType string, p Processor) ([]*SongInfo, error) {
 	files, err := os.ReadDir(tempDir)
@@ -144,7 +93,9 @@ func ReadMusicDir(tempDir string, tidyType string, p Processor) ([]*SongInfo, er
 		ext := strings.ToLower(filepath.Ext(f.Name()))
 		if utils.Contains(p.DecryptedExts(), ext) {
 			fullPath := filepath.Join(tempDir, f.Name())
-			song, err := ExtractSongInfo(fullPath)
+			song, err := ReadTags(fullPath)
+			//嵌入默认标签
+			FillDefaultTags(fullPath, song)
 			if err != nil {
 				return nil, fmt.Errorf("处理文件 %s 失败: %w", f.Name(), err)
 			}
@@ -155,203 +106,109 @@ func ReadMusicDir(tempDir string, tidyType string, p Processor) ([]*SongInfo, er
 	return songs, nil
 }
 
-// EmbedMetadata 为音频嵌入封面、元信息、歌词
-func EmbedMetadata(song *SongInfo, filePath string) error {
-	if song == nil {
-		return fmt.Errorf("song info is nil")
-	}
-
-	ext := strings.ToLower(strings.TrimPrefix(filepath.Ext(filePath), "."))
-	utils.DebugWithFormat("🎧 Embedding metadata for [%s] (%s)", song.SongName, ext)
-
-	tempFile := filePath + ".tmp" + filepath.Ext(filePath)
-	coverPath, cleanup, err := prepareCover(song.PicUrl)
-	if cleanup != nil {
-		defer cleanup()
-	}
+// ReadTags 读取音乐元数据
+func ReadTags(path string) (*SongInfo, error) {
+	tags, err := taglib.ReadTags(path)
 	if err != nil {
-		utils.DebugWithFormat("⚠️ No cover embedded: %v", err)
+		return nil, err
 	}
 
-	args := buildFFmpegArgs(ext, filePath, tempFile, song, coverPath)
-
-	if err := runFFmpeg(args); err != nil {
-		return fmt.Errorf("ffmpeg failed: %v", err)
+	props, err := taglib.ReadProperties(path)
+	if err != nil {
+		return nil, err
 	}
 
-	if err := replaceFile(tempFile, filePath); err != nil {
-		return fmt.Errorf("replace file failed: %v", err)
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return nil, err
 	}
 
-	if ext == "mp3" && song.Lyric != "" {
-		if err := writeID3Lyrics(filePath, song.Lyric); err != nil {
-			utils.DebugWithFormat("❌ Failed to write lyrics: %v", err)
-		} else {
-			utils.DebugWithFormat("✅ Lyrics embedded via ID3v2 successfully")
+	songInfo := &SongInfo{
+		FileExt:   strings.TrimPrefix(filepath.Ext(path), "."),
+		MusicSize: fileInfo.Size(),
+		Bitrate:   strconv.Itoa(int(props.Bitrate)),
+		Duration:  int(props.Length),
+	}
+
+	if t, ok := tags[taglib.Title]; ok && len(t) > 0 {
+		songInfo.SongName = t[0]
+	} else {
+		songInfo.SongName = filepath.Base(path)
+	}
+
+	if a, ok := tags[taglib.Artist]; ok && len(a) > 0 {
+		songInfo.SongArtists = a[0]
+	}
+
+	if al, ok := tags[taglib.Album]; ok && len(al) > 0 {
+		songInfo.SongAlbum = al[0]
+	}
+
+	if d, ok := tags[taglib.Date]; ok && len(d) > 0 {
+		songInfo.Year, _ = strconv.Atoi(d[0])
+	}
+
+	if l, ok := tags[taglib.Lyrics]; ok && len(l) > 0 {
+		songInfo.Lyric = l[0]
+	}
+
+	return songInfo, nil
+}
+
+// FillDefaultTags 标签写入默认值
+func FillDefaultTags(path string, info *SongInfo) {
+	updates := make(map[string][]string)
+
+	if info.Year == 0 {
+		info.Year = 2020
+		updates[taglib.Date] = []string{strconv.Itoa(info.Year)}
+	}
+
+	if info.Lyric == "" {
+		info.Lyric = "[00:00:00]此歌曲为没有填词的纯音乐，请您欣赏"
+		updates[taglib.Lyrics] = []string{info.Lyric}
+	}
+
+	if len(updates) > 0 {
+		if err := taglib.WriteTags(path, updates, 0); err != nil {
+			utils.WarnWithFormat("write default tags failed: %w", err)
 		}
 	}
-
-	utils.DebugWithFormat("✨ Metadata embedding completed for [%s]", song.SongName)
-	return nil
 }
 
-// EmbedLyricsOnly 仅为音频文件嵌入歌词
-func EmbedLyricsOnly(filePath, lyrics string) error {
-	ext := strings.ToLower(strings.TrimPrefix(filepath.Ext(filePath), "."))
-
-	// MP3 用 ID3v2 写入歌词
-	if ext == "mp3" {
-		return writeID3Lyrics(filePath, lyrics)
-	}
-
-	// 其他格式用 ffmpeg -metadata 写入歌词
-	tempFile := filePath + ".tmp" + filepath.Ext(filePath)
-
-	args := []string{
-		"-y", "-i", filePath,
-		"-c", "copy",
-		"-metadata", fmt.Sprintf("lyrics=%s", lyrics),
-		tempFile,
-	}
-
-	if err := runFFmpeg(args); err != nil {
-		return fmt.Errorf("ffmpeg failed: %v", err)
-	}
-
-	if err := replaceFile(tempFile, filePath); err != nil {
-		return fmt.Errorf("replace file failed: %v", err)
-	}
-
-	return nil
-}
-
-// prepareCover 下载或确认封面文件存在
-func prepareCover(picURL string) (string, func(), error) {
-	if picURL == "" {
-		return "", nil, fmt.Errorf("no cover URL provided")
-	}
-
-	if strings.HasPrefix(picURL, "http") {
-		tmpFile, err := os.CreateTemp("", "cover_*.jpg")
-		if err != nil {
-			return "", nil, fmt.Errorf("create temp cover failed: %v", err)
-		}
-		tmpFile.Close()
-
-		if err := utils.DownloadFile(picURL, tmpFile.Name()); err != nil {
-			os.Remove(tmpFile.Name())
-			return "", nil, fmt.Errorf("download cover failed: %v", err)
-		}
-		return tmpFile.Name(), func() { _ = os.Remove(tmpFile.Name()) }, nil
-	}
-
-	if _, err := os.Stat(picURL); err != nil {
-		return "", nil, fmt.Errorf("cover file not found: %v", err)
-	}
-	return picURL, nil, nil
-}
-
-// buildFFmpegArgs 根据格式生成对应参数
-func buildFFmpegArgs(ext, input, output string, song *SongInfo, coverPath string) []string {
-	args := []string{"-y", "-i", input}
-	if coverPath != "" {
-		args = append(args, "-i", coverPath)
-	}
-
-	args = append(args, metadataArgs(song)...)
-
-	switch ext {
-	case "mp3":
-		args = append(args, "-c", "copy", "-id3v2_version", "3")
-	case "flac", "m4a", "aac", "mp4", "ogg", "opus", "ape", "wv":
-		args = append(args, "-c", "copy")
-	default:
-		args = append(args, "-c", "copy")
-	}
-
-	args = append(args, coverArgs(coverPath, ext)...)
-
-	if song.Lyric != "" && ext != "mp3" {
-		args = append(args, "-metadata", fmt.Sprintf("lyrics=%s", song.Lyric))
-	}
-
-	args = append(args, output)
-	return args
-}
-
-// 通用元数据参数生成
-func metadataArgs(song *SongInfo) []string {
-	m := map[string]string{
-		"title":        song.SongName,
-		"artist":       song.SongArtists,
-		"album":        song.SongAlbum,
-		"album_artist": song.SongArtists,
-	}
-	if song.Year > 0 {
-		m["date"] = fmt.Sprintf("%d", song.Year)
-	}
-
-	var args []string
-	for k, v := range m {
-		if v != "" {
-			args = append(args, "-metadata", fmt.Sprintf("%s=%s", k, v))
-		}
-	}
-	return args
-}
-
-// 封面参数生成
-func coverArgs(coverPath, ext string) []string {
-	if coverPath == "" {
+// WriteTags 写入标签
+func WriteTags(song *SongInfo, filePath string) error {
+	//写入标签
+	err := taglib.WriteTags(filePath, map[string][]string{
+		taglib.Title:       {song.SongName},
+		taglib.Artist:      {song.SongArtists},
+		taglib.Album:       {song.SongAlbum},
+		taglib.AlbumArtist: {song.SongAlbum},
+		//年份
+		taglib.Date: {strconv.Itoa(song.Year)},
+		//歌词
+		taglib.Lyrics: {song.Lyric},
+		//流派
+		//taglib.Genre:   {song.SongName},
+	}, 0)
+	if err != nil {
+		utils.WarnWithFormat("write metadate failed: %w", err)
 		return nil
 	}
-	baseArgs := []string{
-		"-map", "0:a?", "-map", "1:v?",
-		"-metadata:s:v", "title=Cover",
+	// 写入封面图片
+	if song.PicUrl != "" {
+		// 下载图片
+		imageData, errImage := utils.FetchImage(song.PicUrl)
+		if errImage != nil {
+			utils.WarnWithFormat("fetch image failed: %w", err)
+			return nil
+		}
+		// 写入图片到音频文件
+		err = taglib.WriteImage(filePath, imageData)
+		if err != nil {
+			utils.WarnWithFormat("write image failed: %w", err)
+			return nil
+		}
 	}
-	if ext == "mp3" || ext == "flac" || ext == "ape" || ext == "wv" || strings.HasPrefix(ext, "m4") || ext == "aac" || ext == "mp4" {
-		baseArgs = append(baseArgs,
-			"-metadata:s:v", "comment=Cover (front)",
-			"-disposition:v", "attached_pic",
-		)
-	}
-	return baseArgs
-}
-
-// 执行 FFmpeg
-func runFFmpeg(args []string) error {
-	utils.DebugWithFormat("🚀 Running ffmpeg: ffmpeg %v", strings.Join(args, " "))
-	cmd := exec.Command("ffmpeg", args...)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		utils.DebugWithFormat("FFmpeg error:\n%s", string(output))
-		return err
-	}
-	utils.DebugWithFormat("FFmpeg OK (%d bytes output)", len(output))
 	return nil
-}
-
-// 写入 MP3 歌词（ID3v2）
-func writeID3Lyrics(filePath, lyrics string) error {
-	tag, err := id3v2.Open(filePath, id3v2.Options{Parse: true})
-	if err != nil {
-		return fmt.Errorf("open id3 tag failed: %v", err)
-	}
-	defer tag.Close()
-
-	tag.AddUnsynchronisedLyricsFrame(id3v2.UnsynchronisedLyricsFrame{
-		Encoding: id3v2.EncodingUTF8,
-		Language: "chi",
-		Lyrics:   lyrics,
-	})
-
-	return tag.Save()
-}
-
-// 文件替换工具
-func replaceFile(src, dst string) error {
-	if err := os.Remove(dst); err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	return os.Rename(src, dst)
 }
