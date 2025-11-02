@@ -75,7 +75,7 @@ func (ncm *NetEaseProcessor) DownloadCommand(url string) *exec.Cmd {
 
 func (ncm *NetEaseProcessor) BeforeTidy() error {
 	for _, song := range ncm.songs {
-		err := EmbedMetadata(song, filepath.Join(ncm.tempDir, ncm.safeFileName(song)))
+		err := WriteTags(song, filepath.Join(ncm.tempDir, ncm.safeFileName(song)))
 		if err != nil {
 			return err
 		}
