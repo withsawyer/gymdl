@@ -3,6 +3,7 @@ package dispatch
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/nichuanfang/gymdl/processor"
 
@@ -11,10 +12,25 @@ import (
 	tb "gopkg.in/telebot.v4"
 )
 
-// HandleVideo
 // ---------------------------
 // 📺 视频处理逻辑
 // ---------------------------
+
+// ReportProgress 实现video.ProgressReporter接口，限制发送频率为2秒一次
+func (s *Session) ReportProgress(progress string) {
+	// 检查距离上次发送进度条的时间间隔
+	currentTime := time.Now()
+	// 如果是第一次发送或者时间间隔大于等于2秒，则发送进度条
+	if s.lastProgressTime == nil || currentTime.Sub(*s.lastProgressTime) >= 2*time.Second {
+		utils.DebugWithFormat("[Telegram] 发送进度条: %s", progress)
+		s._sendVideoProgress(progress)
+		// 更新上次发送时间，创建新的时间实例
+		s.lastProgressTime = &currentTime
+	} else {
+		utils.DebugWithFormat("[Telegram] 进度条发送频率限制，距离上次发送间隔: %v", currentTime.Sub(*s.lastProgressTime))
+	}
+}
+
 func (s *Session) HandleVideo(p video.Processor) error {
 	bot := s.Bot
 	msg := s.Msg
@@ -24,8 +40,8 @@ func (s *Session) HandleVideo(p video.Processor) error {
 	_, _ = bot.Edit(msg, fmt.Sprintf("✅ 已识别【**%s**】链接\n\n🎵 开始分析资源,请稍候...", p.Name()), tb.ModeMarkdown)
 
 	// 下载阶段
-	utils.InfoWithFormat("[Telegram] 正在分析链接资源...")
-	err := p.Download(s.Link)
+	utils.InfoWithFormat("[Telegram] 正在解析下载资源,请稍候...")
+	err := p.Download(s.Link, s)
 	if err != nil {
 		utils.ErrorWithFormat("[Telegram] 下载失败: %v", err)
 		_, _ = bot.Edit(msg, fmt.Sprintf("❌ 下载失败：\n```\n%s\n```", utils.TruncateString(err.Error(), 400)), tb.ModeMarkdown)
@@ -94,7 +110,7 @@ func (s *Session) sendVideoFeedback(p video.Processor) {
 		fileSize := v.Size
 		listBuilder.WriteString(fmt.Sprintf(
 			"📺 《%s》\n🎤 作者：%s\n🎥 分辨率:：%s\n📦 大小：%s",
-			utils.TruncateString(v.Title, 60),
+			utils.TruncateString(v.Desc, 60),
 			utils.TruncateString(v.Author, 40),
 			utils.TruncateString(v.Ratio, 40),
 			fileSize,
@@ -118,4 +134,10 @@ func (s *Session) sendVideoFeedback(p video.Processor) {
 `, count, listBuilder.String(), processor.DetermineTidyType(s.Cfg))
 
 	_, _ = bot.Edit(msg, successMsg, tb.ModeMarkdown)
+}
+
+func (s *Session) _sendVideoProgress(progress string) {
+	bot := s.Bot
+	msg := s.Msg
+	_, _ = bot.Edit(msg, progress, tb.ModeMarkdown)
 }

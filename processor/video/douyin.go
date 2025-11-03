@@ -44,6 +44,7 @@ type DouYinProcessor struct {
 	tempDir   string
 	videos    []*VideoInfo
 	videoInfo *VideoInfo
+	reporter  ProgressReporter // 进度报告器作为结构体字段
 }
 
 // Init 初始化抖音处理器
@@ -65,7 +66,9 @@ func (p *DouYinProcessor) Videos() []*VideoInfo {
 }
 
 // Download 下载抖音视频
-func (p *DouYinProcessor) Download(link string) error {
+func (p *DouYinProcessor) Download(link string, reporter ProgressReporter) error {
+	// 保存reporter到结构体字段
+	p.reporter = reporter
 	err := p.method1(link)
 	if err != nil {
 		return fmt.Errorf("下载抖音视频失败: %v", err)
@@ -85,12 +88,30 @@ func (p *DouYinProcessor) method1(link string) error {
 	//	ctx.Close()
 	//	pw.Stop()
 	//}()
-	//
-	//// 加载 cookies
-	//if err = p.loadCookies(ctx); err != nil {
-	//	utils.InfoWithFormat("加载 cookies 失败: %v", err)
-	//}
-	//
+	// 创建通道用于接收API响应数据
+	//apiDataChan := make(chan map[string]interface{}, 10)
+	//// 拦截网络请求，尝试直接获取API响应数据
+	//page.On("response", func(response playwright.Response) {
+	//	responseURL := response.URL()
+	//	// 检查是否为抖音视频数据相关的API请求
+	//	if strings.Contains(responseURL, "/aweme/v1/play/") ||
+	//		strings.Contains(responseURL, "/aweme/v1/aweme/detail/") ||
+	//		strings.Contains(responseURL, "video/play/") {
+	//		utils.DebugWithFormat("捕获到视频相关API请求: %s", responseURL)
+	//		// 尝试获取JSON响应
+	//		if response.Status() == 200 {
+	//			// 修复JSON解析方法调用
+	//			var jsonData interface{}
+	//			err = response.JSON(&jsonData)
+	//			if err == nil {
+	//				if dataMap, ok := jsonData.(map[string]interface{}); ok {
+	//					apiDataChan <- dataMap
+	//				}
+	//			}
+	//		}
+	//	}
+	//})
+
 	//// 提取视频ID
 	//videoID, err := p._extractVideoID(page, link)
 	//if err != nil {
@@ -156,6 +177,7 @@ func (p *DouYinProcessor) initPlaywrightAndBrowser() (playwright.BrowserContext,
 
 	// 随机选择用户代理
 	selectedUserAgent := p.getRandomUserAgent()
+	utils.DebugWithFormat("随机选择用户代理: %s", selectedUserAgent)
 
 	// 创建浏览器上下文
 	contextOptions := playwright.BrowserNewContextOptions{
@@ -198,6 +220,7 @@ func (p *DouYinProcessor) getRandomUserAgent() string {
 	userAgents := []string{
 		"Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
 		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 QuarkPC/4.6.0.558",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
 	}
 	// 随机选择一条 userAgent
 	rand.New(rand.NewSource(time.Now().Unix()))
@@ -361,7 +384,7 @@ func (p *DouYinProcessor) extractDataFromHTML(html string) error {
 	for _, scriptMatch := range scriptMatches {
 		scriptContent := scriptMatch[1]
 		// 检查是否包含关键数据标记
-		if !strings.Contains(scriptContent, "aweme_id") || !strings.Contains(scriptContent, "status_code") {
+		if !strings.Contains(scriptContent, "aweme_id") || !strings.Contains(scriptContent, "video") {
 			continue
 		}
 		// 尝试提取JSON部分
@@ -621,21 +644,24 @@ func (p *DouYinProcessor) downloadVideo() error {
 	// 下载视频逻辑
 	for _, videoInfo := range p.videos {
 		// 首先下载视频文件
-		fp := filepath.Join(p.tempDir, videoInfo.Author)
+		fp := p.tempDir
 		fn := videoInfo.Desc + ".mp4"
 		downloadSize, err := p._downloadResource(videoInfo.DownloadUrl, fp, fn)
 		if err != nil {
+			utils.ErrorWithFormat("[download] 视频下载失败: %v", err)
 			return err
 		}
 		videoInfo.Size = downloadSize
-		utils.InfoWithFormat("[download] 下载完成: %s", filepath.Join(fp, fn))
+		utils.InfoWithFormat("[download] 视频下载完成: %s", filepath.Join(fp, fn))
 
 		if videoInfo.CoverUrl != "" {
-			// 下载封面图片
-			fn = videoInfo.Title + ".png"
-			_, err = p._downloadResource(videoInfo.DownloadUrl, fp, fn)
+			// 下载封面图片，使用正确的CoverUrl
+			fn = videoInfo.Desc + ".png"
+			_, err = p._downloadResource(videoInfo.CoverUrl, fp, fn)
 			if err != nil {
-				return err
+				utils.ErrorWithFormat("[download] 封面下载失败: %v", err)
+				// 封面下载失败不影响整体流程，继续执行
+				continue
 			}
 			utils.InfoWithFormat("[download] 下载完成: %s", filepath.Join(fp, fn))
 		}
@@ -643,33 +669,50 @@ func (p *DouYinProcessor) downloadVideo() error {
 	return nil
 }
 
-func (p *DouYinProcessor) _downloadResource(url, filepath, filename string) (string, error) {
+func (p *DouYinProcessor) _downloadResource(url, savePath, filename string) (string, error) {
+	// 确保保存目录存在
+	if err := os.MkdirAll(savePath, 0755); err != nil {
+		return "", fmt.Errorf("创建保存目录失败: %w", err)
+	}
+
+	// 正确设置下载选项
 	downloader, err := utils.DownloadFile(url, &utils.DownloadOptions{
-		SavePath:  filepath,
-		FileName:  filename,
-		Timeout:   1200, //  下载超时时间，单位秒
-		IgnoreSSL: true,
-		ProgressFunc: func(progress *utils.DownloadProgress) {
-			utils.DebugWithFormat("[download] 下载进度: %d/%d - %.2f%%", progress.Downloaded, progress.TotalBytes, progress.FormattedSpeed)
-		},
-		MaxRetries: 2,
-		ChunkSize:  10,
+		SavePath:   savePath,
+		FileName:   filename,
+		Timeout:    1200 * time.Second, // 正确设置为time.Duration类型
+		IgnoreSSL:  true,
+		MaxRetries: 3,                // 增加重试次数
+		ChunkSize:  10 * 1024 * 1024, // 正确设置为10MB字节数
 	})
+
 	// 启动下载
 	if err = downloader.Start(); err != nil {
-		utils.ErrorWithFormat("[downloader] 下载失败: %v", err)
+		utils.ErrorWithFormat("[downloader] 启动下载失败: %v", err)
 		return "", err
 	}
+
+	// 等待下载完成
 	for {
 		progress := downloader.GetProgress()
 		if progress.Status == utils.StatusCompleted || progress.Status == utils.StatusFailed {
-			if downloader.GetProgress().Status == utils.StatusCompleted {
-				return "", nil
+			if progress.Status == utils.StatusCompleted {
+				// 返回格式化的文件大小
+				return progress.FormattedSize, nil
 			} else {
-				return "", errors.New(fmt.Sprintf("[downloader] 下载失败: %s", url))
+				// 返回具体的错误信息
+				return "", fmt.Errorf("[downloader] 下载失败: %s, 错误: %s", url, progress.ErrorMessage)
 			}
 		}
-		time.Sleep(2 * time.Second)
+		// 修正进度显示格式，使用Progress而不是FormattedSpeed
+		progressText := fmt.Sprintf("正在下载:\n文件名%s：\n进度: %.2f%%\n速度: %s\n已下载: %s/%s",
+			filename,
+			progress.Progress,
+			progress.FormattedSpeed,
+			progress.FormattedDownloaded, progress.FormattedSize)
+		if p.reporter != nil {
+			p.reporter.ReportProgress(progressText)
+		}
+		time.Sleep(1 * time.Second) // 减少轮询间隔
 	}
 }
 
