@@ -195,8 +195,6 @@ func (p *DouYinProcessor) initPlaywrightAndBrowser() (playwright.BrowserContext,
 func (p *DouYinProcessor) getRandomUserAgent() string {
 	userAgents := []string{
 		"Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
-		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 QuarkPC/4.6.0.558",
-		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
 	}
 	// 随机选择一条 userAgent
 	rand.New(rand.NewSource(time.Now().Unix()))
@@ -627,24 +625,28 @@ func (p *DouYinProcessor) downloadVideo() error {
 		// 首先下载视频文件
 		fp := p.tempDir
 		fn := videoInfo.Desc + ".mp4"
+		videoPath := filepath.Join(fp, fn)
 		downloadSize, err := p._downloadResource(videoInfo.DownloadUrl, fp, fn)
 		if err != nil {
 			utils.ErrorWithFormat("[download] 视频下载失败: %v", err)
 			return err
 		}
 		videoInfo.Size = downloadSize
-		utils.InfoWithFormat("[download] 视频下载完成: %s", filepath.Join(fp, fn))
+		videoInfo.VideoPath = videoPath // 记录视频文件路径
+		utils.InfoWithFormat("[download] 视频下载完成: %s", videoPath)
 
 		if videoInfo.CoverUrl != "" {
 			// 下载封面图片，使用正确的CoverUrl
 			fn = videoInfo.Desc + ".png"
+			coverPath := filepath.Join(fp, fn)
 			_, err = p._downloadResource(videoInfo.CoverUrl, fp, fn)
 			if err != nil {
 				utils.ErrorWithFormat("[download] 封面下载失败: %v", err)
 				// 封面下载失败不影响整体流程，继续执行
 				continue
 			}
-			utils.InfoWithFormat("[download] 下载完成: %s", filepath.Join(fp, fn))
+			videoInfo.CoverPath = coverPath // 记录封面文件路径
+			utils.InfoWithFormat("[download] 封面下载完成: %s", coverPath)
 		}
 	}
 	return nil
@@ -698,81 +700,123 @@ func (p *DouYinProcessor) _downloadResource(url, savePath, filename string) (str
 }
 
 func (p *DouYinProcessor) Tidy() error {
-	files, err := os.ReadDir(p.tempDir)
-	if err != nil {
-		return fmt.Errorf("读取临时目录失败: %w", err)
-	}
-	if len(files) == 0 {
-		utils.WarnWithFormat("[DouYinVideo] ⚠️ 未找到待整理的资源文件")
-		return errors.New("未找到待整理的资源文件")
+	if len(p.videos) == 0 {
+		utils.WarnWithFormat("[DouYinVideo] ⚠️ 未找到待整理的视频信息")
+		return errors.New("未找到待整理的视频信息")
 	}
 
 	switch p.cfg.Tidy.Mode {
 	case 1:
-		return p.tidyToLocal(files)
+		return p.tidyToLocal()
 	case 2:
-		return p.tidyToWebDAV(files, core.GlobalWebDAV)
+		return p.tidyToWebDAV(core.GlobalWebDAV)
 	default:
 		return fmt.Errorf("未知整理模式: %d", p.cfg.Tidy.Mode)
 	}
 }
 
 // 整理到本地
-func (p *DouYinProcessor) tidyToLocal(files []os.DirEntry) error {
+func (p *DouYinProcessor) tidyToLocal() error {
 	dstDir := p.cfg.Tidy.DistDir
 	if dstDir == "" {
-		_ = processor.RemoveTempDir(p.tempDir)
 		return errors.New("未配置输出目录")
 	}
 	if err := os.MkdirAll(dstDir, 0755); err != nil {
-		_ = processor.RemoveTempDir(p.tempDir)
 		return fmt.Errorf("创建输出目录失败: %w", err)
 	}
 
-	for _, f := range files {
-		src := filepath.Join(p.tempDir, f.Name())
-		mvDir := filepath.Join(dstDir, "douyin")
-		if err := os.MkdirAll(mvDir, 0755); err != nil {
-			return fmt.Errorf("创建目录失败: %w", err)
-		}
-		dst := filepath.Join(mvDir, utils.SanitizeFileName(f.Name()))
-		if err := os.Rename(src, dst); err != nil {
-			utils.WarnWithFormat("[DouYinVideo] ⚠️ 移动失败 %s → %s: %v", src, dst, err)
-			continue
-		}
-		utils.InfoWithFormat("[DouYinVideo] 📦 已整理: %s", dst)
+	mvDir := filepath.Join(dstDir, "douyin")
+	if err := os.MkdirAll(mvDir, 0755); err != nil {
+		return fmt.Errorf("创建目录失败: %w", err)
 	}
-	//清除临时目录
-	err := processor.RemoveTempDir(p.tempDir)
-	if err != nil {
-		utils.WarnWithFormat("[DouYinVideo] ⚠️ 删除临时目录失败: %s (%v)", p.tempDir, err)
-		return err
+
+	// 只处理p.videos中记录的文件
+	for _, videoInfo := range p.videos {
+		// 移动视频文件
+		if videoInfo.VideoPath != "" {
+			dst := filepath.Join(mvDir, utils.SanitizeFileName(filepath.Base(videoInfo.VideoPath)))
+			if err := os.Rename(videoInfo.VideoPath, dst); err != nil {
+				utils.WarnWithFormat("[DouYinVideo] ⚠️ 视频移动失败 %s → %s: %v", videoInfo.VideoPath, dst, err)
+			} else {
+				utils.InfoWithFormat("[DouYinVideo] 📦 已整理视频: %s", dst)
+				// 移动成功后，删除原位置的临时文件（如果还存在）
+				if err := os.Remove(videoInfo.VideoPath); err != nil && !os.IsNotExist(err) {
+					utils.WarnWithFormat("[DouYinVideo] ⚠️ 删除视频临时文件失败: %s (%v)", videoInfo.VideoPath, err)
+				} else if err == nil {
+					utils.DebugWithFormat("[DouYinVideo] 🧹 已删除视频临时文件: %s", videoInfo.VideoPath)
+				}
+				videoInfo.VideoPath = dst // 更新路径为新的位置
+			}
+		}
+
+		// 移动封面文件
+		if videoInfo.CoverPath != "" {
+			dst := filepath.Join(mvDir, utils.SanitizeFileName(filepath.Base(videoInfo.CoverPath)))
+			if err := os.Rename(videoInfo.CoverPath, dst); err != nil {
+				utils.WarnWithFormat("[DouYinVideo] ⚠️ 封面移动失败 %s → %s: %v", videoInfo.CoverPath, dst, err)
+			} else {
+				utils.InfoWithFormat("[DouYinVideo] 📦 已整理封面: %s", dst)
+				// 移动成功后，删除原位置的临时文件（如果还存在）
+				if err := os.Remove(videoInfo.CoverPath); err != nil && !os.IsNotExist(err) {
+					utils.WarnWithFormat("[DouYinVideo] ⚠️ 删除封面临时文件失败: %s (%v)", videoInfo.CoverPath, err)
+				} else if err == nil {
+					utils.DebugWithFormat("[DouYinVideo] 🧹 已删除封面临时文件: %s", videoInfo.CoverPath)
+				}
+				videoInfo.CoverPath = dst // 更新路径为新的位置
+			}
+		}
 	}
-	utils.DebugWithFormat("[DouYinVideo] 🧹 已删除临时目录: %s", p.tempDir)
+
 	return nil
 }
 
 // 整理到webdav
-func (p *DouYinProcessor) tidyToWebDAV(files []os.DirEntry, webdav *core.WebDAV) error {
+func (p *DouYinProcessor) tidyToWebDAV(webdav *core.WebDAV) error {
 	if webdav == nil {
-		_ = processor.RemoveTempDir(p.tempDir)
 		return errors.New("WebDAV 未初始化")
 	}
 
-	for _, f := range files {
-		filePath := filepath.Join(p.tempDir, "douyin", f.Name())
-		if err := webdav.Upload(filePath); err != nil {
-			utils.WarnWithFormat("[DouYinVideo] ☁️ 上传失败 %s: %v", f.Name(), err)
-			continue
+	// 只处理p.videos中记录的文件
+	for _, videoInfo := range p.videos {
+		// 上传视频文件
+		if videoInfo.VideoPath != "" {
+			if err := webdav.Upload(videoInfo.VideoPath); err != nil {
+				utils.WarnWithFormat("[DouYinVideo] ☁️ 视频上传失败 %s: %v", filepath.Base(videoInfo.VideoPath), err)
+			} else {
+				utils.InfoWithFormat("[DouYinVideo] ☁️ 已上传视频: %s", filepath.Base(videoInfo.VideoPath))
+			}
 		}
-		utils.InfoWithFormat("[DouYinVideo] ☁️ 已上传: %s", f.Name())
+
+		// 上传封面文件
+		if videoInfo.CoverPath != "" {
+			if err := webdav.Upload(videoInfo.CoverPath); err != nil {
+				utils.WarnWithFormat("[DouYinVideo] ☁️ 封面上传失败 %s: %v", filepath.Base(videoInfo.CoverPath), err)
+			} else {
+				utils.InfoWithFormat("[DouYinVideo] ☁️ 已上传封面: %s", filepath.Base(videoInfo.CoverPath))
+			}
+		}
 	}
-	//清除临时目录
-	err := processor.RemoveTempDir(p.tempDir)
-	if err != nil {
-		utils.WarnWithFormat("[DouYinVideo] ⚠️ 删除临时目录失败: %s (%v)", p.tempDir, err)
-		return err
+
+	// 上传完成后，删除对应的临时文件
+	for _, videoInfo := range p.videos {
+		// 删除视频临时文件
+		if videoInfo.VideoPath != "" {
+			if err := os.Remove(videoInfo.VideoPath); err != nil && !os.IsNotExist(err) {
+				utils.WarnWithFormat("[DouYinVideo] ⚠️ 删除视频临时文件失败: %s (%v)", videoInfo.VideoPath, err)
+			} else if err == nil {
+				utils.DebugWithFormat("[DouYinVideo] 🧹 已删除视频临时文件: %s", videoInfo.VideoPath)
+			}
+		}
+
+		// 删除封面临时文件
+		if videoInfo.CoverPath != "" {
+			if err := os.Remove(videoInfo.CoverPath); err != nil && !os.IsNotExist(err) {
+				utils.WarnWithFormat("[DouYinVideo] ⚠️ 删除封面临时文件失败: %s (%v)", videoInfo.CoverPath, err)
+			} else if err == nil {
+				utils.DebugWithFormat("[DouYinVideo] 🧹 已删除封面临时文件: %s", videoInfo.CoverPath)
+			}
+		}
 	}
-	utils.DebugWithFormat("[DouYinVideo] 🧹 已删除临时目录: %s", p.tempDir)
+
 	return nil
 }

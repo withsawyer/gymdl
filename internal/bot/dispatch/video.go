@@ -21,7 +21,7 @@ func (s *Session) ReportProgress(progress string) {
 	// 检查距离上次发送进度条的时间间隔
 	currentTime := time.Now()
 	// 如果是第一次发送或者时间间隔大于等于2秒，则发送进度条
-	if s.lastProgressTime == nil || currentTime.Sub(*s.lastProgressTime) >= 2*time.Second {
+	if s.lastProgressTime == nil || currentTime.Sub(*s.lastProgressTime) >= 1*time.Second {
 		utils.DebugWithFormat("[Telegram] 发送进度条: %s", progress)
 		s._sendVideoProgress(progress)
 		// 更新上次发送时间，创建新的时间实例
