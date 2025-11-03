@@ -48,7 +48,14 @@ $(gz_releases): %.gz : %
 	zip -m -j $(RELEASE_DIR)/$(NAME)-$(basename $@)-$(VERSION).zip $(RELEASE_DIR)/$(NAME)-$(basename $@) $(RELEASE_DIR)/config.yaml.example
 
 $(zip_releases): %.zip : %
-	zip -m -j $(RELEASE_DIR)/$(NAME)-$(basename $@)-$(VERSION).zip $(RELEASE_DIR)/$(NAME)-$(basename $@).exe $(RELEASE_DIR)/config.yaml.example
+	zip -m -j $(RELEASE_DIR)/$(NAME)-$(basename $@)-$(VERSION).zip \
+		$(RELEASE_DIR)/$(NAME)-$(basename $@).exe \
+		$(RELEASE_DIR)/config.yaml.example \
+		$(RELEASE_DIR)/requirements.txt \
+		$(RELEASE_DIR)/*.bat \
+		$(RELEASE_DIR)/*.ps1 \
+		$(RELEASE_DIR)/*.vbs
+
 
 release: $(gz_releases) $(zip_releases)
 
