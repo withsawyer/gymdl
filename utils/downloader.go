@@ -358,7 +358,8 @@ func (dm *DownloadManager) downloadWithResume(savePath string, existingSize int6
 		savePath,
 		map[bool]string{true: "支持断点续传", false: "不支持断点续传"}[resumeSupported],
 		FormatBytes(existingSize))
-	// 创建请求
+
+	// 创建请求前，先检查URL是否有效（包括重定向处理）
 	req, err := http.NewRequest("GET", dm.progress.URL, nil)
 	if err != nil {
 		return &DownloadError{
@@ -410,6 +411,11 @@ func (dm *DownloadManager) downloadWithResume(savePath string, existingSize int6
 		}
 	}
 	defer resp.Body.Close()
+
+	// 记录重定向信息（如果有）
+	if resp.Request.URL.String() != dm.progress.URL {
+		DebugWithFormat("[redirect] 下载URL重定向: %s -> %s", dm.progress.URL, resp.Request.URL.String())
+	}
 
 	// 检查响应状态
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
