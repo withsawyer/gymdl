@@ -7,12 +7,18 @@ import (
 )
 
 /* ---------------------- 视频处理接口定义 ---------------------- */
+
+// ProgressReporter 进度报告器接口
+type ProgressReporter interface {
+	ReportProgress(progress string)
+}
+
 type Processor interface {
 	processor.Processor
 	// 视频元信息列表
 	Videos() []*VideoInfo
 	// 下载视频
-	Download(url string) error
+	Download(url string, reporter ProgressReporter) error
 	// 整理视频
 	Tidy() error
 }

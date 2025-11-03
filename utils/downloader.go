@@ -370,7 +370,17 @@ func (dm *DownloadManager) downloadWithResume(savePath string, existingSize int6
 	}
 
 	// 设置请求头
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+	// 使用更现代的User-Agent
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
+	// 添加接受头部
+	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
+	// 对抖音URL添加特殊处理
+	if strings.Contains(dm.progress.URL, "aweme.snssdk.com") {
+		DebugWithFormat("检测到抖音URL，添加特殊请求头")
+		req.Header.Set("Referer", "https://www.iesdouyin.com/")
+		req.Header.Set("X-Requested-With", "XMLHttpRequest")
+	}
 
 	// 如果支持断点续传且已有部分文件，设置Range头
 	if resumeSupported && existingSize > 0 {
@@ -684,11 +694,19 @@ func createHTTPClient(timeout time.Duration, ignoreSSL bool) *http.Client {
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 20,
 		IdleConnTimeout:     90 * time.Second,
+		// 允许重定向（默认行为）
 	}
 
 	return &http.Client{
 		Transport: transport,
 		Timeout:   timeout,
+		// 增加重定向次数限制
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 10 {
+				return errors.New("too many redirects")
+			}
+			return nil
+		},
 	}
 }
 
@@ -751,7 +769,7 @@ func extractFileNameFromURL(urlStr string) string {
 func FormatBytes(bytes int64) string {
 	const unit = 1024
 	if bytes < unit {
-		return fmt.Sprintf("%d B", bytes)
+		return fmt.Sprintf("%d", bytes)
 	}
 	div, exp := int64(unit), 0
 	for n := bytes / unit; n >= unit; n /= unit {
