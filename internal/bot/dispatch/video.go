@@ -2,8 +2,9 @@ package dispatch
 
 import (
 	"fmt"
-	"github.com/nichuanfang/gymdl/processor"
 	"strings"
+
+	"github.com/nichuanfang/gymdl/processor"
 
 	"github.com/nichuanfang/gymdl/processor/video"
 	"github.com/nichuanfang/gymdl/utils"
@@ -20,10 +21,10 @@ func (s *Session) HandleVideo(p video.Processor) error {
 	// user := s.User
 	// start := s.Start
 
-	_, _ = bot.Edit(msg, fmt.Sprintf("✅ 已识别【**%s**】链接\n\n🎵 下载中,请稍候...", p.Name()), tb.ModeMarkdown)
+	_, _ = bot.Edit(msg, fmt.Sprintf("✅ 已识别【**%s**】链接\n\n🎵 开始分析资源,请稍候...", p.Name()), tb.ModeMarkdown)
 
 	// 下载阶段
-	utils.InfoWithFormat("[Telegram] 下载中...")
+	utils.InfoWithFormat("[Telegram] 正在分析链接资源...")
 	err := p.Download(s.Link)
 	if err != nil {
 		utils.ErrorWithFormat("[Telegram] 下载失败: %v", err)
@@ -71,7 +72,6 @@ func (s *Session) sendVideoFeedback(p video.Processor) {
 🎥 *分辨率:* %s  
 🕒 *创建时间:* %s
 📷 *封面:* %s
-🔗 *下载地址:* %s
 📝 *简介:* %s
 📦 *大小:* %s
 ☁️ *入库方式:* %s`,
@@ -80,7 +80,6 @@ func (s *Session) sendVideoFeedback(p video.Processor) {
 			videoInfo.Ratio,
 			videoInfo.Time,
 			videoInfo.CoverUrl,
-			videoInfo.DownloadUrl,
 			utils.TruncateString(videoInfo.Desc, 400),
 			fileSize,
 			processor.DetermineTidyType(s.Cfg),

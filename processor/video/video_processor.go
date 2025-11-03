@@ -28,6 +28,8 @@ type VideoInfo struct {
 	Desc        string
 	Size        string
 	Tidy        string // 入库方式(默认/webdav)
+	VideoPath   string
+	CoverPath   string
 }
 
 /* ---------------------- 常量 ---------------------- */
