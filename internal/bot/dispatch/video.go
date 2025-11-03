@@ -34,8 +34,6 @@ func (s *Session) ReportProgress(progress string) {
 func (s *Session) HandleVideo(p video.Processor) error {
 	bot := s.Bot
 	msg := s.Msg
-	// user := s.User
-	// start := s.Start
 
 	_, _ = bot.Edit(msg, fmt.Sprintf("✅ 已识别【**%s**】链接\n\n🎵 开始分析资源,请稍候...", p.Name()), tb.ModeMarkdown)
 

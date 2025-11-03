@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -67,8 +68,174 @@ func (p *DouYinProcessor) Download(link string, reporter ProgressReporter) error
 	// 保存reporter到结构体字段
 	p.reporter = reporter
 	err := p.method1(link)
+	//err := errors.New("method1 error")
 	if err != nil {
-		return fmt.Errorf("下载抖音视频失败: %v", err)
+		utils.InfoWithFormat("method1下载失败，尝试使用method2: %v", err)
+		// 当method1失败时，尝试使用method2
+		err2 := p.method2(link)
+		//err2 := errors.New("method2 error")
+		if err2 != nil {
+			utils.InfoWithFormat("method2下载失败，尝试使用method3: %v", err2)
+			// 当method2也失败时，尝试使用method3
+			if err3 := p.method3(link); err3 != nil {
+				return fmt.Errorf("所有下载方法都失败: method1错误: %v, method2错误: %v, method3错误: %v", err, err2, err3)
+			}
+		}
+	}
+
+	return nil
+}
+
+// method3 使用wzapi接口下载抖音视频
+func (p *DouYinProcessor) method3(link string) error {
+	// 构建API URL
+	apiURL := fmt.Sprintf("https://wzapi.com/api/qsy?url=%s", link)
+
+	utils.InfoWithFormat("调用method3 API: %s", apiURL)
+
+	// 发送HTTP GET请求
+	resp, err := http.Get(apiURL)
+	if err != nil {
+		return fmt.Errorf("调用API失败: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// 检查响应状态码
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("API返回错误状态码: %d", resp.StatusCode)
+	}
+
+	// 解析JSON响应
+	type APIResponse struct {
+		Success interface{} `json:"success"`
+		Message string      `json:"message,omitempty"`
+		Data    struct {
+			VideoTitle  string `json:"video_title,omitempty"`
+			VideoURL    string `json:"video_url,omitempty"`
+			DownloadURL string `json:"download_url,omitempty"`
+			ImageURL    string `json:"image_url,omitempty"`
+		} `json:"data,omitempty"`
+		Time string `json:"time,omitempty"`
+	}
+
+	var result APIResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return fmt.Errorf("解析API响应失败: %v", err)
+	}
+
+	// 处理错误响应
+	switch v := result.Success.(type) {
+	case bool:
+		// 成功响应
+		if !v {
+			return fmt.Errorf("API返回失败: %s", result.Message)
+		}
+	case float64:
+		// 错误码响应
+		errCode := int(v)
+		if errCode != 401 && errCode != 403 {
+			return fmt.Errorf("API返回错误码: %d, 消息: %s", errCode, result.Message)
+		}
+		return fmt.Errorf("API返回错误码: %d, 消息: %s", errCode, result.Message)
+	default:
+		return fmt.Errorf("API返回未知的success字段类型: %T", result.Success)
+	}
+
+	// 检查数据是否有效
+	if result.Data.VideoTitle == "" || result.Data.VideoURL == "" || result.Data.DownloadURL == "" {
+		return fmt.Errorf("API返回数据无效: 缺少必要的视频信息")
+	}
+
+	utils.InfoWithFormat("API调用成功，视频标题: %s", result.Data.VideoTitle)
+
+	// 构建视频信息
+	p.videoInfo = &VideoInfo{
+		Title:       strings.TrimSpace(result.Data.VideoTitle),
+		DownloadUrl: strings.TrimSpace(result.Data.DownloadURL),
+		CoverUrl:    strings.TrimSpace(result.Data.ImageURL),
+		Desc:        strings.TrimSpace(result.Data.VideoTitle),
+	}
+
+	// 保存视频信息
+	p.videos = append(p.videos, p.videoInfo)
+
+	// 下载视频
+	if err = p.downloadVideo(); err != nil {
+		return fmt.Errorf("下载视频失败: %v", err)
+	}
+
+	return nil
+}
+
+// method2 使用API接口下载抖音视频
+func (p *DouYinProcessor) method2(link string) error {
+	// 构建API URL
+	apiURL := fmt.Sprintf("https://api.cenguigui.cn/api/juhe/video.php?url=%s", link)
+
+	utils.InfoWithFormat("调用method2 API: %s", apiURL)
+
+	// 发送HTTP GET请求
+	resp, err := http.Get(apiURL)
+	if err != nil {
+		return fmt.Errorf("调用API失败: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// 检查响应状态码
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("API返回错误状态码: %d", resp.StatusCode)
+	}
+
+	// 解析JSON响应
+	var result struct {
+		Code int    `json:"code"`
+		Msg  string `json:"msg"`
+		Data struct {
+			Title  string `json:"title"`
+			Pic    string `json:"pic"`
+			URL    string `json:"url"`
+			Down   string `json:"down"`
+			Author struct {
+				UID    string `json:"uid"`
+				Name   string `json:"name"`
+				Avatar string `json:"avatar"`
+			} `json:"author"`
+		} `json:"data"`
+		Tips string `json:"tips"`
+		Time string `json:"time"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return fmt.Errorf("解析API响应失败: %v", err)
+	}
+
+	// 检查API返回的业务状态码
+	if result.Code != 200 {
+		return fmt.Errorf("API返回错误码: %d, 消息: %s", result.Code, result.Msg)
+	}
+
+	// 检查数据是否有效（失败情况下的返回值）
+	if result.Data.Title == "" || result.Data.URL == "" {
+		return fmt.Errorf("API返回数据无效: title或url为空")
+	}
+
+	utils.InfoWithFormat("API调用成功，视频标题: %s", result.Data.Title)
+
+	// 构建视频信息
+	p.videoInfo = &VideoInfo{
+		Title:       strings.TrimSpace(result.Data.Title),
+		DownloadUrl: strings.TrimSpace(result.Data.URL),
+		CoverUrl:    strings.TrimSpace(result.Data.Pic),
+		Author:      strings.TrimSpace(result.Data.Author.Name),
+		Desc:        strings.TrimSpace(result.Data.Title),
+	}
+
+	// 保存视频信息
+	p.videos = append(p.videos, p.videoInfo)
+
+	// 下载视频
+	if err = p.downloadVideo(); err != nil {
+		return fmt.Errorf("下载视频失败: %v", err)
 	}
 
 	return nil
@@ -245,7 +412,7 @@ func (p *DouYinProcessor) _extractVideoID(page playwright.Page, link string) (st
 	}
 
 	// 等待特定元素出现，确保关键内容已加载
-	waitForElements(page)
+	//waitForElements(page)
 
 	// 尝试滚动页面，确保动态加载的内容也被加载
 	if _, err := page.Evaluate(`window.scrollTo(0, document.body.scrollHeight);`); err != nil {
@@ -477,8 +644,8 @@ func (p *DouYinProcessor) findDataInJson(data map[string]interface{}) *htmlJsonD
 							hjd.Author = getString(author, "nickname")
 						}
 
-						if createTime, ok := item["create_time"].(int64); ok {
-							hjd.Time = datetime.FormatTimeToStr(time.Unix(createTime, 0), "yyyy-mm-dd hh:mm:ss")
+						if createTime, ok := item["create_time"].(float64); ok {
+							hjd.Time = datetime.FormatTimeToStr(time.Unix(int64(createTime), 0), "yyyy-mm-dd hh:mm:ss")
 						}
 
 						if video := getMap(item, "video"); video != nil {
@@ -490,12 +657,18 @@ func (p *DouYinProcessor) findDataInJson(data map[string]interface{}) *htmlJsonD
 											utils.InfoWithFormat("[findDataInJson] 视频URL不可访问: %s", vUrl)
 											continue
 										}
+
+										videoUrlQueryMap, err := p._extractURLParams(vUrl)
+										if err == nil {
+											if ratio := videoUrlQueryMap["ratio"]; ratio != "" {
+												hjd.Ratio = videoUrlQueryMap["ratio"]
+											}
+										}
 										hjd.VideoUrl = vUrl
 										if hjd.VideoUrl != "" {
 											hjd.VideoUrl = strings.Replace(hjd.VideoUrl, "playwm", "play", 1)
 										}
 									}
-
 								}
 							}
 
@@ -519,6 +692,26 @@ func (p *DouYinProcessor) findDataInJson(data map[string]interface{}) *htmlJsonD
 	}
 
 	return hjd
+}
+
+// _extractURLParams 从 URL 中提取查询参数，并返回一个键值对映射。
+func (p *DouYinProcessor) _extractURLParams(rawURL string) (map[string]string, error) {
+	// 解析 URL
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return nil, err
+	}
+	// 提取查询参数
+	queryParams := parsedURL.Query()
+	params := make(map[string]string)
+	// 将查询参数转换为 map
+	for key, values := range queryParams {
+		// 如果参数有多个值，只取第一个值
+		if len(values) > 0 {
+			params[key] = values[0]
+		}
+	}
+	return params, nil
 }
 
 // resolveFinalURL 解析URL的最终重定向地址
