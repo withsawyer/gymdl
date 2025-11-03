@@ -77,27 +77,51 @@ func (s *Session) sendVideoFeedback(p video.Processor) {
 	// 🎵 单曲反馈
 	if count == 1 {
 		videoInfo := videos[0]
-		fileSize := videoInfo.Size
+		// 构建结构化消息内容
+		var parts []string
+		parts = append(parts, "🎉 *入库成功！*")
 
-		successMsg := fmt.Sprintf(
-			`🎉 *入库成功！*
-📺 *标题:* %s  
-🎤 *作者:* %s  
-🎥 *分辨率:* %s  
-🕒 *创建时间:* %s
-📷 *封面:* %s
-📝 *简介:* %s
-📦 *大小:* %s
-☁️ *入库方式:* %s`,
-			utils.TruncateString(videoInfo.Title, 80),
-			utils.TruncateString(videoInfo.Author, 40),
-			videoInfo.Ratio,
-			videoInfo.Time,
-			videoInfo.CoverUrl,
-			utils.TruncateString(videoInfo.Desc, 400),
-			fileSize,
-			processor.DetermineTidyType(s.Cfg),
-		)
+		// 标题（必选字段）
+		if title := strings.TrimSpace(videoInfo.Title); title != "" {
+			parts = append(parts, fmt.Sprintf("📺 *标题:* %s", utils.TruncateString(title, 80)))
+		}
+
+		// 作者（可选字段）
+		if author := strings.TrimSpace(videoInfo.Author); author != "" {
+			parts = append(parts, fmt.Sprintf("🎤 *作者:* %s", utils.TruncateString(author, 40)))
+		}
+
+		// 分辨率（可选字段）
+		if ratio := strings.TrimSpace(videoInfo.Ratio); ratio != "" {
+			parts = append(parts, fmt.Sprintf("🎥 *分辨率:* %s", ratio))
+		}
+
+		// 创建时间（可选字段）
+		if createTime := strings.TrimSpace(videoInfo.Time); createTime != "" {
+			parts = append(parts, fmt.Sprintf("🕒 *发布时间:* %s", createTime))
+		}
+
+		// 封面（可选字段）
+		if coverUrl := strings.TrimSpace(videoInfo.CoverUrl); coverUrl != "" {
+			parts = append(parts, fmt.Sprintf("📷 *封面:* %s", coverUrl))
+		}
+
+		// 简介（可选字段）
+		if desc := strings.TrimSpace(videoInfo.Desc); desc != "" {
+			parts = append(parts, fmt.Sprintf("📝 *简介:* %s", utils.TruncateString(desc, 400)))
+		}
+
+		// 文件大小（可选字段）
+		if fileSize := strings.TrimSpace(videoInfo.Size); fileSize != "" {
+			parts = append(parts, fmt.Sprintf("📦 *大小:* %s", fileSize))
+		}
+
+		// 入库方式（必选字段）
+		storageType := processor.DetermineTidyType(s.Cfg)
+		parts = append(parts, fmt.Sprintf("☁️ *入库方式:* %s", storageType))
+
+		// 合并所有非空部分
+		successMsg := strings.Join(parts, "\n")
 		_, _ = bot.Edit(msg, successMsg, tb.ModeMarkdown)
 		return
 	}
@@ -105,20 +129,37 @@ func (s *Session) sendVideoFeedback(p video.Processor) {
 	// 🎶 多曲反馈
 	var listBuilder strings.Builder
 	for i, v := range videos {
-		fileSize := v.Size
-		listBuilder.WriteString(fmt.Sprintf(
-			"📺 《%s》\n🎤 作者：%s\n🎥 分辨率:：%s\n📦 大小：%s",
-			utils.TruncateString(v.Desc, 60),
-			utils.TruncateString(v.Author, 40),
-			utils.TruncateString(v.Ratio, 40),
-			fileSize,
-		))
+		// 为每个视频创建结构化消息组件
+		var videoParts []string
 
-		// 如果不是最后一首，添加长横线分隔
-		if i < count-1 {
-			listBuilder.WriteString("\n──────────────────\n")
-		} else {
-			listBuilder.WriteString("\n")
+		// 标题（必选字段）
+		if title := strings.TrimSpace(v.Title); title != "" {
+			videoParts = append(videoParts, fmt.Sprintf("📺 *标题:* %s", utils.TruncateString(title, 60)))
+		}
+
+		// 作者（可选字段）
+		if author := strings.TrimSpace(v.Author); author != "" {
+			videoParts = append(videoParts, fmt.Sprintf("🎤 *作者:* %s", utils.TruncateString(author, 40)))
+		}
+
+		// 分辨率（可选字段）
+		if ratio := strings.TrimSpace(v.Ratio); ratio != "" {
+			videoParts = append(videoParts, fmt.Sprintf("🎥 *分辨率:* %s", ratio))
+		}
+
+		// 文件大小（可选字段）
+		if fileSize := strings.TrimSpace(v.Size); fileSize != "" {
+			videoParts = append(videoParts, fmt.Sprintf("📦 *大小:* %s", fileSize))
+		}
+
+		// 合并当前视频的非空字段
+		if len(videoParts) > 0 {
+			listBuilder.WriteString(strings.Join(videoParts, "\n"))
+
+			// 添加分隔线（最后一个视频不添加）
+			if i < count-1 {
+				listBuilder.WriteString("\n──────────────────\n")
+			}
 		}
 	}
 
