@@ -40,7 +40,7 @@ func (p *BiliBiliProcessor) Videos() []*VideoInfo {
 
 /* ------------------------ 下载逻辑 ------------------------ */
 
-func (p *BiliBiliProcessor) Download(url string) error {
+func (p *BiliBiliProcessor) Download(url string, callback func(progress string)) error {
 	utils.Debugf("开始下载视频:%s", url)
 	return nil
 }
