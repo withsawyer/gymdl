@@ -63,9 +63,10 @@ func HandleEvent(path string, cfg *config.Config) (*music.SongInfo, error) {
 func BuildUmCmd(inputFile, outputDir string) *exec.Cmd {
 	// um 命令参数列表
 	args := []string{
-		"-i", inputFile, // 输入文件
+		"--update-metadata",
+		"--overwrite",   // 覆盖输出文件
 		"-o", outputDir, // 输出目录
-		"--overwrite", // 覆盖输出文件
+		"-i", inputFile, // 输入文件
 	}
 	return exec.Command("um", args...)
 }
