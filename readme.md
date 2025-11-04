@@ -22,19 +22,19 @@ CookieCloud 自动同步登录、WebDAV 上传、下载器监控、Telegram Bot 
 | 功能                                                   | 状态     |
 |------------------------------------------------------|--------|
 | 主流音乐平台：Apple Music、Spotify、YouTube Music、SoundCloud等 | ✅      |
-| 智能链接识别与解析                                            | ✅      |
-| CookieCloud 自动同步登录状态                                 | ✅      |
-| WebDAV 自动上传整理后的音乐                                    | ✅      |
-| Telegram Bot 控制下载、接收通知                               | ✅      |
-| 定时任务调度（gocron）                                       | ✅      |
-| 重构模块                                                 | 🚧 开发中 |
-| wrapper集成                                            | 🚧 开发中 |
-| 下载器监控                                                | ⚠️ 规划中 |
-| 支持下载列表                                               | ⚠️ 规划中 |
-| 视频下载                                                 | ⚠️ 规划中 |
-| 多个通知渠道                                               | ⚠️ 规划中 |
-| AI 助手                                                | ⚠️ 规划中 |
-| Web UI                                               | ⚠️ 规划中 |
+| 智能链接识别与解析                                              | ✅      |
+| CookieCloud 自动同步登录状态                                    | ✅      |
+| WebDAV 自动上传整理后的音乐                                     | ✅      |
+| Telegram Bot 控制下载、接收通知                                 | ✅      |
+| 定时任务调度（gocron）                                          | ✅      |
+| 重构模块                                                       | ✅ |
+| 下载器监控                                                     | ✅ |
+| 支持下载列表                                                   | ✅ |
+| 视频下载                                                      | 🚧 开发中 |
+| YoutubeMusic下载                                              | 🚧 开发中 |
+| 多个通知渠道                                                   | ⚠️ 规划中 |
+| AI 助手                                                       | ⚠️ 规划中 |
+| Web UI                                                        | ⚠️ 规划中 |
 
 ---
 
@@ -116,7 +116,6 @@ additional_config:
   enable_monitor: false  # 是否启用目录监听 开启后监听下载目录使用um cli自动解密
   monitor_dirs:
     - ""  # 监听的目录,下载器监控
-  enable_wrapper: false  # 是否启用 wrapper 需要使用docker启动wrapper服务 容器名称wrapper 需要过2FA验证
 
 # 代理配置
 proxy:
@@ -179,10 +178,10 @@ or
 | CookieCloud 已同步 | ✅    |
 | 部署方式            | 详见下表 |
 
-| 部署方式         | 说明                                                                                                    |
-|--------------|-------------------------------------------------------------------------------------------------------|
-| 🐳 Docker 部署 | <br>• 配置 `config.yaml`<br>• 部署`wrapper`<br>                                                           |
-| 💻 本地部署      | 需额外安装：<br>• `Python(3.12+)`<br>• `ffmpeg` / `ffprobe`<br>• `N_m3u8DL-RE`<br>• `MP4Box`<br>• `wrapper` |
+| 部署方式         | 说明                                                                                         |
+|--------------|--------------------------------------------------------------------------------------------|
+| 🐳 Docker 部署 | <br>• 配置 `config.yaml`<br>                                                                 |
+| 💻 本地部署      | 需额外安装：<br>• `Python(3.12+)`<br>• `ffmpeg` / `ffprobe`<br>• `N_m3u8DL-RE`<br>• `MP4Box`<br> |
 
 ---
 

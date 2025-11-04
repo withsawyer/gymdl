@@ -1,106 +1,214 @@
 package monitor
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/nichuanfang/gymdl/config"
+	"github.com/nichuanfang/gymdl/internal/bot"
+	"github.com/nichuanfang/gymdl/processor/music"
 	"github.com/nichuanfang/gymdl/utils"
 )
 
-//目录监控
-
-// WatchManager监听管理器
+// WatchManager 监听管理器
 type WatchManager struct {
-	//目录-目录监听器映射表
-	watchers map[string]*fsnotify.Watcher
-	//互斥锁
-	mu sync.Mutex
-	//事件缓冲池(相当于消息队列)
-	eventCh chan fsnotify.Event
+	watchers   map[string]*fsnotify.Watcher
+	mu         sync.Mutex
+	eventCh    chan fsnotify.Event
+	stopCh     chan struct{}
+	debounceMu sync.Mutex
+	eventMap   map[string]time.Time
+	wg         sync.WaitGroup
+	cfg        *config.Config
 }
 
 // 创建监听管理器
-func NewWatchManager() *WatchManager {
+func NewWatchManager(c *config.Config) *WatchManager {
 	return &WatchManager{
 		watchers: make(map[string]*fsnotify.Watcher),
-		eventCh:  make(chan fsnotify.Event, 1024),
+		eventCh:  make(chan fsnotify.Event, 2048),
+		stopCh:   make(chan struct{}),
+		eventMap: make(map[string]time.Time),
+		cfg:      c,
 	}
 }
 
-// 添加目录
+// 递归添加目录及其所有子目录
+func (wm *WatchManager) AddDirRecursive(root string) error {
+	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return wm.AddDir(path)
+		}
+		return nil
+	})
+}
+
+// 添加单个目录监听
 func (wm *WatchManager) AddDir(dir string) error {
 	wm.mu.Lock()
 	defer wm.mu.Unlock()
 	if _, ok := wm.watchers[dir]; ok {
-		//当前目录已注册
 		return nil
 	}
 
-	//添加监听器
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
 	}
-
-	//监听器注册目录
-	err = watcher.Add(dir)
-	if err != nil {
+	if err := watcher.Add(dir); err != nil {
 		return err
 	}
-
-	//将目录和目录监听器绑定 建立一对一关系
 	wm.watchers[dir] = watcher
 
-	//启动一个协程 执行监听
-	go wm.watchLoop(watcher)
+	wm.wg.Add(1)
+	go wm.watchLoop(watcher, dir)
 	return nil
 }
 
-// 监听
-func (wm *WatchManager) watchLoop(watcher *fsnotify.Watcher) {
+// 去抖动逻辑：同一路径事件1秒内只处理一次
+func (wm *WatchManager) debounce(event fsnotify.Event) bool {
+	wm.debounceMu.Lock()
+	defer wm.debounceMu.Unlock()
+	now := time.Now()
+	last, ok := wm.eventMap[event.Name]
+	if ok && now.Sub(last) < time.Second {
+		return false
+	}
+	wm.eventMap[event.Name] = now
+	return true
+}
+
+// 监听协程
+func (wm *WatchManager) watchLoop(watcher *fsnotify.Watcher, dir string) {
+	defer wm.wg.Done()
 	for {
 		select {
 		case event, ok := <-watcher.Events:
 			if !ok {
 				return
 			}
-			// 可加入去抖动逻辑
-			wm.eventCh <- event
+			if !wm.debounce(event) {
+				continue
+			}
+			select {
+			case wm.eventCh <- event:
+			case <-wm.stopCh:
+				return
+			}
+
+			if event.Op&fsnotify.Create == fsnotify.Create {
+				info, err := os.Stat(event.Name)
+				if err == nil && info.IsDir() {
+					wm.AddDirRecursive(event.Name)
+				}
+			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
 				return
 			}
 			utils.ErrorWithFormat("watcher error:", err)
+		case <-wm.stopCh:
+			return
 		}
 	}
 }
 
+// 停止所有监听和worker
 func (wm *WatchManager) Stop() {
 	wm.mu.Lock()
 	defer wm.mu.Unlock()
-
-	// 关闭所有 watcher
+	close(wm.stopCh)
 	for _, watcher := range wm.watchers {
 		watcher.Close()
 	}
-
-	// 关闭事件通道，通知所有 worker 退出
 	close(wm.eventCh)
-
-	// 清空 map
-	wm.watchers = make(map[string]*fsnotify.Watcher)
+	wm.watchers = nil // 清空map即可，无需重新make
+	wm.wg.Wait()
 }
 
-// 启动workers
+// 文件大小稳定性检测，interval为检测间隔，checks为检测次数
+func isFileStable(path string, interval time.Duration, checks int) bool {
+	var lastSize int64 = -1
+	for i := 0; i < checks; i++ {
+		info, err := os.Stat(path)
+		if err != nil || info.IsDir() {
+			return false
+		}
+		size := info.Size()
+		if lastSize != -1 && size != lastSize {
+			lastSize = size
+			time.Sleep(interval)
+			continue
+		}
+		lastSize = size
+		time.Sleep(interval)
+	}
+	return true
+}
+
+// SendTelegram 发送入库通知
+func SendTelegram(songInfo *music.SongInfo) {
+	notifier := bot.GetNotifier()
+	if notifier != nil {
+		// 计算文件大小 MB
+		fileSizeMB := float64(songInfo.MusicSize) / 1024.0 / 1024.0
+
+		// 构建消息文本
+		messageText := fmt.Sprintf(
+			`🎉 *入库成功！*
+
+🎵 *歌曲:* %s  
+🎤 *艺术家:* %s  
+💿 *专辑:* %s  
+🎧 *格式:* %s  
+📊 *码率:* %s kbps  
+📦 *大小:* %.2f MB  
+☁️ *入库方式:* %s`,
+			utils.TruncateString(songInfo.SongName, 80),
+			utils.TruncateString(songInfo.SongArtists, 80),
+			utils.TruncateString(songInfo.SongAlbum, 80),
+			strings.ToUpper(songInfo.FileExt),
+			songInfo.Bitrate,
+			fileSizeMB,
+			strings.ToUpper(songInfo.Tidy),
+		)
+
+		// 发送消息
+		notifier.Send(messageText)
+	}
+}
+
+// 启动worker池处理事件
 func (wm *WatchManager) StartWorkerPool(workerCount int) {
 	for i := 0; i < workerCount; i++ {
+		wm.wg.Add(1)
 		go func(id int) {
+			defer wm.wg.Done()
 			for event := range wm.eventCh {
-				utils.DebugWithFormat("[Monitor] Worker %d handling event: %s\n", id, event)
-				// todo 处理业务逻辑
-				// todo 1如果event对应的是目录 需要解锁该目录下的文件 读取该目录下所有加密文件 用um cli 批量解密后整理
-				// todo 2如果event对应的是文件 则直接整理无需解锁
-				// todo 3 第1步比第二步多一个解密的环节 整理可以一起做
+				info, err := os.Stat(event.Name)
+				if err != nil {
+					continue
+				}
+				if event.Op&(fsnotify.Create|fsnotify.Write) != 0 && !info.IsDir() {
+					if isFileStable(event.Name, 1*time.Second, 2) {
+						utils.DebugWithFormat("[Monitor] Worker %d: Music file ready: %s", id, event.Name)
+						songInfo, eventErr := HandleEvent(event.Name, wm.cfg)
+						if eventErr != nil {
+							continue
+						}
+						SendTelegram(songInfo)
+					} else {
+						utils.DebugWithFormat("[Monitor] Worker %d: File not stable yet: %s", id, event.Name)
+					}
+				}
 			}
 		}(i)
 	}

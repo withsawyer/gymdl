@@ -52,24 +52,8 @@ RUN git clone --depth=1 https://github.com/gpac/gpac.git /tmp/gpac && \
     strip /usr/local/bin/MP4Box && \
     rm -rf /tmp/gpac /tmp/build
 
-
 # ==============================
-# 第二阶段：编译 Go 程序 apple-music-downloader
-# ==============================
-FROM golang:1.23.1 AS go-builder
-
-WORKDIR /go/src/app
-
-# 下载项目源码
-RUN git clone https://github.com/zhaarey/apple-music-downloader.git . && \
-    go mod tidy
-
-# 编译（静态可执行）
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o amdl .
-
-
-# ==============================
-# 第三阶段：生产镜像
+# 第二阶段：生产镜像
 # ==============================
 FROM python:3.12-slim
 
@@ -93,21 +77,8 @@ RUN curl -L -o N_m3u8DL-RE.tar.gz \
     chmod +x /usr/local/bin/N_m3u8DL-RE && \
     rm -rf /tmp/*
 
-# 安装 wrapper
-WORKDIR /app
-RUN wget -q "https://github.com/zhaarey/wrapper/releases/download/linux.V2/wrapper.x86_64.tar.gz" && \
-    wget -q "https://github.com/zhaarey/wrapper/archive/refs/heads/main.zip" &&\
-    unzip main.zip &&\
-    mv wrapper-main wrapper && \
-    tar -xzf wrapper.x86_64.tar.gz -C wrapper && \
-    rm -rf wrapper.x86_64.tar.gz main.zip && \
-    cd wrapper && chmod +x wrapper
-
 # 拷贝 FFmpeg + MP4Box 二进制
 COPY --from=ffmpeg-builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/MP4Box /usr/local/bin/
-
-# 拷贝 go 程序
-COPY --from=go-builder /go/src/app/amdl /usr/local/bin/
 
 ENV TZ=Asia/Shanghai \
     PATH="/root/.deno/bin:/app/data/bin:${PATH}" \

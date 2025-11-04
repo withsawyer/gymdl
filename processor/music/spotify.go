@@ -33,7 +33,7 @@ func (p *SpotifyProcessor) Songs() []*SongInfo {
 }
 
 /* ------------------------ 下载逻辑 ------------------------ */
-func (p *SpotifyProcessor) DownloadMusic(url string) error {
+func (p *SpotifyProcessor) DownloadMusic(url string, callback func(string)) error {
 	// TODO implement me
 	panic("implement me")
 }

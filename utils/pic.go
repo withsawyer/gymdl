@@ -1,102 +1,85 @@
 package utils
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"image"
-	"image/draw"
 	"image/jpeg"
-	"image/png"
 	"io"
 	"net/http"
 	"os"
+	"time"
 
-	"github.com/nfnt/resize"
-	"github.com/sirupsen/logrus"
+	"github.com/disintegration/imaging"
 )
 
-// 缩放图片到 320x320px (黑底填充)
-func ResizeImg(filePath string) (string, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", err
-	}
-
-	buffer, err := io.ReadAll(bufio.NewReader(file))
-	if err != nil {
-		return "", err
-	}
-
-	var img image.Image
-
-	img, err = jpeg.Decode(bytes.NewReader(buffer))
-	if err != nil {
-		img, err = png.Decode(bytes.NewReader(buffer))
-		if err != nil {
-			return "", fmt.Errorf("Image decode error  %s", filePath)
-		}
-	}
-	err = file.Close()
-	if err != nil {
-		return "", err
-	}
-
-	width := img.Bounds().Dx()
-	height := img.Bounds().Dy()
-	widthNew := 320
-	heightNew := 320
-
-	var m image.Image
-	if width/height >= widthNew/heightNew {
-		m = resize.Resize(uint(widthNew), uint(height)*uint(widthNew)/uint(width), img, resize.Lanczos3)
-	} else {
-		m = resize.Resize(uint(width*heightNew/height), uint(heightNew), img, resize.Lanczos3)
-	}
-
-	newImag := image.NewNRGBA(image.Rect(0, 0, 320, 320))
-	if m.Bounds().Dx() > m.Bounds().Dy() {
-		draw.Draw(newImag, image.Rectangle{
-			Min: image.Point{Y: (320 - m.Bounds().Dy()) / 2},
-			Max: image.Point{X: 320, Y: 320},
-		}, m, m.Bounds().Min, draw.Src)
-	} else {
-		draw.Draw(newImag, image.Rectangle{
-			Min: image.Point{X: (320 - m.Bounds().Dx()) / 2},
-			Max: image.Point{X: 320, Y: 320},
-		}, m, m.Bounds().Min, draw.Src)
-	}
-
-	out, err := os.Create(filePath + ".resize.jpg")
-	if err != nil {
-		return "", fmt.Errorf("Create image file error  %s", err)
-	}
-	defer func(out *os.File) {
-		err := out.Close()
-		if err != nil {
-			logrus.Errorln(err)
-		}
-	}(out)
-
-	err = jpeg.Encode(out, newImag, nil)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	return filePath + ".resize.jpg", nil
+var client = &http.Client{
+	Timeout: 10 * time.Second,
+	Transport: &http.Transport{
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 10,
+	},
 }
 
-// FetchImage 从网络下载图片并解码成 image.Image
-func FetchImage(url string) (*image.Image, error) {
-	resp, err := http.Get(url)
+// FetchImage 下载图片
+func FetchImage(url string) ([]byte, error) {
+	// 发起请求
+	resp, err := client.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("下载图片失败: %w", err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	img, _, err := image.Decode(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("图片解码失败: %w", err)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("bad status: %s", resp.Status)
 	}
 
-	return &img, nil
+	// 限制最大读取大小，防止内存攻击
+	const maxImageSize = 10 << 20
+	data, err := io.ReadAll(io.LimitReader(resp.Body, maxImageSize))
+	if err != nil {
+		return nil, err
+	}
+
+	// 解码图片
+	img, _, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+
+	//缩放到目标尺寸 320x320
+	resized := imaging.Resize(img, 320, 320, imaging.Lanczos)
+
+	// 编码为 JPEG 格式，压缩质量设为85以平衡性能与质量
+	buf := new(bytes.Buffer)
+	err = jpeg.Encode(buf, resized, &jpeg.Options{Quality: 85})
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+// DownloadAndSaveImage 从指定 URL 下载图片，并保存为 JPEG 文件到 path
+func DownloadAndSaveImage(url, path string) error {
+	// 调用之前的 FetchImage 获取图片字节
+	data, err := FetchImage(url)
+	if err != nil {
+		return err
+	}
+
+	// 创建文件
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// 写入数据到文件
+	_, err = file.Write(data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

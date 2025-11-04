@@ -61,7 +61,6 @@ additional_config:
   enable_monitor: false  # 是否启用目录监听 开启后监听下载目录使用um cli自动解密
   monitor_dirs:
     - ""  # 监听的目录,下载器监控
-  enable_wrapper: false  # 是否启用 wrapper 需要使用docker启动wrapper服务 容器名称wrapper 需要过2FA验证
 
 # 代理配置
 proxy:

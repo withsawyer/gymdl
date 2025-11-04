@@ -69,7 +69,6 @@ type AdditionalConfig struct {
 	EnableCron       bool     `yaml:"enable_cron"`    // 是否启用定时任务
 	EnableDirMonitor bool     `yaml:"enable_monitor"` // 是否启用目录监听
 	MonitorDirs      []string `yaml:"monitor_dirs"`   // 需要监听的目录  监听网易云/QQ下载目录=>调用um工具解锁=>整理=>telegram入库通知
-	EnableWrapper    bool     `yaml:"enable_wrapper"` // 是否启动wrapper
 }
 
 type ProxyConfig struct {

@@ -10,7 +10,6 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-co-op/gocron/v2 v2.17.0
-	github.com/go-ping/ping v1.2.0
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/google/uuid v1.6.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
@@ -19,10 +18,10 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/studio-b12/gowebdav v0.11.0
 	github.com/withsawyer/gopher-tools v0.0.0-20251031074855-b781974a4503
+	go.senan.xyz/taglib v0.10.4
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.46.0
 	gopkg.in/telebot.v4 v4.0.0-beta.5
-	gopkg.in/vansante/go-ffprobe.v2 v2.2.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -32,6 +31,7 @@ require (
 	github.com/bytedance/sonic v1.14.1 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
+	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/deckarep/golang-set/v2 v2.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
@@ -53,12 +53,14 @@ require (
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.55.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
+	github.com/tetratelabs/wazero v1.9.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	go.uber.org/mock v0.6.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/arch v0.22.0 // indirect
 	golang.org/x/crypto v0.43.0 // indirect
+	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
 	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect
