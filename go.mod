@@ -7,12 +7,13 @@ toolchain go1.24.3
 require (
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/XiaoMengXinX/Music163Api-Go v0.1.29
+	github.com/XiaoMengXinX/SimpleDownloader v0.0.0-20241104184306-5642193c58ed
+	github.com/disintegration/imaging v1.6.2
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-co-op/gocron/v2 v2.17.0
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/google/uuid v1.6.0
-	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/playwright-community/playwright-go v0.5200.1
 	github.com/sashabaranov/go-openai v1.41.2
 	github.com/sirupsen/logrus v1.9.0
@@ -31,7 +32,6 @@ require (
 	github.com/bytedance/sonic v1.14.1 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
-	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/deckarep/golang-set/v2 v2.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect

@@ -852,7 +852,7 @@ func (p *DouYinProcessor) _downloadResource(url, savePath, filename string) (str
 	}
 
 	// 正确设置下载选项
-	downloader, err := utils.DownloadFile(url, &utils.DownloadOptions{
+	downloader, err := utils.NewDownloader(url, &utils.DownloadOptions{
 		SavePath:   savePath,
 		FileName:   filename,
 		Timeout:    1200 * time.Second, // 正确设置为time.Duration类型

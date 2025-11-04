@@ -114,7 +114,7 @@ func NewDefaultDownloadOptions() *DownloadOptions {
 }
 
 // 下载文件的主函数
-func DownloadFile(url string, options *DownloadOptions) (*DownloadManager, error) {
+func NewDownloader(url string, options *DownloadOptions) (*DownloadManager, error) {
 	// 使用默认选项如果传入nil
 	if options == nil {
 		options = NewDefaultDownloadOptions()
